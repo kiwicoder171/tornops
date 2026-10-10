@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #000000;
+    --foreground: #f4f4f5;
+    --card: #0d0d0f;
+    --card-hover: #161619;
+    --card-foreground: #f4f4f5;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-foreground: #ffffff;
+    --muted: #18181b;
+    --muted-foreground: #a1a1aa;
+    --accent: #38bdf8;
+    --accent-foreground: #000000;
+    --destructive: #ef4444;
+    --border: #222225;
+    --border-subtle: #1c1c1f;
+  }
+
+  body {
+    background-color: #000000;
+    color: #f4f4f5;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom Sleek Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #000000;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+  }
+
+  /* Text Selection */
+  ::selection {
+    background: rgba(37, 99, 235, 0.4);
+    color: #ffffff;
+  }
+}
+
+/* Tabular numbers for live telemetry, counters, and timers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle Tactical Grid Background */
+.tactical-grid {
+  background-image: radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ==========================================================================
+   PURE BLACK & DARK GREY TACTICAL SYSTEM
+   Deep pitch black canvas with carbon dark grey cards and crisp hairline borders.
+   ========================================================================== */
+
+/* Background Canvas */
+.bg-slate-950,
+.bg-slate-950\/90,
+.bg-slate-950\/80 {
+  background-color: #000000 !important;
+}
+
+.bg-slate-950\/70,
+.bg-slate-950\/60 {
+  background-color: #09090b !important;
+}
+
+.bg-slate-950\/40,
+.bg-slate-950\/30,
+.bg-slate-950\/20 {
+  background-color: #0d0d0f !important;
+}
+
+/* Carbon Dark Grey Panels & Cards */
+.bg-slate-900,
+.bg-slate-900\/80,
+.bg-slate-900\/60,
+.bg-slate-900\/40 {
+  background-color: #0d0d0f !important;
+}
+
+.hover\:bg-slate-850:hover,
+.hover\:bg-slate-900:hover {
+  background-color: #141417 !important;
+}
+
+/* Neutral Dark Grey Hairline Borders */
+.border-slate-800,
+.border-slate-800\/80,
+.border-slate-700 {
+  border-color: #222225 !important;
+}
+
+.divide-slate-800,
+.divide-slate-800\/80 {
+  border-color: #1c1c1f !important;
+}
+
+/* Subtle Secondary Pills & Sub-containers */
+.bg-slate-800,
+.bg-slate-800\/80,
+.bg-slate-800\/60 {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+.hover\:bg-slate-800\/40:hover,
+.hover\:bg-slate-800\/30:hover,
+.hover\:bg-slate-800\/20:hover,
+.hover\:bg-slate-700:hover {
+  background-color: #202024 !important;
+}
+
+/* High-Contrast Neutral Typography */
+.text-white {
+  color: #f4f4f5 !important;
+}
+
+.text-slate-100,
+.text-slate-200 {
+  color: #e4e4e7 !important;
+}
+
+.text-slate-300 {
+  color: #d4d4d8 !important;
+}
+
+.text-slate-400 {
+  color: #a1a1aa !important;
+}
+
+.text-slate-500 {
+  color: #71717a !important;
+}
+
+/* Neutral Input Fields & Focus Rings */
+input, select {
+  background-color: #09090b !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+input:focus, select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4) !important;
+}

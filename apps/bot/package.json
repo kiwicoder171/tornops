@@ -1,0 +1,22 @@
+{
+  "name": "@torn/bot",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node ./dist/index.js"
+  },
+  "dependencies": {
+    "@torn/api": "workspace:*",
+    "@torn/db": "workspace:*",
+    "@torn/shared": "workspace:*",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "typescript": "^5.8.2"
+  }
+}

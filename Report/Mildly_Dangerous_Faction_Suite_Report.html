@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Torn Faction Operations Suite - Executive Capability Report</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 10mm 12mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 8.5pt;
+      line-height: 1.4;
+    }
+
+    .page {
+      padding: 0;
+      height: 277mm;
+      max-height: 277mm;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    .content-wrap {
+      flex: 1;
+    }
+
+    /* Header styling */
+    .header-banner {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-group h1 {
+      font-size: 15pt;
+      color: #ffffff;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group h1 span {
+      color: #38bdf8;
+    }
+
+    .subtitle {
+      font-size: 8pt;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .faction-badge {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 6px 12px;
+      text-align: right;
+    }
+
+    .faction-name {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .faction-meta {
+      font-size: 7.5pt;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .card-title {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 4px;
+    }
+
+    .card-title .icon {
+      font-size: 11pt;
+    }
+
+    .card p {
+      font-size: 8pt;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .feature-list {
+      list-style: none;
+      font-size: 8pt;
+    }
+
+    .feature-list li {
+      padding: 2.5px 0;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .feature-list li::before {
+      content: "✔";
+      color: #10b981;
+      font-weight: bold;
+      font-size: 7.5pt;
+    }
+
+    /* Badges & Pills */
+    .badge {
+      display: inline-block;
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      font-size: 7pt;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-purple { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+      margin-top: 4px;
+    }
+
+    th {
+      background: #0f172a;
+      color: #94a3b8;
+      text-align: left;
+      padding: 5px 8px;
+      border: 1px solid #334155;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 4.5px 8px;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+    }
+
+    tr:nth-child(even) {
+      background: #182234;
+    }
+
+    .callout {
+      background: rgba(30, 41, 59, 0.8);
+      border-left: 3px solid #38bdf8;
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      margin: 8px 0 10px 0;
+      font-size: 8pt;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 2px;
+      font-size: 8.5pt;
+    }
+
+    .metric-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 13pt;
+      font-weight: 800;
+      font-family: monospace;
+      color: #f8fafc;
+    }
+
+    .metric-label {
+      font-size: 7pt;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .footer {
+      padding-top: 6px;
+      border-top: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.5pt;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= PAGE 1 ================= -->
+  <div class="page">
+    <div class="content-wrap">
+      <div class="header-banner">
+        <div class="title-group">
+          <h1>⚔️ TORN <span>OPS SUITE</span></h1>
+          <div class="subtitle">Complete Faction Military Command, Fair Payout & Automation Platform</div>
+        </div>
+        <div class="faction-badge">
+          <div class="faction-name">Mildly Dangerous [57693]</div>
+          <div class="faction-meta">Leader: Eklatant [4430788] | 19 Members</div>
+        </div>
+      </div>
+
+      <!-- Metrics Summary -->
+      <div class="grid-3">
+        <div class="metric-box">
+          <div class="metric-value" style="color: #34d399;">100% TOS</div>
+          <div class="metric-label">Zero Automation / Safe API</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #60a5fa;">1,900+ req/m</div>
+          <div class="metric-label">Pooled Member Rate Capacity</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" style="color: #c084fc;">384 Targets</div>
+          <div class="metric-label">Baldr's Leveling Target Database</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">📌 Executive Overview for Faction Leadership</div>
+        This platform was engineered specifically for <strong>Mildly Dangerous [57693]</strong> to solve every friction point in Ranked Wars, Crime coordination, fair compensation, and armory logistics without requiring members to install complex software. It combines a private web portal, Discord watchdogs, and Tampermonkey browser scripts into a unified military operations suite.
+      </div>
+
+      <!-- Core Features Grid -->
+      <div class="grid-2">
+        <!-- War Room -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">🎯</span> War Room & Military Radar
+          </div>
+          <p>Live Ranked War cockpit connecting directly to Torn API v2 with sub-second polling.</p>
+          <ul class="feature-list">
+            <li><strong>Live Chain Monitor:</strong> Real-time counter, timeout countdown, and clutch bonus markers.</li>
+            <li><strong>Split Tactical Roster:</strong> Opponents on the left with 1-click modern attack links (<code>page.php?sid=attack</code>), Friendly roster on the right with revive & message callouts.</li>
+            <li><strong>Opponent Sleep Heatmap:</strong> Analyzes 7-day UTC activity logs to pinpoint the opponent's vulnerable sleep windows for coordinated strikes.</li>
+          </ul>
+        </div>
+
+        <!-- Fair Payout -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">💰</span> Fair-Share War Payout Engine
+          </div>
+          <p>Automated war settlement replacing manual Google Sheets calculations.</p>
+          <ul class="feature-list">
+            <li><strong>Official War Report Sync:</strong> Loads official Ranked War logs (tested on War #50506 with 11 real fighters).</li>
+            <li><strong>Customizable Formula Weights:</strong> Configurable base pay per hit, respect bonus, assist split, and loss penalties.</li>
+            <li><strong>Clutch Hit Bounty:</strong> Special multiplier reward for fighters who save the chain with under 30 seconds remaining.</li>
+            <li><strong>1-Click Userscript & CSV Export:</strong> Copy batch payout JSON for instant vault payouts in Torn.</li>
+          </ul>
+        </div>
+
+        <!-- OC 2.0 Optimizer -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">🕵️‍♂️</span> Crimes 2.0 (OC) Command Center
+          </div>
+          <p>Advanced Crime matching with strict leadership role-gating (Leader AA vs Member).</p>
+          <ul class="feature-list">
+            <li><strong>👑 Leader AA Optimizer:</strong> Algorithmically analyzes member skill ratings across 8 crime disciplines to build optimal lineups (88%+ success rate).</li>
+            <li><strong>Slot Locking:</strong> Lock in confirmed fighters so automated scheduling doesn't displace them.</li>
+            <li><strong>Stalled Invite Alerts:</strong> Highlights members holding up countdowns with 1-click Discord nudge triggers.</li>
+            <li><strong>👤 Member View:</strong> Recruits strictly see only their assigned crime, slot, and live Torn skill tree.</li>
+          </ul>
+        </div>
+
+        <!-- Baldr Targets -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">⭐</span> Baldr's Leveling Directory (384 Targets)
+          </div>
+          <p>Complete curated database of inactive, low-battle-stat targets for rapid leveling to 15.</p>
+          <ul class="feature-list">
+            <li><strong>384 Verified Inactive Targets:</strong> Spanning List 1, List 2, List 3, Extra Lists 1–3, and Domino List (down to 54 total stats).</li>
+            <li><strong>🟢 Live Availability Check:</strong> Auto-checks visible targets via API; displays <span class="badge badge-green">AVAILABLE</span>, <span class="badge badge-red">IN HOSPITAL (countdown)</span>, or <span class="badge badge-blue">TRAVELING</span>.</li>
+            <li><strong>Export to YATA & TornPDA:</strong> 1-click import into mobile apps.</li>
+            <li><strong>Always "Leave":</strong> Clear coaching to choose Leave for 100% XP.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Torn Faction Operations Suite • Mildly Dangerous [57693]</span>
+      <span>Page 1 of 2</span>
+    </div>
+  </div>
+
+  <!-- ================= PAGE 2 ================= -->
+  <div class="page">
+    <div class="content-wrap">
+      <div class="header-banner" style="padding: 8px 14px; margin-bottom: 10px;">
+        <div class="title-group">
+          <h2 style="font-size: 13pt; color: #fff;">🤖 DISCORD BOT, VAULT LEDGER & USERSCRIPTS</h2>
+          <div class="subtitle">Automated Faction Infrastructure & Rate Limit Scaling</div>
+        </div>
+        <span class="badge badge-purple" style="font-size: 7.5pt;">App ID: 1558116499678306454</span>
+      </div>
+
+      <!-- Discord Bot Section -->
+      <div class="card" style="margin-bottom: 10px;">
+        <div class="card-title">
+          <span class="icon">🤖</span> Faction Discord War Bot (`@torn/bot`)
+        </div>
+        <p>Custom Discord.js v14 bot providing live faction intelligence directly into your Discord channels.</p>
+        
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 20%;">Slash Command</th>
+              <th style="width: 50%;">Functionality</th>
+              <th style="width: 30%;">Permission / Scope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/chain</code></td>
+              <td>Live chain timer, timeout warning, and recent hitter tracker.</td>
+              <td><span class="badge badge-blue">All Members</span></td>
+            </tr>
+            <tr>
+              <td><code>/hospital</code></td>
+              <td>Live enemy roster monitoring with instant hospital-out callouts & attack links.</td>
+              <td><span class="badge badge-red">War Hitters</span></td>
+            </tr>
+            <tr>
+              <td><code>/targets</code></td>
+              <td>Searches 384 Baldr targets with live availability check (Available vs In Hosp).</td>
+              <td><span class="badge badge-green">New Members</span></td>
+            </tr>
+            <tr>
+              <td><code>/withdraw</code></td>
+              <td>Queues a member vault withdrawal request for faction bankers.</td>
+              <td><span class="badge badge-amber">All Members</span></td>
+            </tr>
+            <tr>
+              <td><code>/balance</code></td>
+              <td>Displays personal vault balance and recent deposit history.</td>
+              <td><span class="badge badge-blue">All Members</span></td>
+            </tr>
+            <tr>
+              <td><code>/verify</code></td>
+              <td>Secure 1-click account verification; encrypts Limited API key and pools rate capacity.</td>
+              <td><span class="badge badge-purple">Ephemeral / Private</span></td>
+            </tr>
+            <tr>
+              <td><code>/setup</code></td>
+              <td>Configures chain alert channels, war rooms, and role ping triggers.</td>
+              <td><span class="badge badge-red">Leader / Admin Only</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 7.5pt;">
+          <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155;">
+            <strong style="color: #f87171;">⚡ Chain Watchdog Daemon</strong><br>
+            Polls chain status every 15s. Escalates alerts at 120s, 60s, and triggers role emergency pings at 30s.
+          </div>
+          <div style="background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155;">
+            <strong style="color: #60a5fa;">🏥 Hospital Watchdog Daemon</strong><br>
+            Monitors enemy hospital timers and automatically posts target callouts with direct attack buttons.
+          </div>
+        </div>
+      </div>
+
+      <!-- Banking & Userscripts Grid -->
+      <div class="grid-2">
+        <!-- Banking & Vault -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">🏦</span> Faction Banking & Vault Ledger
+          </div>
+          <p>Accurate financial management integrated with Torn fundsnews.</p>
+          <ul class="feature-list">
+            <li><strong>Deposit Sync:</strong> Ingests <code>fundsnews</code> deposit logs automatically.</li>
+            <li><strong>Withdrawal Queue:</strong> Members submit requests; bankers approve in order.</li>
+            <li><strong>Batch Transfer Copy:</strong> 1-click helper string allowing bankers to disburse multiple payouts in Torn within 10 seconds.</li>
+            <li><strong>Restricted View:</strong> Non-bankers cannot tamper with funds.</li>
+          </ul>
+        </div>
+
+        <!-- Userscripts -->
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">🧩</span> Custom Tampermonkey Userscripts
+          </div>
+          <p>In-game browser enhancements for member quality-of-life.</p>
+          <ul class="feature-list">
+            <li><code>torn-target-filters.user.js</code>: Floating HUD on Torn Ranked War page hiding hospital targets and highlighting optimal hits.</li>
+            <li><code>torn-armory-warning.user.js</code>: Armory stock monitor alerting when medical supplies (Morphine/Blood) drop below threshold.</li>
+            <li><code>torn-energy-travel-notifier.user.js</code>: Native desktop alerts when Energy hits 100/150 or when travel lands.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Security & Next Steps -->
+      <div class="card" style="background: #131c31; border-color: #3b82f6; margin-top: 10px; padding: 8px 12px;">
+        <div class="card-title" style="color: #60a5fa; margin-bottom: 4px; padding-bottom: 2px;">
+          <span class="icon">🔐</span> Security, Compliance & Faction Setup Checklist
+        </div>
+        <div style="font-size: 7.5pt; color: #cbd5e1; line-height: 1.5;">
+          <p><strong>1. Strict API Safety:</strong> Zero scraping without keys, zero automated gameplay actions (strictly complies with Torn rules). All member keys are encrypted at rest with AES-256-GCM.</p>
+          <p><strong>2. Discord Bot Authorization:</strong> Send the 1-click invite link to the Discord server owner/leader:</p>
+          <div style="background: #0f172a; padding: 5px 8px; border-radius: 4px; font-family: monospace; font-size: 7pt; color: #38bdf8; margin: 3px 0 5px 0; word-break: break-all;">
+            https://discord.com/oauth2/authorize?client_id=1558116499678306454&permissions=8&scope=bot%20applications.commands
+          </div>
+          <p><strong>3. Channel Setup:</strong> Run <code>/setup faction_id:57693</code> in Discord to link alert channels.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Torn Faction Operations Suite • Prepared for Faction Leader Eklatant [4430788]</span>
+      <span>Page 2 of 2</span>
+    </div>
+  </div>
+
+</body>
+</html>
