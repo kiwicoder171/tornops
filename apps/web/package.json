@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@torn/api": "workspace:*",
-    "@torn/db": "workspace:*",
     "@torn/shared": "workspace:*",
     "lucide-react": "^1.16.0",
     "next": "^15.2.1",

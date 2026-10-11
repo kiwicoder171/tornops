@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @torn/web build",
+  "outputDirectory": "apps/web/.next",
+  "env": {
+    "PRISMA_SKIP_POSTINSTALL_GENERATE": "true"
+  },
+  "build": {
+    "env": {
+      "PRISMA_SKIP_POSTINSTALL_GENERATE": "true"
+    }
+  }
+}

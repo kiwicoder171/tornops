@@ -206,9 +206,6 @@ importers:
       '@torn/api':
         specifier: workspace:*
         version: link:../../packages/torn-api
-      '@torn/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@torn/shared':
         specifier: workspace:*
         version: link:../../packages/shared
