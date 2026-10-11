@@ -11,8 +11,11 @@
       "default": "./dist/index.js"
     }
   },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "dev": "tsc --watch",
     "db:generate": "prisma generate",
     "db:push": "prisma db push"
