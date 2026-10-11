@@ -11,9 +11,6 @@
       "default": "./dist/index.js"
     }
   },
-  "prisma": {
-    "schema": "prisma/schema.prisma"
-  },
   "scripts": {
     "build": "prisma generate && tsc",
     "dev": "tsc --watch",

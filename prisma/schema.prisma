@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  MEMBER
+  BANKER
+  OC_LEAD
+  CO_LEADER
+  LEADER
+}
+
+enum KeyType {
+  FACTION
+  MEMBER
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  FULFILLED
+  REJECTED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id              String        @id @default(uuid())
+  discordId       String        @unique
+  discordUsername String
+  avatarUrl       String?
+  tornId          Int           @unique
+  tornUsername    String
+  role            UserRole      @default(MEMBER)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  bankAccount     BankAccount?
+  withdrawalReqs  WithdrawalRequest[]
+  assignedTasks   TodoTask[]    @relation("AssignedTasks")
+  createdTasks    TodoTask[]    @relation("CreatedTasks")
+  apiKeys         ApiKeyPool[]
+
+  @@index([tornId])
+  @@index([discordId])
+}
+
+model FactionConfig {
+  id                 Int           @id // Torn Faction ID
+  name               String
+  discordGuildId     String?       @unique
+  chainChannelId     String?
+  hospChannelId      String?
+  warChannelId       String?
+  bankChannelId      String?
+  chainAlertRoleId   String?
+  hospAlertRoleId    String?
+  minChainTimeAlert  Int           @default(60) // seconds
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  wars               WarRecord[]
+  apiKeys            ApiKeyPool[]
+}
+
+model ApiKeyPool {
+  id             String         @id @default(uuid())
+  encryptedKey   String
+  keyType        KeyType        @default(MEMBER)
+  ownerTornId    Int
+  factionId      Int?
+  isActive       Boolean        @default(true)
+  requestsCount  Int            @default(0)
+  lastUsedAt     DateTime?
+  createdAt      DateTime       @default(now())
+
+  user           User?          @relation(fields: [ownerTornId], references: [tornId], onDelete: Cascade)
+  faction        FactionConfig? @relation(fields: [factionId], references: [id], onDelete: Cascade)
+
+  @@index([ownerTornId])
+  @@index([factionId])
+  @@index([keyType, isActive])
+}
+
+model WarRecord {
+  id                 Int            @id // Torn War ID
+  factionId          Int
+  opponentFactionId  Int
+  opponentName       String
+  targetScore        Int
+  ourScore           Int            @default(0)
+  opponentScore      Int            @default(0)
+  startTimestamp     DateTime
+  endTimestamp       DateTime?
+  status             String         // SCHEDULED, ACTIVE, ENDED
+  payoutCalculated   Boolean        @default(false)
+  payoutReportJson   String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  faction            FactionConfig  @relation(fields: [factionId], references: [id], onDelete: Cascade)
+
+  @@index([factionId])
+  @@index([status])
+}
+
+model EnemyWatch {
+  id             Int            @id // Torn Player ID
+  factionId      Int            // Enemy faction ID
+  name           String
+  level          Int
+  hospitalUntil  DateTime?
+  estimatedStats String?
+  lastAction     String?
+  sleepSchedule  String?        // JSON of active hours
+  priority       Int            @default(1) // 1=Normal, 2=High Value, 3=Priority Target
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([factionId])
+  @@index([hospitalUntil])
+}
+
+model BankAccount {
+  id              String        @id @default(uuid())
+  userTornId      Int           @unique
+  balance         BigInt        @default(0)
+  totalDeposited  BigInt        @default(0)
+  totalWithdrawn  BigInt        @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userTornId], references: [tornId], onDelete: Cascade)
+  transactions    BankTransaction[]
+
+  @@index([userTornId])
+}
+
+model BankTransaction {
+  id             String         @id @default(uuid())
+  accountId      String
+  tornLogId      Int?           @unique // Unique ID from Torn fundsnews to prevent duplicate ingestion
+  type           String         // DEPOSIT, WITHDRAWAL, PAYOUT_CREDIT, ADJUSTMENT
+  amount         BigInt
+  notes          String?
+  createdAt      DateTime       @default(now())
+
+  account        BankAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([createdAt])
+}
+
+model WithdrawalRequest {
+  id             String           @id @default(uuid())
+  userTornId     Int
+  amount         BigInt
+  reason         String?
+  status         WithdrawalStatus @default(PENDING)
+  fulfilledBy    String?          // Banker identifier
+  requestedAt    DateTime         @default(now())
+  fulfilledAt    DateTime?
+
+  user           User             @relation(fields: [userTornId], references: [tornId], onDelete: Cascade)
+
+  @@index([userTornId])
+  @@index([status])
+}
+
+model OrganizedCrimeTeam {
+  id             Int              @id @default(autoincrement())
+  crimeTypeId    Int
+  crimeName      String
+  status         String           @default("PLANNING") // PLANNING, READY, EXECUTED
+  slotsJson      String           // Array of slot assignments with member IDs
+  stalledHours   Int              @default(0)
+  lastReminderAt DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model LevelingTarget {
+  id             Int              @id // Target Torn Player ID
+  name           String
+  level          Int
+  estimatedStats String?
+  notes          String?
+  difficultyTier String           @default("BALDR_TIER") // LOW_STAT, BALDR_TIER, CHAIN_FODDER
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([level])
+  @@index([difficultyTier])
+}
+
+model TodoTask {
+  id             String           @id @default(uuid())
+  title          String
+  description    String?
+  status         TaskStatus       @default(TODO)
+  priority       TaskPriority     @default(MEDIUM)
+  factionWide    Boolean          @default(false)
+  assignedToId   Int?
+  createdById    Int
+  dueDate        DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  assignedTo     User?            @relation("AssignedTasks", fields: [assignedToId], references: [tornId], onDelete: SetNull)
+  createdBy      User             @relation("CreatedTasks", fields: [createdById], references: [tornId], onDelete: Cascade)
+
+  @@index([assignedToId])
+  @@index([status])
+  @@index([factionWide])
+}
