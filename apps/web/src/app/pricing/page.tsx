@@ -1,140 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Tag,
   Check,
   Zap,
-  Star,
-  Diamond,
-  Copy,
-  ExternalLink,
   ShieldCheck,
   Sparkles,
-  RefreshCw,
-  HelpCircle,
-  Clock,
-  ArrowRight,
+  Heart,
+  ExternalLink,
   Users,
+  Copy,
+  Clock,
+  Swords,
+  Moon,
+  HeartPulse,
+  Calculator,
+  ShieldAlert,
+  Plane,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 
-interface PricingPlan {
-  id: string;
-  name: string;
-  badge?: string;
-  badgeColor?: string;
-  price: string;
-  unit: string;
-  subPrice?: string;
-  highlight?: boolean;
-  icon: any;
-  iconColor: string;
-  description: string;
-  features: string[];
-}
-
-const plans: PricingPlan[] = [
-  {
-    id: "free",
-    name: "Recruit",
-    badge: "NO PAYMENT REQUIRED",
-    badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    price: "Free",
-    unit: "forever",
-    description: "Essential tactical tools for every Torn citizen and developing faction.",
-    icon: Tag,
-    iconColor: "text-zinc-400",
-    features: [
-      "1 recruitment scan per day (up to 5 results)",
-      "Ranked War live scoreboard (30s polling)",
-      "Standard OC 2.0 slot viewer",
-      "384 curated leveling & chain targets",
-      "Travel flight countdowns & overseas stock checker",
-      "Vault banking manual balance book",
-      "Client-side zero-knowledge API security",
-    ],
-  },
-  {
-    id: "war-pass",
-    name: "War Pass",
-    badge: "PAY PER WAR",
-    badgeColor: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-    price: "2",
-    unit: "Xanax",
-    subPrice: "~$1.7M Torn Cash • 7 Days",
-    description: "Designed for factions entering an active Ranked War cycle this week.",
-    icon: Zap,
-    iconColor: "text-amber-400",
-    features: [
-      "7 days full combat suite access",
-      "1-second hospital countdown snipe timers",
-      "Automated War Payout Engine (Fair-Fight multipliers)",
-      "1-click Torn forum BBCode payout summary",
-      "Revive Dispatch queue with 1-click revive links",
-      "5 recruitment scans (up to 20 results each)",
-      "Priority 10s war room telemetry polling",
-      "Export war results to CSV",
-    ],
-  },
-  {
-    id: "commander",
-    name: "Commander",
-    badge: "MOST POPULAR",
-    badgeColor: "bg-purple-500/20 text-purple-300 border-purple-500/40",
-    price: "10",
-    unit: "Xanax / mo",
-    subPrice: "~$8.4M Torn Cash • 30 Days",
-    highlight: true,
-    icon: Star,
-    iconColor: "text-purple-400",
-    description: "Complete faction command suite for warring factions and ambitious leadership.",
-    features: [
-      "30 days full access for your ENTIRE faction",
-      "Enemy Sleep Schedule 24h Heatmap & Push-Window Predictor",
-      "Automated War Payouts with custom bonus pots & fair-fight math",
-      "1-click pre-filled Torn Vault transfer links",
-      "Vault & Banking auto-ingester for Torn fundsnews",
-      "OC 2.0 auto-nudge queue with 1-click Discord ping generator",
-      "Armory & Loaner equipment tracking with medical usage audits",
-      "Revive Dispatch ledger with automatic reviver payout tallies",
-      "Audible chain panic sirens (60s / 30s alarms)",
-      "Unlimited recruitment radar scans & CSV export",
-      "Priority 5s real-time war room polling",
-    ],
-  },
-  {
-    id: "syndicate",
-    name: "Syndicate Lifetime",
-    badge: "VIP FOUNDER",
-    badgeColor: "bg-blue-500/20 text-blue-300 border-blue-500/40",
-    price: "50",
-    unit: "Xanax",
-    subPrice: "~$42M Torn Cash • Permanent",
-    icon: Diamond,
-    iconColor: "text-blue-400",
-    description: "Permanent VIP license for veteran factions, hall of fame crews, and leaders.",
-    features: [
-      "Lifetime access for your faction (never pay again)",
-      "Every current and future tactical tool included",
-      "Multi-leader & banker role-based permissions",
-      "Dedicated Discord bot instance & custom webhook routing",
-      "Custom faction accent colors and branding",
-      "VIP Founder badge displayed across global telemetry",
-      "Unlimited candidate scans & export capacity",
-      "Direct priority feature requests & support",
-    ],
-  },
-];
-
 export default function PricingPage() {
   const { userProfile, isLive } = useTorn();
-  const [selectedPlan, setSelectedPlan] = useState<string>("commander");
   const [copied, setCopied] = useState<boolean>(false);
-  const [isVerifying, setIsVerifying] = useState<boolean>(false);
-  const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
 
-  // Recipient details for Xanax payment
+  // Recipient details for optional tips
   const recipientName = "Mildly Dangerous";
   const recipientId = 57693;
 
@@ -144,204 +36,187 @@ export default function PricingPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleVerify = () => {
-    setIsVerifying(true);
-    setVerifyMessage(null);
-
-    setTimeout(() => {
-      setIsVerifying(false);
-      setVerifyMessage(
-        "Scanning Torn API events for recent incoming transfers... If you just sent the Xanax, allow 30-60 seconds for Torn's API cache to update."
-      );
-    }, 1500);
-  };
+  const unlockedFeatures = [
+    {
+      title: "Enemy Sleep Heatmap & Push-Window Radar",
+      desc: "Analyze opponent timezones and predict 04:00–08:00 TCT offline sleep windows for uncontested 250-point leads.",
+      icon: Moon,
+    },
+    {
+      title: "Ranked War Room & Live Scoreboard",
+      desc: "Live hospital countdown timers, chain telemetry, and 1-click direct attack links.",
+      icon: Swords,
+    },
+    {
+      title: "Automated Fair-Share War Payout Engine",
+      desc: "Algorithmic reward distribution based on hits, Fair-Fight multipliers, clutch bonuses, and 1-click forum BBCode.",
+      icon: Calculator,
+    },
+    {
+      title: "War Revive Dispatch Board",
+      desc: "Real-time hospital queue with 1-click revive links and automated Xanax payout tracking for contract revivers.",
+      icon: HeartPulse,
+    },
+    {
+      title: "Faction Recruitment Radar (Unlimited Scans)",
+      desc: "Search active, unaligned players by level and activity with 1-click personalized recruitment invitation letters.",
+      icon: Users,
+    },
+    {
+      title: "Armory & Loaner Item Tracker",
+      desc: "Track faction-loaned armor, RW weapons, and audit medical/Xanax armory consumption.",
+      icon: ShieldAlert,
+    },
+    {
+      title: "Travel Safe-Landing & Stock Radar",
+      desc: "5-minute touchdown warning sirens to prevent mugs, plus live overseas plushie, flower, and Xanax stocks.",
+      icon: Plane,
+    },
+    {
+      title: "Crimes 2.0 Planner & Vault Banking",
+      desc: "Team slot assignment, readiness indicators, and transparent deposit/withdrawal ledgers.",
+      icon: ShieldCheck,
+    },
+    {
+      title: "Baldr Leveling & Chain Targets (384 Targets)",
+      desc: "Curated low-stat, high-level inactive targets for rapid early leveling and chain building.",
+      icon: Zap,
+    },
+  ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Page Header */}
-      <div className="text-center space-y-3 pt-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-          <span>IN-GAME XANAX SUBSCRIPTION</span>
+      <div className="text-center space-y-3 pt-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span>OPEN PUBLIC ACCESS • 100% FREE FOR ALL</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-          Tactical Operations Plans
+          All Tactical Tools Are 100% Free
         </h1>
-        <p className="text-zinc-400 text-sm max-w-2xl mx-auto">
-          Free citizen tools forever. Upgrade to high-speed Ranked War telemetry, automated payout engines, and sleep heatmaps. Pay in Xanax directly in-game.
+        <p className="text-zinc-400 text-sm max-w-2xl mx-auto leading-relaxed">
+          We&apos;ve paused all paid plans to give every Torn faction and citizen unrestricted access to our combat intelligence, sleep heatmaps, and payout engines. No paywalls, no Xanax required.
         </p>
       </div>
 
-      {/* Pricing Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-        {plans.map((plan) => {
-          const isSelected = selectedPlan === plan.id;
-          const Icon = plan.icon;
-
-          return (
-            <div
-              key={plan.id}
-              onClick={() => setSelectedPlan(plan.id)}
-              className={`relative flex flex-col justify-between rounded-xl p-5 cursor-pointer transition-all duration-200 ${
-                plan.highlight
-                  ? "bg-[#0f0e14] border-2 border-purple-500/60 shadow-xl shadow-purple-950/20"
-                  : isSelected
-                  ? "bg-[#111114] border border-blue-500/60"
-                  : "bg-[#0d0d0f] border border-[#222225] hover:border-[#333338]"
-              }`}
-            >
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full tracking-wider uppercase shadow-md">
-                  Commander Choice
-                </div>
-              )}
-
-              <div>
-                {/* Header & Badge */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-2 rounded-lg bg-[#18181c] border border-[#27272a] ${plan.iconColor}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  {plan.badge && (
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${plan.badgeColor}`}>
-                      {plan.badge}
-                    </span>
-                  )}
-                </div>
-
-                {/* Plan Title & Price */}
-                <h3 className="text-lg font-bold text-white">{plan.name}</h3>
-                <div className="mt-2 mb-1 flex items-baseline gap-1.5">
-                  <span className="text-2xl md:text-3xl font-extrabold text-white tracking-tight font-mono">
-                    {plan.price}
-                  </span>
-                  <span className="text-xs font-semibold text-zinc-400">{plan.unit}</span>
-                </div>
-                {plan.subPrice && (
-                  <p className="text-[11px] font-mono text-zinc-400 mb-3">{plan.subPrice}</p>
-                )}
-                <p className="text-xs text-zinc-400 leading-relaxed mt-2 mb-4">{plan.description}</p>
-
-                {/* Features Divider */}
-                <div className="border-t border-[#1f1f23] my-4" />
-
-                {/* Feature Bullet Points */}
-                <ul className="space-y-2.5 text-xs text-zinc-300">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span className="leading-tight">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Select Button */}
-              <button
-                type="button"
-                className={`mt-6 w-full py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                  plan.highlight
-                    ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-900/30"
-                    : isSelected
-                    ? "bg-blue-600 hover:bg-blue-500 text-white"
-                    : "bg-[#18181b] hover:bg-[#222226] text-zinc-300 border border-[#27272a]"
-                }`}
-              >
-                {plan.id === "free" ? "Included Free" : isSelected ? "Selected Plan" : "Choose Plan"}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Torn In-Game Payment Bar (TornCrew-style) */}
-      <div className="bg-[#0e0e11] border border-[#27272c] rounded-xl p-6 shadow-xl">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-purple-400 font-bold">
-                In-Game Transfer Destination
+      {/* Main Unlocked Suite Banner */}
+      <div className="bg-[#0e0e11] border border-emerald-500/30 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#1c1c1f]">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                CURRENT STATUS: UNRESTRICTED
               </span>
+              <span className="text-xs font-mono text-zinc-500">Tier: Full Commander</span>
             </div>
-            <div className="text-lg font-bold text-white flex items-center justify-center lg:justify-start gap-2">
-              <span>Send Xanax to:</span>
-              <span className="text-purple-300 font-mono underline decoration-purple-500/50">
-                {recipientName} [{recipientId}]
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400">
-              No message or note required. Just send the exact item quantity. Access activates automatically within 30 seconds.
+            <h2 className="text-xl font-bold text-white mt-2">
+              Full Faction Commander Suite (Unlocked for Everyone)
+            </h2>
+            <p className="text-xs text-zinc-400 mt-1">
+              Every tool and telemetry feed is completely open for your entire roster.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={handleCopyName}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#18181c] border border-[#2c2c32] hover:border-zinc-500 text-xs font-semibold text-zinc-200 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{copied ? "Copied to Clipboard!" : "Copy Name"}</span>
-            </button>
-
-            <a
-              href="https://www.torn.com/item.php#drugs"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors shadow-sm"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Inventory (Torn)</span>
-            </a>
-
-            <button
-              onClick={handleVerify}
-              disabled={isVerifying}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white transition-colors shadow-sm"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isVerifying ? "animate-spin" : ""}`} />
-              <span>{isVerifying ? "Checking Logs..." : "I've Paid, Verify Now"}</span>
-            </button>
+          <div className="text-right shrink-0">
+            <div className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">
+              $0 / Free
+            </div>
+            <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
+              Zero Xanax • Unlimited Usage
+            </div>
           </div>
         </div>
 
-        {verifyMessage && (
-          <div className="mt-4 p-3 rounded-lg bg-purple-950/30 border border-purple-500/30 text-xs text-purple-200 flex items-center gap-2 font-mono">
-            <Clock className="w-4 h-4 text-purple-400 shrink-0" />
-            <span>{verifyMessage}</span>
-          </div>
-        )}
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
+          {unlockedFeatures.map((feat, idx) => {
+            const Icon = feat.icon;
+            return (
+              <div
+                key={idx}
+                className="p-3.5 rounded-xl bg-[#121215] border border-[#1f1f23] flex items-start gap-3 hover:border-emerald-500/30 transition-colors"
+              >
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-white flex items-center gap-1.5">
+                    {feat.title}
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+                    {feat.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* FAQ / Guarantees Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] space-y-2">
-          <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Zero-Knowledge Security</span>
-          </div>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Your Public API key never leaves your browser. It is saved in your local storage and sent only to Torn&apos;s official API endpoints.
-          </p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] space-y-2">
-          <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <Clock className="w-4 h-4 text-purple-400" />
-            <span>Instant Auto-Activation</span>
-          </div>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Torn API event logs verify the sender&apos;s Torn ID and item quantity automatically. No secret codes or manual confirmations needed.
-          </p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] space-y-2">
+      {/* Roadmap & Why It's Free */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-5 rounded-xl bg-[#0e0e11] border border-[#222225] space-y-2.5">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
             <Users className="w-4 h-4 text-blue-400" />
-            <span>Entire Faction Coverage</span>
+            <span>Why is everything free?</span>
           </div>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            Commander and Syndicate tiers cover your whole faction. When the leader or banker upgrades, every member gets high-speed war room access.
+            Our mission is to empower developing and competitive factions alike. By making the platform completely free during our public launch, we ensure every commander and rookie has the best possible experience without barrier to entry.
           </p>
+        </div>
+
+        <div className="p-5 rounded-xl bg-[#0e0e11] border border-[#222225] space-y-2.5">
+          <div className="flex items-center gap-2 text-white font-bold text-sm">
+            <Clock className="w-4 h-4 text-purple-400" />
+            <span>Will paid plans be added later?</span>
+          </div>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            In the future, we may explore optional faction supporter perks or private hosted Discord bot instances. But the core web tools you see today are built for the community and designed to remain accessible.
+          </p>
+        </div>
+      </div>
+
+      {/* Optional Community Tip Jar */}
+      <div className="bg-[#0b0b0d] border border-[#1e1e22] rounded-xl p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-amber-400 font-medium">
+              <Heart className="w-3.5 h-3.5 fill-amber-400/20 text-amber-400" />
+              <span>Optional Community Tip Jar</span>
+            </div>
+            <h3 className="text-sm font-semibold text-white">
+              Enjoying the tools? Faction tips are welcome!
+            </h3>
+            <p className="text-xs text-zinc-400">
+              100% voluntary. You never have to pay anything to use the suite. Any Xanax or items sent to{" "}
+              <span className="text-zinc-200 font-mono font-medium">
+                {recipientName} [{recipientId}]
+              </span>{" "}
+              help maintain hosting and development.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleCopyName}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141417] hover:bg-[#1c1c20] border border-[#27272a] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
+            >
+              <Copy className="w-3.5 h-3.5 text-zinc-400" />
+              <span>{copied ? "Copied!" : "Copy Recipient"}</span>
+            </button>
+
+            <Link
+              href="https://www.torn.com/item.php#drugs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1a1a20] hover:bg-[#25252e] border border-[#2e2e38] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Send in Torn</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

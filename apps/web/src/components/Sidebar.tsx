@@ -45,7 +45,7 @@ const navSections: NavSection[] = [
       { name: "Overview", href: "/", icon: Flame },
       { name: "War Room", href: "/war", icon: Swords, badge: "LIVE", badgeVariant: "red" },
       { name: "Payout Engine", href: "/payout", icon: Calculator },
-      { name: "Sleep Heatmap", href: "/heatmap", icon: Moon, badge: "PRO", badgeVariant: "purple" },
+      { name: "Sleep Heatmap", href: "/heatmap", icon: Moon },
       { name: "Revive Dispatch", href: "/revives", icon: HeartPulse },
     ],
   },
@@ -69,7 +69,7 @@ const navSections: NavSection[] = [
   {
     title: "SETTINGS & ACCESS",
     items: [
-      { name: "Plans & Xanax", href: "/pricing", icon: Tag },
+      { name: "Free Access & Roadmap", href: "/pricing", icon: Tag },
       { name: "Settings & API Keys", href: "/settings", icon: Settings },
     ],
   },
@@ -267,8 +267,8 @@ export function Sidebar() {
           <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
           {isLive ? "Live API" : "Demo Mode"}
         </span>
-        <Link href="/pricing" className="text-zinc-400 hover:text-white transition-colors">
-          Free Tier
+        <Link href="/pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+          100% Free Access
         </Link>
       </div>
     </aside>

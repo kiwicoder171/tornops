@@ -350,8 +350,8 @@ export default function OverviewPage() {
                   <div>
                     <div className="text-xs font-medium text-white group-hover:text-purple-400 transition-colors flex items-center gap-2">
                       Enemy Sleep Heatmap
-                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                        PRO
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        FREE
                       </span>
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-0.5">
@@ -491,11 +491,14 @@ export default function OverviewPage() {
                     <Zap className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-white group-hover:text-purple-400 transition-colors flex items-center gap-2">
-                      Xanax Passes & Pricing Tiers
+                    <div className="text-xs font-medium text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      100% Free Access & Roadmap
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        FREE
+                      </span>
                     </div>
                     <div className="text-[11px] text-zinc-400 mt-0.5">
-                      Recruit, War Pass, and Commander subscriptions payable via in-game Xanax.
+                      All 14 tactical tools, war heatmaps, and payout engines 100% free for everyone.
                     </div>
                   </div>
                 </div>

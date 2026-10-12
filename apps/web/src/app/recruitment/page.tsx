@@ -138,7 +138,9 @@ Drop an application or message me if you'd like an invite!`;
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
               TALENT SCOUTING • RADAR
             </span>
-            <span className="text-xs text-zinc-400 font-mono">1 Free Scan Today Available</span>
+            <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> UNLIMITED SCANS • 100% FREE
+            </span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-blue-400" />

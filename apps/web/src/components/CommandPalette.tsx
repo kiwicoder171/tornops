@@ -51,7 +51,7 @@ const ITEMS: PaletteItem[] = [
   { id: "todo", title: "Faction Task Board", category: "CITIZEN", icon: CheckSquare, href: "/todo" },
 
   // Access
-  { id: "pricing", title: "Plans & Xanax Subscription Passes", category: "ACCESS", icon: Zap, href: "/pricing" },
+  { id: "pricing", title: "Open Access & Roadmap (100% Free)", category: "ACCESS", icon: Zap, href: "/pricing" },
   { id: "settings", title: "System Settings & Key Pool", category: "ACCESS", icon: Settings, href: "/settings" },
 
   // Torn In-Game Shortcuts
