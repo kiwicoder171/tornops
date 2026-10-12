@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Key, ShieldCheck, Check, Plus, Trash2, RefreshCw } from "lucide-react";
 import { maskApiKey } from "@torn/shared";
-
+import { useTorn } from "@/context/TornContext";
 
 interface PooledKeyItem {
   id: string;
@@ -21,9 +21,27 @@ const mockKeys: PooledKeyItem[] = [
 ];
 
 export default function SettingsPage() {
-  const [keys, setKeys] = useState(mockKeys);
+  const { isLive, apiKey, userProfile } = useTorn();
+  const [keys, setKeys] = useState<PooledKeyItem[]>([]);
   const [newKey, setNewKey] = useState("");
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (isLive && apiKey) {
+      setKeys([
+        {
+          id: "connected-user-key",
+          maskedKey: maskApiKey(apiKey),
+          type: userProfile?.isLeader ? "FACTION" : "MEMBER",
+          contributor: `${userProfile?.name || "Connected User"} [${userProfile?.playerId || ""}]`,
+          callsLastMinute: 12,
+          status: "Active",
+        },
+      ]);
+    } else {
+      setKeys(mockKeys);
+    }
+  }, [isLive, apiKey, userProfile]);
 
   const handleAddKey = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +51,7 @@ export default function SettingsPage() {
       id: `key-${Date.now()}`,
       maskedKey: maskApiKey(newKey),
       type: "MEMBER",
-      contributor: "You (Member)",
+      contributor: `${userProfile?.name || "You"} (Pooled)`,
       callsLastMinute: 0,
       status: "Active",
     };

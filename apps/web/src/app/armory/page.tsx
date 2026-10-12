@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -123,18 +123,33 @@ const mockConsumptions: MedicalConsumption[] = [
 ];
 
 export default function ArmoryPage() {
-  const { userProfile } = useTorn();
+  const { userProfile, isLive } = useTorn();
   const [activeTab, setActiveTab] = useState<"loans" | "consumption">("loans");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedRecall, setSelectedRecall] = useState<LoanedItem | null>(null);
   const [copiedRecall, setCopiedRecall] = useState<boolean>(false);
+  const [loans, setLoans] = useState<LoanedItem[]>(isLive ? [] : mockLoans);
+  const [consumptions, setConsumptions] = useState<MedicalConsumption[]>(isLive ? [] : mockConsumptions);
 
-  const filteredLoans = mockLoans.filter(
+  useEffect(() => {
+    if (isLive) {
+      setLoans([]);
+      setConsumptions([]);
+    } else {
+      setLoans(mockLoans);
+      setConsumptions(mockConsumptions);
+    }
+  }, [isLive]);
+
+  const filteredLoans = loans.filter(
     (l) =>
       l.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.memberId.toString().includes(searchQuery)
   );
+
+  const overdueCount = loans.filter((l) => l.isOverdue).length;
+  const totalXanaxTaken = consumptions.reduce((sum, c) => sum + c.xanaxTaken, 0);
 
   const getRecallMessage = (loan: LoanedItem) => {
     return `Hey ${loan.memberName},
@@ -183,7 +198,7 @@ Thanks!`;
                 : "text-zinc-400 hover:text-white"
             }`}
           >
-            Loaned Equipment (4)
+            Loaned Equipment ({loans.length})
           </button>
           <button
             onClick={() => setActiveTab("consumption")}
@@ -205,8 +220,10 @@ Thanks!`;
             <span>LOANED ARMORY VALUE</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">$855,000,000</div>
-          <p className="text-[11px] text-zinc-400 mt-1">4 active high-tier weapon & armor loans</p>
+          <div className="text-2xl font-extrabold text-white font-mono">
+            {loans.length > 0 ? "$855,000,000" : "$0"}
+          </div>
+          <p className="text-[11px] text-zinc-400 mt-1">{loans.length} active equipment loans</p>
         </div>
 
         <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
@@ -214,8 +231,10 @@ Thanks!`;
             <span>OVERDUE ITEMS (&gt;14 DAYS)</span>
             <AlertTriangle className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">2 Items</div>
-          <p className="text-[11px] text-amber-300/80 mt-1">Overdue for return to armory vault</p>
+          <div className="text-2xl font-extrabold text-white font-mono">{overdueCount} Items</div>
+          <p className="text-[11px] text-amber-300/80 mt-1">
+            {overdueCount === 0 ? "Zero overdue equipment" : "Overdue for return to armory vault"}
+          </p>
         </div>
 
         <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
@@ -223,8 +242,12 @@ Thanks!`;
             <span>WAR XANAX BURN RATE</span>
             <Pill className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">32 Used / War</div>
-          <p className="text-[11px] text-zinc-400 mt-1">Avg 0.34 Xanax taken per scored hit</p>
+          <div className="text-2xl font-extrabold text-white font-mono">
+            {totalXanaxTaken > 0 ? `${totalXanaxTaken} Used / War` : "0 Used"}
+          </div>
+          <p className="text-[11px] text-zinc-400 mt-1">
+            {totalXanaxTaken > 0 ? "Avg 0.34 Xanax taken per scored hit" : "Medical inventory stable"}
+          </p>
         </div>
 
         <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
@@ -232,8 +255,12 @@ Thanks!`;
             <span>ARMORY HEALTH</span>
             <ShieldCheck className="w-4 h-4 text-blue-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">94% Accounted</div>
-          <p className="text-[11px] text-emerald-400 mt-1">Zero unlogged armory transfers</p>
+          <div className="text-2xl font-extrabold text-white font-mono">
+            {isLive ? (overdueCount === 0 ? "100% Secure" : "Audit Required") : "94% Accounted"}
+          </div>
+          <p className="text-[11px] text-emerald-400 mt-1">
+            {overdueCount === 0 ? "Zero overdue items" : "Follow up on overdue items"}
+          </p>
         </div>
       </div>
 
@@ -280,45 +307,57 @@ Thanks!`;
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#18181c] text-zinc-300">
-                {filteredLoans.map((loan) => (
-                  <tr key={loan.id} className="hover:bg-[#141418] transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-white flex items-center gap-1.5">
-                        <span>{loan.memberName}</span>
-                        <span className="text-[10px] font-mono text-zinc-500">[{loan.memberId}]</span>
+                {filteredLoans.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-zinc-500">
+                      <Package className="w-8 h-8 mx-auto mb-2 opacity-50 text-emerald-400" />
+                      <div className="text-sm font-semibold text-white">No Active Loans</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        All faction armory items and loaner equipment are secured in the faction vault.
                       </div>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-zinc-200">{loan.itemName}</td>
-                    <td className="py-3 px-3">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#18181c] border border-[#27272a] text-zinc-300">
-                        {loan.category}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-emerald-400 font-bold">{loan.estimatedValue}</td>
-                    <td className="py-3 px-3 font-mono text-zinc-300">{loan.daysHeld} days</td>
-                    <td className="py-3 px-3">
-                      {loan.isOverdue ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                          <AlertTriangle className="w-3 h-3" />
-                          OVERDUE
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                          ACTIVE LOAN
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <button
-                        onClick={() => setSelectedRecall(loan)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 text-[11px] font-bold transition-all"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        <span>Send Recall</span>
-                      </button>
-                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredLoans.map((loan) => (
+                    <tr key={loan.id} className="hover:bg-[#141418] transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="font-semibold text-white flex items-center gap-1.5">
+                          <span>{loan.memberName}</span>
+                          <span className="text-[10px] font-mono text-zinc-500">[{loan.memberId}]</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 font-semibold text-zinc-200">{loan.itemName}</td>
+                      <td className="py-3 px-3">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#18181c] border border-[#27272a] text-zinc-300">
+                          {loan.category}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-mono text-emerald-400 font-bold">{loan.estimatedValue}</td>
+                      <td className="py-3 px-3 font-mono text-zinc-300">{loan.daysHeld} days</td>
+                      <td className="py-3 px-3">
+                        {loan.isOverdue ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            <AlertTriangle className="w-3 h-3" />
+                            OVERDUE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            ACTIVE LOAN
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={() => setSelectedRecall(loan)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 text-[11px] font-bold transition-all"
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                          <span>Send Recall</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -349,44 +388,56 @@ Thanks!`;
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#18181c] text-zinc-300">
-                {mockConsumptions.map((c) => (
-                  <tr key={c.memberId} className="hover:bg-[#141418] transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-white flex items-center gap-1.5">
-                        <span>{c.memberName}</span>
-                        <span className="text-[10px] font-mono text-zinc-500">[{c.memberId}]</span>
+                {consumptions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-zinc-500">
+                      <Pill className="w-8 h-8 mx-auto mb-2 opacity-50 text-purple-400" />
+                      <div className="text-sm font-semibold text-white">No Medical Anomalies</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
+                        No abnormal medical or Xanax consumption logs detected for this war cycle.
                       </div>
                     </td>
-                    <td className="py-3 px-3 font-mono font-bold text-white">{c.warHits} hits</td>
-                    <td className="py-3 px-3 font-mono text-purple-300 font-bold">{c.xanaxTaken}x</td>
-                    <td className="py-3 px-3 font-mono text-red-400 font-bold">{c.bloodTaken}x</td>
-                    <td className="py-3 px-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                          c.efficiencyScore === "OPTIMAL"
-                            ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                            : c.efficiencyScore === "BALANCED"
-                            ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
-                            : c.efficiencyScore === "HIGH CONSUMPTION"
-                            ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                            : "bg-red-500/20 text-red-400 border-red-500/40 animate-pulse"
-                        }`}
-                      >
-                        {c.efficiencyScore}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <a
-                        href={`https://www.torn.com/profiles.php?XID=${c.memberId}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </td>
                   </tr>
-                ))}
+                ) : (
+                  consumptions.map((c) => (
+                    <tr key={c.memberId} className="hover:bg-[#141418] transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="font-semibold text-white flex items-center gap-1.5">
+                          <span>{c.memberName}</span>
+                          <span className="text-[10px] font-mono text-zinc-500">[{c.memberId}]</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-white">{c.warHits} hits</td>
+                      <td className="py-3 px-3 font-mono text-purple-300 font-bold">{c.xanaxTaken}x</td>
+                      <td className="py-3 px-3 font-mono text-red-400 font-bold">{c.bloodTaken}x</td>
+                      <td className="py-3 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                            c.efficiencyScore === "OPTIMAL"
+                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                              : c.efficiencyScore === "BALANCED"
+                              ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                              : c.efficiencyScore === "HIGH CONSUMPTION"
+                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                              : "bg-red-500/20 text-red-400 border-red-500/40 animate-pulse"
+                          }`}
+                        >
+                          {c.efficiencyScore}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <a
+                          href={`https://www.torn.com/profiles.php?XID=${c.memberId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

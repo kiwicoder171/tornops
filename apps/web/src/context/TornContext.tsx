@@ -64,21 +64,24 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
       const level = rawProfile.level || 0;
       const factionId = rawProfile.faction_id || data.faction?.faction_id || data.faction?.id;
 
-      let factionName = data.faction?.faction_name || data.faction?.name || "Mildly Dangerous";
-      let position = data.faction?.position || rawProfile.rank || "Member";
+      let factionName = data.faction?.faction_name || data.faction?.name;
+      let position = data.faction?.position || rawProfile.rank || (factionId ? "Member" : "Unaligned");
       let isLeader = false;
       let isCoLeader = false;
 
       // If factionId exists, fetch faction basic info to check leadership & co-leadership
-      if (factionId) {
+      if (factionId && Number(factionId) > 0) {
         try {
           const facRes = await fetch(`/api/torn/faction?selections=basic&key=${encodeURIComponent(key.trim())}`);
           const facData = await facRes.json();
-          if (facData.basic) {
-            factionName = facData.basic.name || factionName;
-            isLeader = playerId === facData.basic.leader_id;
-            isCoLeader = playerId === facData.basic.co_leader_id;
+          const fname = facData.name || facData.basic?.name || facData.tag;
+          if (fname) {
+            factionName = fname;
           }
+          const leaderId = facData.leader_id ?? facData.basic?.leader_id ?? facData.leader;
+          const coLeaderId = facData.co_leader_id ?? facData.basic?.co_leader_id ?? facData.co_leader;
+          isLeader = playerId === leaderId;
+          isCoLeader = playerId === coLeaderId;
         } catch {
           // Keep fallback
         }

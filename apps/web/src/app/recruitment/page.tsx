@@ -105,8 +105,10 @@ export default function RecruitmentPage() {
   const [activeMessageModal, setActiveMessageModal] = useState<Candidate | null>(null);
   const [copiedPitch, setCopiedPitch] = useState<boolean>(false);
 
-  const factionName = userProfile?.factionName || "Mildly Dangerous";
-  const factionId = userProfile?.factionId || 57693;
+  const factionName = userProfile?.factionName || "our faction";
+  const factionProfileLink = userProfile?.factionId
+    ? `https://www.torn.com/factions.php?step=profile&ID=${userProfile.factionId}`
+    : "https://www.torn.com/factions.php?step=profile";
 
   const generatePitch = (candidate: Candidate) => {
     return `Hey ${candidate.name},
@@ -119,7 +121,7 @@ Here is what we offer every member:
 • Coordinated OC 2.0 teams with high success rates
 • Active, chill community with zero toxic drama
 
-Check out our faction profile here: https://www.torn.com/factions.php?step=profile&ID=${factionId}
+Check out our faction profile here: ${factionProfileLink}
 Drop an application or message me if you'd like an invite!`;
   };
 

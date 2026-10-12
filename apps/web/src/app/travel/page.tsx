@@ -195,20 +195,32 @@ export default function TravelPage() {
     userProfile?.status?.state === "Traveling" || userProfile?.status?.state === "Abroad";
 
   // Active Flight Timer simulation or live sync
-  const [isSimulatingFlight, setIsSimulatingFlight] = useState(true);
-  const [flightDestination, setFlightDestination] = useState("Switzerland");
-  const [flightSecondsLeft, setFlightSecondsLeft] = useState(482); // ~8 mins left
+  const [isSimulatingFlight, setIsSimulatingFlight] = useState(!isLive);
+  const [flightDestination, setFlightDestination] = useState(!isLive ? "Switzerland" : "Torn City");
+  const [flightSecondsLeft, setFlightSecondsLeft] = useState(!isLive ? 482 : 0);
   const hasWarnedRef = useRef(false);
 
   // Auto-sync with live Torn telemetry if traveling
   useEffect(() => {
-    if (isPlayerTraveling && userProfile?.status?.until) {
-      const remaining = Math.max(0, userProfile.status.until - Math.floor(Date.now() / 1000));
-      setFlightSecondsLeft(remaining);
-      setFlightDestination(userProfile.status.description.replace(/^Traveling to /i, "").replace(/^In /i, "") || "Destination");
-      setIsSimulatingFlight(false);
+    if (isLive) {
+      if (isPlayerTraveling && userProfile?.status?.until) {
+        const remaining = Math.max(0, userProfile.status.until - Math.floor(Date.now() / 1000));
+        setFlightSecondsLeft(remaining);
+        setFlightDestination(
+          userProfile.status.description.replace(/^Traveling to /i, "").replace(/^In /i, "") || "Overseas"
+        );
+        setIsSimulatingFlight(false);
+      } else {
+        setFlightSecondsLeft(0);
+        setFlightDestination(userProfile?.status?.description || "Torn City");
+        setIsSimulatingFlight(false);
+      }
+    } else {
+      setIsSimulatingFlight(true);
+      setFlightDestination("Switzerland");
+      setFlightSecondsLeft(482);
     }
-  }, [isPlayerTraveling, userProfile?.status?.until, userProfile?.status?.description]);
+  }, [isLive, isPlayerTraveling, userProfile?.status?.until, userProfile?.status?.description]);
 
   // Decrement seconds
   useEffect(() => {
@@ -265,6 +277,10 @@ export default function TravelPage() {
                 {isPlayerTraveling ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
                     <Radio className="w-3 h-3 mr-1 animate-pulse" /> LIVE TELEMETRY
+                  </span>
+                ) : isLive ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    GROUNDED IN TORN
                   </span>
                 ) : (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#141416] text-[#71717a] border border-[#222225]">
@@ -323,72 +339,119 @@ export default function TravelPage() {
       </div>
 
       {/* Flight Safe-Landing Radar Box */}
-      <div
-        className={`p-5 rounded-xl border transition-all ${
-          isMugDanger
-            ? "bg-amber-950/20 border-amber-500/40 shadow-xl shadow-amber-950/30"
-            : "bg-[#0d0d0f] border-[#222225]"
-        }`}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div
-              className={`p-3 rounded-xl border ${
-                isMugDanger
-                  ? "bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse"
-                  : "bg-sky-500/10 border-sky-500/20 text-sky-400"
-              }`}
-            >
-              <Plane className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white">
-                  Active In-Flight Radar: En Route to {flightDestination}
-                </span>
-                {isMugDanger ? (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    TOUCHDOWN IMMINENT (PREPARE MUG DEFENSE)
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    SAFE TRANSIT
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-[#a1a1aa] mt-1">
-                Hospitalizers and mug bots wait for players touching down with raw cash. Have your buy screen ready.
-              </p>
-            </div>
-          </div>
-
-          {/* Countdown & Quick Action */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-[11px] text-[#71717a]">Estimated Touchdown</div>
+      {flightSecondsLeft > 0 ? (
+        <div
+          className={`p-5 rounded-xl border transition-all ${
+            isMugDanger
+              ? "bg-amber-950/20 border-amber-500/40 shadow-xl shadow-amber-950/30"
+              : "bg-[#0d0d0f] border-[#222225]"
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
               <div
-                className={`text-2xl font-mono font-bold tracking-tight ${
-                  isMugDanger ? "text-amber-400" : "text-white"
+                className={`p-3 rounded-xl border ${
+                  isMugDanger
+                    ? "bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse"
+                    : "bg-sky-500/10 border-sky-500/20 text-sky-400"
                 }`}
               >
-                {minutesLeft}m {secondsRemainder < 10 ? `0${secondsRemainder}` : secondsRemainder}s
+                <Plane className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">
+                    Active In-Flight Radar: En Route to {flightDestination}
+                  </span>
+                  {isMugDanger ? (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      TOUCHDOWN IMMINENT (PREPARE MUG DEFENSE)
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      SAFE TRANSIT
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#a1a1aa] mt-1">
+                  Hospitalizers and mug bots wait for players touching down with raw cash. Have your buy screen ready.
+                </p>
               </div>
             </div>
 
-            <Link
-              href="https://www.torn.com/index.php"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#1a1a1e] hover:bg-[#25252a] text-white border border-[#333338] flex items-center gap-1.5 transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
-              1-Click Torn Tab
-            </Link>
+            {/* Countdown & Quick Action */}
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-[11px] text-[#71717a]">Estimated Touchdown</div>
+                <div
+                  className={`text-2xl font-mono font-bold tracking-tight ${
+                    isMugDanger ? "text-amber-400" : "text-white"
+                  }`}
+                >
+                  {minutesLeft}m {secondsRemainder < 10 ? `0${secondsRemainder}` : secondsRemainder}s
+                </div>
+              </div>
+
+              <Link
+                href="https://www.torn.com/index.php"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#1a1a1e] hover:bg-[#25252a] text-white border border-[#333338] flex items-center gap-1.5 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
+                1-Click Torn Tab
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-5 rounded-xl border bg-[#0d0d0f] border-[#222225]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">
+                    Flight Radar Standby: Grounded in Torn City
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    READY FOR DEPARTURE
+                  </span>
+                </div>
+                <p className="text-xs text-[#a1a1aa] mt-1">
+                  You are currently in Torn City. Safe-landing countdown telemetry arms automatically once your flight boards.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setIsSimulatingFlight(true);
+                  setFlightSecondsLeft(480);
+                  setFlightDestination("Switzerland");
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-[#27272a] bg-[#141416] text-[#a1a1aa] hover:text-white transition-colors"
+              >
+                Test Flight Alarm
+              </button>
+              <Link
+                href="https://www.torn.com/travelagency.php"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-sky-950/40"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Travel Agency
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Flight Parameters & Capacity Bar */}
       <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] flex flex-wrap items-center justify-between gap-4 text-xs">

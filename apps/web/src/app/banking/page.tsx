@@ -87,14 +87,14 @@ export default function BankingLedgerPage() {
                     Your Identity: <strong className="text-white">{userProfile?.name}</strong> [{userProfile?.playerId}]
                   </span>
                   <span>
-                    Faction: <strong className="text-white">{userProfile?.factionName || "Mildly Dangerous"}</strong>
+                    Faction: <strong className="text-white">{userProfile?.factionName || "Your Faction"}</strong>
                   </span>
                   <span>
                     Current Rank: <span className="text-amber-400 font-semibold">{userProfile?.position || "Recruit"}</span>
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 italic mt-1">
-                  To view live faction deposits and approve batch transfers, connect with an API key from faction leadership (e.g., Leader <strong>Eklatant</strong> [4430788]).
+                  To view live faction deposits and approve batch transfers, connect with an API key from faction leadership with Access Authority (AA).
                 </p>
               </div>
             </div>
@@ -167,26 +167,55 @@ export default function BankingLedgerPage() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase">Faction Vault Ledger</span>
-              <div className="mt-2 text-2xl font-bold text-white">$14,285,000,000</div>
-              <span className="text-xs text-emerald-400 mt-1 block">Backed by Torn in-game vault</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-400 uppercase">Faction Vault Ledger</span>
+                {!isLive && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">DEMO</span>
+                )}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-white font-mono">
+                {isLive ? "AA Key Required" : "$14,285,000,000"}
+              </div>
+              <span className="text-xs text-emerald-400 mt-1 block">
+                {isLive ? "Requires Faction Leader AA key" : "Backed by Torn in-game vault"}
+              </span>
             </div>
 
             <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase">Pending Withdrawals Queue</span>
-              <div className="mt-2 text-2xl font-bold text-amber-400">$53,500,000</div>
-              <span className="text-xs text-slate-400 mt-1 block">3 requests awaiting banker fulfillment</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-400 uppercase">Pending Withdrawals Queue</span>
+                {!isLive && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">DEMO</span>
+                )}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-amber-400 font-mono">
+                {isLive ? "$0" : "$53,500,000"}
+              </div>
+              <span className="text-xs text-slate-400 mt-1 block">
+                {isLive ? "0 requests awaiting fulfillment" : "3 requests awaiting banker fulfillment"}
+              </span>
             </div>
 
             <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl">
-              <span className="text-xs font-semibold text-slate-400 uppercase">24h Deposit Influx</span>
-              <div className="mt-2 text-2xl font-bold text-blue-400">+$175,000,000</div>
-              <span className="text-xs text-slate-400 mt-1 block">From fundsnews auto-sync</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-400 uppercase">24h Deposit Influx</span>
+                {!isLive && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">DEMO</span>
+                )}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-blue-400 font-mono">
+                {isLive ? "--" : "+$175,000,000"}
+              </div>
+              <span className="text-xs text-slate-400 mt-1 block">
+                {isLive ? "Syncs with fundsnews on AA key" : "From fundsnews auto-sync"}
+              </span>
             </div>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center text-xs text-slate-400">
-            Connect an Access Authority (AA) key from faction leadership to activate live batch transfer queues.
+            {isLive
+              ? "Faction Vault batch transfers and fundsnews logs are restricted to leadership with Access Authority (AA)."
+              : "Connect an Access Authority (AA) key from faction leadership to activate live batch transfer queues."}
           </div>
         </div>
       )}

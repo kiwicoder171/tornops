@@ -146,9 +146,9 @@ const INITIAL_REVIVERS: ReviverContract[] = [
 ];
 
 export default function ReviveDispatchPage() {
-  const { isLive, apiKey } = useTorn();
-  const [patients, setPatients] = useState<HospitalPatient[]>(INITIAL_PATIENTS);
-  const [revivers, setRevivers] = useState<ReviverContract[]>(INITIAL_REVIVERS);
+  const { isLive, apiKey, userProfile } = useTorn();
+  const [patients, setPatients] = useState<HospitalPatient[]>(isLive ? [] : INITIAL_PATIENTS);
+  const [revivers, setRevivers] = useState<ReviverContract[]>(isLive ? [] : INITIAL_REVIVERS);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<"queue" | "revivers" | "payouts">("queue");
   const [searchQuery, setSearchQuery] = useState("");
@@ -156,7 +156,11 @@ export default function ReviveDispatchPage() {
 
   // Live hospital triage polling
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      setPatients(INITIAL_PATIENTS);
+      setRevivers(INITIAL_REVIVERS);
+      return;
+    }
 
     let isMounted = true;
     const fetchHospitalized = async () => {
@@ -190,13 +194,7 @@ export default function ReviveDispatchPage() {
             };
           });
 
-        if (liveCasualties.length > 0) {
-          setPatients((prev) => {
-            const liveIds = new Set(liveCasualties.map((c) => c.id));
-            const oldUnmatched = prev.filter((p) => !liveIds.has(p.id));
-            return [...liveCasualties, ...oldUnmatched];
-          });
-        }
+        setPatients(liveCasualties);
       } catch {
         // Silently preserve
       }
@@ -565,57 +563,67 @@ export default function ReviveDispatchPage() {
             <span className="text-purple-400 font-mono font-semibold">Standard Rate: 1 Xanax / Revive</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {revivers.map((reviver) => (
-              <div
-                key={reviver.id}
-                className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="font-semibold text-white flex items-center gap-1.5">
-                      {reviver.name}
-                      <span className="text-xs text-[#71717a]">[{reviver.tornId}]</span>
+          {revivers.length === 0 ? (
+            <div className="p-8 text-center bg-[#0d0d0f] rounded-xl border border-[#222225]">
+              <Users className="w-8 h-8 text-[#71717a] mx-auto mb-2 opacity-60" />
+              <div className="text-sm font-semibold text-white">No Revivers Contracted</div>
+              <p className="text-xs text-[#71717a] mt-1">
+                Add dedicated medics to log completed revives and track fair Xanax payouts during Ranked Wars.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {revivers.map((reviver) => (
+                <div
+                  key={reviver.id}
+                  className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] flex flex-col justify-between space-y-4"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="font-semibold text-white flex items-center gap-1.5">
+                        {reviver.name}
+                        <span className="text-xs text-[#71717a]">[{reviver.tornId}]</span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          reviver.status === "ONLINE"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : "bg-[#222225] text-[#71717a]"
+                        }`}
+                      >
+                        {reviver.status}
+                      </span>
                     </div>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        reviver.status === "ONLINE"
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          : "bg-[#222225] text-[#71717a]"
-                      }`}
+
+                    <div className="text-xs text-[#71717a]">{reviver.skillLevel}</div>
+
+                    <div className="mt-4 pt-3 border-t border-[#1f1f23] flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] text-[#71717a]">Hits Delivered</div>
+                        <div className="text-lg font-bold text-white">{reviver.revivesCompleted}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[11px] text-[#71717a]">Contract Rate</div>
+                        <div className="text-xs font-semibold text-purple-400">{reviver.ratePerRevive}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Link
+                      href={`https://www.torn.com/profiles.php?XID=${reviver.tornId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[#141416] hover:bg-[#1a1a1d] text-white border border-[#27272a] flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      {reviver.status}
-                    </span>
-                  </div>
-
-                  <div className="text-xs text-[#71717a]">{reviver.skillLevel}</div>
-
-                  <div className="mt-4 pt-3 border-t border-[#1f1f23] flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] text-[#71717a]">Hits Delivered</div>
-                      <div className="text-lg font-bold text-white">{reviver.revivesCompleted}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[11px] text-[#71717a]">Contract Rate</div>
-                      <div className="text-xs font-semibold text-purple-400">{reviver.ratePerRevive}</div>
-                    </div>
+                      <ExternalLink className="w-3 h-3 text-[#71717a]" />
+                      View Reviver Profile
+                    </Link>
                   </div>
                 </div>
-
-                <div className="pt-2">
-                  <Link
-                    href={`https://www.torn.com/profiles.php?XID=${reviver.tornId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[#141416] hover:bg-[#1a1a1d] text-white border border-[#27272a] flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3 text-[#71717a]" />
-                    View Reviver Profile
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -628,14 +636,19 @@ export default function ReviveDispatchPage() {
               Copy the batch payment command to transfer Xanax or cash directly from your Faction Vault.
             </p>
 
-            <div className="space-y-3">
-              {revivers.map((reviver) => {
-                const totalOwedText =
-                  reviver.ratePerRevive === "1 Xanax"
-                    ? `${reviver.revivesCompleted}x Xanax`
-                    : `$${(reviver.revivesCompleted * 1000000).toLocaleString()}`;
+            {revivers.length === 0 ? (
+              <div className="p-8 text-center bg-[#141416] rounded-lg border border-[#27272a] text-xs text-[#71717a]">
+                No revive payout claims recorded. All reviver accounts settled.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {revivers.map((reviver) => {
+                  const totalOwedText =
+                    reviver.ratePerRevive === "1 Xanax"
+                      ? `${reviver.revivesCompleted}x Xanax`
+                      : `$${(reviver.revivesCompleted * 1000000).toLocaleString()}`;
 
-                const transferMemo = `War Revive Payout: ${reviver.revivesCompleted} hits delivered to Mildly Dangerous`;
+                  const transferMemo = `War Revive Payout: ${reviver.revivesCompleted} hits delivered to ${userProfile?.factionName || "Faction"}`;
 
                 return (
                   <div
@@ -688,9 +701,10 @@ export default function ReviveDispatchPage() {
                 );
               })}
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
+    )}
 
       {/* Modal: Request Priority Revive */}
       {showRequestModal && (

@@ -52,41 +52,47 @@ export default function OverviewPage() {
     cooldown: 0,
   });
 
-  const [warSummary, setWarSummary] = useState<LiveWarSummary>({
-    opponentName: "Storm Heralds",
-    opponentId: 57574,
-    ourScore: 2409,
-    opponentScore: 1573,
-    lead: 836,
-    isWon: true,
-    statusLabel: "VICTORY",
-  });
+  const [warSummary, setWarSummary] = useState<LiveWarSummary | null>(
+    isLive
+      ? null
+      : {
+          opponentName: "Storm Heralds",
+          opponentId: 57574,
+          ourScore: 2409,
+          opponentScore: 1573,
+          lead: 836,
+          isWon: true,
+          statusLabel: "VICTORY",
+        }
+  );
 
   const [factionStats, setFactionStats] = useState({
-    members: 19,
-    respect: 10465,
-    tag: "MD",
+    members: isLive ? (userProfile?.factionId ? 1 : 0) : 19,
+    respect: isLive ? 0 : 10465,
+    tag: isLive ? "" : "MD",
   });
 
   // Synchronized TCT clock & shift telemetry
   const [tctNow, setTctNow] = useState<Date>(new Date());
-  const [factionMembers, setFactionMembers] = useState(DEMO_FACTION_TIMEZONES);
+  const [factionMembers, setFactionMembers] = useState<any[]>(isLive ? [] : DEMO_FACTION_TIMEZONES);
 
   useEffect(() => {
     const t = setInterval(() => setTctNow(new Date()), 1000);
-    try {
-      const stored = localStorage.getItem("torn_faction_timezones_v1");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setFactionMembers(parsed);
+    if (!isLive) {
+      try {
+        const stored = localStorage.getItem("torn_faction_timezones_v1");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setFactionMembers(parsed);
+          }
         }
+      } catch {
+        // Storage error fallback
       }
-    } catch {
-      // Storage error fallback
     }
     return () => clearInterval(t);
-  }, []);
+  }, [isLive]);
 
   const curTctHour = tctNow.getUTCHours();
   const curTctMinute = tctNow.getUTCMinutes();
@@ -99,7 +105,22 @@ export default function OverviewPage() {
 
   // If live key is connected, poll live faction telemetry
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      if (!isLive) {
+        setWarSummary({
+          opponentName: "Storm Heralds",
+          opponentId: 57574,
+          ourScore: 2409,
+          opponentScore: 1573,
+          lead: 836,
+          isWon: true,
+          statusLabel: "VICTORY",
+        });
+        setFactionMembers(DEMO_FACTION_TIMEZONES);
+        setFactionStats({ members: 19, respect: 10465, tag: "MD" });
+      }
+      return;
+    }
 
     let isMounted = true;
     const fetchLiveData = async () => {
@@ -113,9 +134,9 @@ export default function OverviewPage() {
           setChainData(data.chain);
         }
 
-        const membersCount = data.members && typeof data.members === "object" ? Object.keys(data.members).length : (data.basic?.members || 20);
-        const respectVal = data.respect ?? data.basic?.respect ?? 10465;
-        const tagVal = data.tag ?? data.basic?.tag ?? "MD";
+        const membersCount = data.members && typeof data.members === "object" ? Object.keys(data.members).length : (data.basic?.members || (data.name ? 1 : 0));
+        const respectVal = data.respect ?? data.basic?.respect ?? 0;
+        const tagVal = data.tag ?? data.basic?.tag ?? "";
 
         setFactionStats({
           members: membersCount,
@@ -123,17 +144,45 @@ export default function OverviewPage() {
           tag: tagVal,
         });
 
+        // Sync live faction members for timezone radar
+        if (data.members && typeof data.members === "object") {
+          const rawMembers = Array.isArray(data.members)
+            ? data.members
+            : Object.entries(data.members).map(([id, m]: [string, any]) => ({ id: Number(id), ...m }));
+
+          const mapped = rawMembers.map((m: any) => ({
+            memberId: m.id,
+            name: m.name,
+            level: m.level || 1,
+            position: m.position || "Member",
+            timezone: "Atlantic/Reykjavik",
+            timezoneLabel: "GMT / TCT (UTC+0)",
+            utcOffset: 0,
+            awakeStartLocal: 8,
+            awakeEndLocal: 23,
+            chainWatchStartTct: 12,
+            chainWatchEndTct: 18,
+            warPreference: "ALL" as const,
+            ocReady: true,
+            lastActionStatus: m.last_action?.status || "Offline",
+            inGameStatus: m.status?.state || "Okay",
+          }));
+          setFactionMembers(mapped);
+        } else if (!userProfile?.factionId) {
+          setFactionMembers([]);
+        }
+
         // Process Ranked Wars (handles both Torn v1 dictionary and array)
         const rawRw = data.ranked_wars || data.rankedwars;
         const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
         if (rwList.length > 0) {
-          const rw = rwList[0];
-          const ourFacId = userProfile?.factionId || 57693;
-          const ourFac = rw.factions?.find((f: { id: number }) => f.id === ourFacId);
-          const oppFac = rw.factions?.find((f: { id: number }) => f.id !== ourFacId);
+          const rw = rwList[0] as any;
+          const ourFacId = userProfile?.factionId;
+          const ourFac = ourFacId ? rw.factions?.find((f: { id: number }) => f.id === ourFacId) : rw.factions?.[0];
+          const oppFac = ourFacId ? rw.factions?.find((f: { id: number }) => f.id !== ourFacId) : rw.factions?.[1];
 
           if (ourFac && oppFac) {
-            const isWon = rw.winner === ourFacId;
+            const isWon = rw.winner === (ourFacId || ourFac.id);
             setWarSummary({
               opponentName: oppFac.name || "Opponent",
               opponentId: oppFac.id || 0,
@@ -143,10 +192,15 @@ export default function OverviewPage() {
               isWon,
               statusLabel: rw.end ? (isWon ? "VICTORY" : "DEFEAT") : "LIVE WAR",
             });
+          } else {
+            setWarSummary(null);
           }
+        } else {
+          // No active or recent ranked war
+          setWarSummary(null);
         }
       } catch {
-        // Silently preserve data on error
+        // Error handling
       }
     };
 
@@ -172,7 +226,12 @@ export default function OverviewPage() {
           <p className="text-xs text-slate-400 mt-0.5">
             {isLive && userProfile ? (
               <>
-                Connected to <span className="font-semibold text-emerald-400">{userProfile.factionName || "Mildly Dangerous"}</span> <span className="font-mono text-slate-400 tabular-nums">[{userProfile.factionId || 57693}]</span> as <span className="text-white font-medium">{userProfile.name}</span> <span className="font-mono text-slate-400 tabular-nums">[{userProfile.playerId}]</span>
+                Connected to <span className="font-semibold text-emerald-400">{userProfile.factionName || "No Faction (Unaligned)"}</span>{" "}
+                {userProfile.factionId ? (
+                  <span className="font-mono text-slate-400 tabular-nums">[{userProfile.factionId}]</span>
+                ) : null}{" "}
+                as <span className="text-white font-medium">{userProfile.name}</span>{" "}
+                <span className="font-mono text-slate-400 tabular-nums">[{userProfile.playerId}]</span>
               </>
             ) : (
               "Tactical mission control: live chain telemetry, ranked war status, and resource readiness."
@@ -183,7 +242,7 @@ export default function OverviewPage() {
         <div className="flex items-center gap-2 text-xs">
           <div className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-md text-slate-300 flex items-center gap-2">
             <span className="text-slate-400">Faction Tag:</span>
-            <span className="font-mono font-bold text-blue-400">[{factionStats.tag}]</span>
+            <span className="font-mono font-bold text-blue-400">{factionStats.tag ? `[${factionStats.tag}]` : "N/A"}</span>
           </div>
           <div className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-md text-slate-300 flex items-center gap-2">
             <span className="text-slate-400">Roster:</span>
@@ -254,33 +313,57 @@ export default function OverviewPage() {
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Ranked War</span>
               <span
                 className={`px-2 py-0.5 text-[10px] font-semibold rounded inline-flex items-center gap-1 ${
-                  warSummary.isWon
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                  warSummary
+                    ? warSummary.isWon
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    : "bg-slate-800 text-slate-400 border border-slate-700"
                 }`}
               >
-                {warSummary.isWon ? <Trophy className="w-3 h-3 text-emerald-400" /> : <Zap className="w-3 h-3 text-blue-400" />}
-                <span>{warSummary.statusLabel}</span>
+                {warSummary ? (
+                  warSummary.isWon ? <Trophy className="w-3 h-3 text-emerald-400" /> : <Zap className="w-3 h-3 text-blue-400" />
+                ) : (
+                  <Swords className="w-3 h-3 text-slate-400" />
+                )}
+                <span>{warSummary ? warSummary.statusLabel : isLive ? "STANDBY" : "DEMO"}</span>
               </span>
             </div>
-            <div className="mt-2.5 flex items-baseline gap-2">
-              <span className={`text-3xl font-extrabold font-mono tabular-nums ${warSummary.lead >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                {warSummary.lead >= 0 ? `+${warSummary.lead.toLocaleString()}` : warSummary.lead.toLocaleString()}
-              </span>
-              <span className="text-xs text-slate-400">{warSummary.isWon ? "Margin" : "Delta"}</span>
-            </div>
+            {warSummary ? (
+              <div className="mt-2.5 flex items-baseline gap-2">
+                <span className={`text-3xl font-extrabold font-mono tabular-nums ${warSummary.lead >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  {warSummary.lead >= 0 ? `+${warSummary.lead.toLocaleString()}` : warSummary.lead.toLocaleString()}
+                </span>
+                <span className="text-xs text-slate-400">{warSummary.isWon ? "Margin" : "Delta"}</span>
+              </div>
+            ) : (
+              <div className="mt-2.5">
+                <span className="text-base font-semibold text-white block">No Active War</span>
+                <span className="text-[11px] text-slate-400">Matchmaking standby</span>
+              </div>
+            )}
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-800/80">
-            <div className="text-xs text-slate-400 flex items-center justify-between mb-1.5">
-              <span className="truncate max-w-[120px]">vs {warSummary.opponentName}</span>
-              <span className="font-mono text-slate-300 tabular-nums">
-                {warSummary.ourScore.toLocaleString()} : {warSummary.opponentScore.toLocaleString()}
-              </span>
-            </div>
-            <div className="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-emerald-500 h-full w-[60%]" />
-            </div>
+            {warSummary ? (
+              <>
+                <div className="text-xs text-slate-400 flex items-center justify-between mb-1.5">
+                  <span className="truncate max-w-[120px]">vs {warSummary.opponentName}</span>
+                  <span className="font-mono text-slate-300 tabular-nums">
+                    {warSummary.ourScore.toLocaleString()} : {warSummary.opponentScore.toLocaleString()}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-emerald-500 h-full w-[60%]" />
+                </div>
+              </>
+            ) : (
+              <div className="text-xs text-slate-400 flex items-center justify-between">
+                <span>Opponent: None</span>
+                <Link href="/war" className="text-blue-400 hover:text-blue-300 text-[11px] font-medium">
+                  War Room →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

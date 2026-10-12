@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Moon,
   Sun,
@@ -122,31 +122,25 @@ const mockEnemyRoster: MemberActivity[] = [
 ];
 
 export default function EnemyHeatmapPage() {
-  const { isLive, apiKey } = useTorn();
-  const [targetFactionId, setTargetFactionId] = useState<string>("57574");
+  const { isLive, apiKey, userProfile } = useTorn();
+  const [targetFactionId, setTargetFactionId] = useState<string>(isLive ? "" : "57574");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [enemyRoster, setEnemyRoster] = useState<MemberActivity[]>(mockEnemyRoster);
+  const [enemyRoster, setEnemyRoster] = useState<MemberActivity[]>(isLive ? [] : mockEnemyRoster);
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
 
-  const handleScanOpponent = async () => {
-    if (!targetFactionId.trim()) return;
-    if (!isLive || !apiKey) {
-      setScanMessage("Running in Demo Preview. Connect your Torn API key in the top bar to scan live enemy factions!");
-      setTimeout(() => setScanMessage(null), 4000);
-      return;
-    }
-
+  const runScan = async (factionIdToScan: string) => {
+    if (!factionIdToScan.trim() || !apiKey) return;
     setIsScanning(true);
     setScanMessage(null);
     try {
-      const res = await fetch(`/api/torn/faction/${targetFactionId.trim()}?selections=basic&key=${encodeURIComponent(apiKey)}`);
+      const res = await fetch(`/api/torn/faction/${factionIdToScan.trim()}?selections=basic&key=${encodeURIComponent(apiKey)}`);
       const data = await res.json();
+      setIsScanning(false);
 
       if (data.error) {
         setScanMessage(`Scan error: ${data.error.error || "Invalid Faction ID"}`);
-        setIsScanning(false);
         return;
       }
 
@@ -178,29 +172,72 @@ export default function EnemyHeatmapPage() {
               ? [23, 0, 1, 2, 3, 4, 5, 6]
               : timezone === "Americas (EST/PST)"
               ? [4, 5, 6, 7, 8, 9, 10, 11]
-              : [13, 14, 15, 16, 17, 18, 19, 20];
+              : [13, 14, 15, 16, 17, 18, 19];
 
           return {
             id: m.id,
             name: m.name,
             level: m.level,
             timezone,
-            status: stateStr,
-            lastAction: m.last_action?.relative || "Unknown",
+            status: stateStr as any,
+            lastAction: m.last_action?.relative || "Recently",
             sleepHours,
             ffMultiplier: m.level >= 50 ? "1.80x" : "2.50x",
           };
         });
 
         setEnemyRoster(liveRoster);
-        setScanMessage(`✓ Loaded live roster for ${data.name} [${data.tag || targetFactionId}] (${liveRoster.length} members)`);
-        setTimeout(() => setScanMessage(null), 5000);
       }
     } catch {
-      setScanMessage("Network error during opponent scan");
-    } finally {
       setIsScanning(false);
+      setScanMessage("Network error scanning faction.");
     }
+  };
+
+  // Auto-detect ranked war opponent when connected live
+  useEffect(() => {
+    if (!isLive || !apiKey) {
+      if (!isLive) {
+        setTargetFactionId("57574");
+        setEnemyRoster(mockEnemyRoster);
+      }
+      return;
+    }
+
+    let isMounted = true;
+    const autoDetectOpponent = async () => {
+      try {
+        const res = await fetch(`/api/torn/faction?selections=rankedwars&key=${encodeURIComponent(apiKey)}`);
+        const data = await res.json();
+        if (!isMounted) return;
+
+        const rawRw = data.ranked_wars || data.rankedwars;
+        const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
+        if (rwList.length > 0) {
+          const rw = rwList[0] as any;
+          const ourId = userProfile?.factionId;
+          const oppFac = ourId ? rw.factions?.find((f: { id: number }) => f.id !== ourId) : rw.factions?.[1];
+          if (oppFac?.id) {
+            setTargetFactionId(String(oppFac.id));
+            runScan(String(oppFac.id));
+          }
+        }
+      } catch {
+        // Silently preserve state
+      }
+    };
+
+    autoDetectOpponent();
+  }, [isLive, apiKey, userProfile]);
+
+  const handleScanOpponent = async () => {
+    if (!targetFactionId.trim()) return;
+    if (!isLive || !apiKey) {
+      setScanMessage("Running in Demo Preview. Connect your Torn API key in the top bar to scan live enemy factions!");
+      setTimeout(() => setScanMessage(null), 4000);
+      return;
+    }
+    runScan(targetFactionId);
   };
 
   const filteredRoster = enemyRoster.filter((m) => {
@@ -361,40 +398,46 @@ export default function EnemyHeatmapPage() {
         </div>
 
         {/* Heat Columns */}
-        <div className="grid grid-cols-12 md:grid-cols-24 gap-1.5 py-2">
-          {mockHourlyOnlineRates.map((h, i) => {
-            const isPushGolden = h.rate <= 20;
-            const isPeak = h.rate >= 75;
+        {enemyRoster.length === 0 ? (
+          <div className="py-8 text-center text-zinc-500 font-mono text-xs bg-[#09090b] rounded-lg border border-[#1f1f23]">
+            Awaiting target faction scan. Enter an Opponent Faction ID above to calculate 24-hour activity distribution and sleep windows.
+          </div>
+        ) : (
+          <div className="grid grid-cols-12 md:grid-cols-24 gap-1.5 py-2">
+            {mockHourlyOnlineRates.map((h, i) => {
+              const isPushGolden = h.rate <= 20;
+              const isPeak = h.rate >= 75;
 
-            const bgClass = isPushGolden
-              ? "bg-purple-950/70 border-purple-500/60 text-purple-300 shadow-sm shadow-purple-900/20"
-              : isPeak
-              ? "bg-emerald-800/60 border-emerald-500/40 text-emerald-200"
-              : h.rate > 50
-              ? "bg-amber-900/40 border-amber-500/30 text-amber-200"
-              : "bg-[#18181e] border-[#292930] text-zinc-300";
+              const bgClass = isPushGolden
+                ? "bg-purple-950/70 border-purple-500/60 text-purple-300 shadow-sm shadow-purple-900/20"
+                : isPeak
+                ? "bg-emerald-800/60 border-emerald-500/40 text-emerald-200"
+                : h.rate > 50
+                ? "bg-amber-900/40 border-amber-500/30 text-amber-200"
+                : "bg-[#18181e] border-[#292930] text-zinc-300";
 
-            return (
-              <div
-                key={h.hour}
-                className={`flex flex-col items-center justify-between p-2 rounded border text-center transition-all hover:scale-105 cursor-pointer ${bgClass}`}
-                title={`Hour: ${h.hour} TCT - Active: ${h.rate}%`}
-              >
-                <span className="text-[9px] font-mono font-bold">{h.hour.slice(0, 2)}h</span>
-                <div className="my-1.5">
-                  <span className="text-xs font-mono font-extrabold">{h.rate}%</span>
+              return (
+                <div
+                  key={h.hour}
+                  className={`flex flex-col items-center justify-between p-2 rounded border text-center transition-all hover:scale-105 cursor-pointer ${bgClass}`}
+                  title={`Hour: ${h.hour} TCT - Active: ${h.rate}%`}
+                >
+                  <span className="text-[9px] font-mono font-bold">{h.hour.slice(0, 2)}h</span>
+                  <div className="my-1.5">
+                    <span className="text-xs font-mono font-extrabold">{h.rate}%</span>
+                  </div>
+                  {isPushGolden ? (
+                    <span className="text-[8px] font-mono uppercase bg-purple-600/80 px-1 rounded text-white font-bold">
+                      PUSH
+                    </span>
+                  ) : (
+                    <span className="text-[8px] font-mono text-zinc-500">act</span>
+                  )}
                 </div>
-                {isPushGolden ? (
-                  <span className="text-[8px] font-mono uppercase bg-purple-600/80 px-1 rounded text-white font-bold">
-                    PUSH
-                  </span>
-                ) : (
-                  <span className="text-[8px] font-mono text-zinc-500">act</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Individual Enemy Member Vulnerability Roster */}
@@ -459,7 +502,25 @@ export default function EnemyHeatmapPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#18181c] text-zinc-300">
-              {filteredRoster.map((target) => (
+              {filteredRoster.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 px-3 text-center text-xs text-zinc-500 font-mono">
+                    {isScanning ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                        Scanning enemy faction roster...
+                      </span>
+                    ) : enemyRoster.length === 0 ? (
+                      <span>
+                        No enemy faction scanned yet. Enter a Faction ID in the search box above to analyze sleep schedules.
+                      </span>
+                    ) : (
+                      <span>No enemy targets match your active filters.</span>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                filteredRoster.map((target) => (
                 <tr key={target.id} className="hover:bg-[#141418] transition-colors">
                   <td className="py-3 px-3">
                     <div className="font-semibold text-white flex items-center gap-1.5">
@@ -499,8 +560,9 @@ export default function EnemyHeatmapPage() {
                     </a>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              ))
+            )}
+          </tbody>
           </table>
         </div>
       </div>

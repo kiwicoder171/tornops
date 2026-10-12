@@ -77,35 +77,51 @@ export default function FactionCoveragePage() {
     .padStart(2, "0")}:${currentTctSecond.toString().padStart(2, "0")} TCT`;
 
   // Availability roster state
-  const [members, setMembers] = useState<FactionMemberAvailability[]>(DEMO_FACTION_TIMEZONES);
+  const [members, setMembers] = useState<FactionMemberAvailability[]>(isLive ? [] : DEMO_FACTION_TIMEZONES);
   const [isLiveRosterLoaded, setIsLiveRosterLoaded] = useState(false);
+  const [isLoadingRoster, setIsLoadingRoster] = useState(isLive);
 
-  // Load persisted member timezones from localStorage
+  // Load persisted member timezones from localStorage in Demo Mode
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMembers(parsed);
+    if (!isLive) {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMembers(parsed);
+          }
         }
+      } catch {
+        // Fallback to default
       }
-    } catch {
-      // Fallback to default
     }
-  }, []);
+  }, [isLive]);
 
   // Sync with Live Torn API faction roster if key is available
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      if (!isLive) {
+        setMembers(DEMO_FACTION_TIMEZONES);
+      }
+      return;
+    }
 
     let isMounted = true;
     const fetchLiveRoster = async () => {
+      setIsLoadingRoster(true);
       try {
         const res = await fetch(`/api/torn/faction?selections=basic&key=${encodeURIComponent(apiKey)}`);
         const data = await res.json();
-        if (!isMounted || !data.members) return;
+        if (!isMounted) return;
+        setIsLoadingRoster(false);
+
+        if (!data.members || typeof data.members !== "object") {
+          setMembers([]);
+          setIsLiveRosterLoaded(true);
+          return;
+        }
 
         const liveMembersMap = data.members;
         const liveList: FactionMemberAvailability[] = Object.entries(liveMembersMap).map(([idStr, m]: [string, any]) => {
@@ -157,16 +173,18 @@ export default function FactionCoveragePage() {
             ocReady: true,
             lastActionStatus,
             inGameStatus,
-            notes: "Live faction recruit",
+            notes: "Live faction member",
           };
         });
 
         if (liveList.length > 0) {
           setMembers(liveList);
           setIsLiveRosterLoaded(true);
+        } else {
+          setMembers([]);
         }
       } catch {
-        // Retain current roster
+        setIsLoadingRoster(false);
       }
     };
 
@@ -710,10 +728,21 @@ export default function FactionCoveragePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/60 font-sans">
-              {filteredMembers.length === 0 ? (
+              {isLoadingRoster ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-zinc-500 font-mono text-xs">
-                    No faction members matched your filter criteria.
+                    <span className="flex items-center justify-center gap-2">
+                      <Clock className="w-4 h-4 animate-spin text-emerald-400" />
+                      Loading live faction roster...
+                    </span>
+                  </td>
+                </tr>
+              ) : filteredMembers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-500 font-mono text-xs">
+                    {isLive && !userProfile?.factionId
+                      ? "You are not currently in a faction. Join a faction in Torn to manage roster timezones."
+                      : "No faction members matched your filter criteria."}
                   </td>
                 </tr>
               ) : (

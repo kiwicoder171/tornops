@@ -34,13 +34,24 @@ interface FactionCandidate {
   skillLevel: number;
 }
 
-const mockCandidates: FactionCandidate[] = [
+const DEMO_CANDIDATES: FactionCandidate[] = [
   { id: 4430788, name: "Eklatant (Leader)", level: 28, bestSkillName: "Burglary", skillLevel: 68 },
   { id: 4072152, name: "kisagikun", level: 25, bestSkillName: "Cracking", skillLevel: 74 },
   { id: 4158320, name: "Kakemannen", level: 23, bestSkillName: "Illicit Services", skillLevel: 58 },
   { id: 4535577, name: "EvilBadger", level: 13, bestSkillName: "Disposal", skillLevel: 52 },
   { id: 2869985, name: "RubberDuck3179", level: 19, bestSkillName: "Scamming", skillLevel: 46 },
   { id: 4552150, name: "NongGuyver (You)", level: 4, bestSkillName: "Search for Cash", skillLevel: 12.11 },
+];
+
+const DEMO_SKILLS: UserSkill[] = [
+  { slug: "search_for_cash", name: "Search for Cash", level: 12.11 },
+  { slug: "arson", name: "Arson", level: 3.0 },
+  { slug: "bootlegging", name: "Bootlegging", level: 2.16 },
+  { slug: "scamming", name: "Scamming", level: 2.09 },
+  { slug: "shoplifting", name: "Shoplifting", level: 1.9 },
+  { slug: "pickpocketing", name: "Pickpocketing", level: 1.87 },
+  { slug: "graffiti", name: "Graffiti", level: 1.71 },
+  { slug: "hustling", name: "Hustling", level: 1.39 },
 ];
 
 export default function OcOptimizerPage() {
@@ -74,22 +85,18 @@ export default function OcOptimizerPage() {
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
   const [lockedSlots, setLockedSlots] = useState<Record<string, number>>({});
   const [pinged, setPinged] = useState<number | null>(null);
+  const [candidates, setCandidates] = useState<FactionCandidate[]>(isLive ? [] : DEMO_CANDIDATES);
 
   // --- Member State ---
-  const [mySkills, setMySkills] = useState<UserSkill[]>([
-    { slug: "search_for_cash", name: "Search for Cash", level: 12.11 },
-    { slug: "arson", name: "Arson", level: 3.0 },
-    { slug: "bootlegging", name: "Bootlegging", level: 2.16 },
-    { slug: "scamming", name: "Scamming", level: 2.09 },
-    { slug: "shoplifting", name: "Shoplifting", level: 1.9 },
-    { slug: "pickpocketing", name: "Pickpocketing", level: 1.87 },
-    { slug: "graffiti", name: "Graffiti", level: 1.71 },
-    { slug: "hustling", name: "Hustling", level: 1.39 },
-  ]);
+  const [mySkills, setMySkills] = useState<UserSkill[]>(isLive ? [] : DEMO_SKILLS);
 
-  // Fetch real skills if connected live
+  // Fetch real skills & faction members if connected live
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      setCandidates(DEMO_CANDIDATES);
+      setMySkills(DEMO_SKILLS);
+      return;
+    }
 
     const fetchLiveSkills = async () => {
       try {
@@ -103,7 +110,30 @@ export default function OcOptimizerPage() {
       }
     };
 
+    const fetchLiveCandidates = async () => {
+      try {
+        const res = await fetch(`/api/torn/faction?selections=basic&key=${encodeURIComponent(apiKey)}`);
+        const data = await res.json();
+        if (data.members) {
+          const raw = Array.isArray(data.members)
+            ? data.members
+            : Object.entries(data.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+          const liveCands: FactionCandidate[] = raw.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            level: m.level || 1,
+            bestSkillName: "Crimes 2.0 Operative",
+            skillLevel: Math.min(100, (m.level || 1) * 2),
+          }));
+          setCandidates(liveCands);
+        }
+      } catch {
+        // Retain
+      }
+    };
+
     fetchLiveSkills();
+    fetchLiveCandidates();
   }, [isLive, apiKey]);
 
   const currentTemplate = OC_TEMPLATES[selectedTemplateIndex];
@@ -158,7 +188,7 @@ export default function OcOptimizerPage() {
           <p className="text-xs text-slate-400 mt-0.5">
             {activeView === "LEADER"
               ? "Recommend and lock optimal members into OC 2.0 slots based on faction API skills."
-              : `Your assigned Crimes 2.0 operations and live skill tree for ${userProfile?.factionName || "Mildly Dangerous"}.`}
+              : `Your assigned Crimes 2.0 operations and live skill tree for ${userProfile?.factionName || "your faction"}.`}
           </p>
         </div>
 
@@ -243,30 +273,32 @@ export default function OcOptimizerPage() {
       {/* ========================================================= */}
       {activeView === "LEADER" && (
         <div className="space-y-6">
-          {/* Stalled Invites Alert */}
-          <div className="p-4 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
-                <AlertCircle className="w-4 h-4" />
+          {/* Stalled Invites Alert (Demo only) */}
+          {!isLive && (
+            <div className="p-4 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-white">
+                    Stalled Invite: RubberDuck3179 <span className="font-mono text-slate-400 tabular-nums">[2869985]</span>
+                  </h3>
+                  <p className="text-xs text-amber-300/80 mt-0.5">
+                    Unaccepted invite for <strong>Safehouse Infiltration</strong> (pending for 6 hours).
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xs font-semibold text-white">
-                  Stalled Invite: RubberDuck3179 <span className="font-mono text-slate-400 tabular-nums">[2869985]</span>
-                </h3>
-                <p className="text-xs text-amber-300/80 mt-0.5">
-                  Unaccepted invite for <strong>Safehouse Infiltration</strong> (pending for 6 hours).
-                </p>
-              </div>
-            </div>
 
-            <button
-              onClick={() => handlePingMember(2869985)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-sm"
-            >
-              <Bell className="w-3.5 h-3.5" />
-              <span>{pinged === 2869985 ? "Discord Nudge Sent!" : "Nudge Member"}</span>
-            </button>
-          </div>
+              <button
+                onClick={() => handlePingMember(2869985)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold rounded-lg text-xs transition-colors shadow-sm"
+              >
+                <Bell className="w-3.5 h-3.5" />
+                <span>{pinged === 2869985 ? "Discord Nudge Sent!" : "Nudge Member"}</span>
+              </button>
+            </div>
+          )}
 
           {/* Crime Template Selector */}
           <div className="flex flex-wrap gap-2.5">
@@ -308,7 +340,7 @@ export default function OcOptimizerPage() {
               {currentTemplate.slots.map((slot) => {
                 const slotKey = `${currentTemplate.crimeTypeId}-${slot.slotIndex}`;
                 const isLocked = !!lockedSlots[slotKey];
-                const candidate = mockCandidates[slot.slotIndex % mockCandidates.length];
+                const candidate = candidates.length > 0 ? candidates[slot.slotIndex % candidates.length] : null;
 
                 return (
                   <div
@@ -337,17 +369,18 @@ export default function OcOptimizerPage() {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <span className="font-medium text-white block">
-                          {candidate.name}
+                          {candidate ? candidate.name : "Awaiting Lineup"}
                         </span>
                         <span className="text-xs text-slate-400 font-mono tabular-nums">
-                          Skill Level: <strong className="text-purple-400">{candidate.skillLevel}</strong>
+                          Skill Level: <strong className="text-purple-400">{candidate ? candidate.skillLevel : "--"}</strong>
                         </span>
                       </div>
 
                       {/* Lock / Unlock Toggle Button */}
                       <button
-                        onClick={() => toggleLockSlot(slotKey, candidate.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        onClick={() => candidate && toggleLockSlot(slotKey, candidate.id)}
+                        disabled={!candidate}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40 ${
                           isLocked
                             ? "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-sm"
                             : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700"
@@ -389,17 +422,19 @@ export default function OcOptimizerPage() {
                     Your Assigned Crime 2.0
                   </span>
                   <h2 className="text-base font-bold text-white mt-0.5">
-                    Safehouse Infiltration
+                    {isLive ? "Crimes 2.0 Operative Standby" : "Safehouse Infiltration"}
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Slot: <strong className="text-white">Lookout & Intel</strong> | Required Skill: <strong className="text-slate-300">Burglary</strong>
+                    {isLive
+                      ? "Awaiting leader squad assignment. Ensure your crime skills are trained below."
+                      : "Slot: Lookout & Intel | Required Skill: Burglary"}
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col sm:items-end gap-2">
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Selected by Faction Leader
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {isLive ? "Telemetry Connected" : "Selected by Faction Leader"}
                 </span>
                 <a
                   href="https://www.torn.com/factions.php?step=your#/war/crimes"
@@ -421,8 +456,8 @@ export default function OcOptimizerPage() {
                   <TrendingUp className="w-4 h-4 text-emerald-400" /> Your Crimes 2.0 Skill Tree
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Live proficiencies pulled directly from your Torn account ({userProfile?.name || "NongGuyver"}{" "}
-                  <span className="font-mono tabular-nums">[{userProfile?.playerId || 4552150}]</span>).
+                  Live proficiencies pulled directly from your Torn account ({userProfile?.name || "Player"}{" "}
+                  {userProfile?.playerId && <span className="font-mono tabular-nums">[{userProfile.playerId}]</span>}).
                 </p>
               </div>
               <span className="text-xs text-slate-400 font-mono tabular-nums">

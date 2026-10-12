@@ -49,28 +49,53 @@ export default function WarRoomPage() {
   const [activeTab, setActiveTab] = useState<"ENEMY_TARGETS" | "FRIENDLY_ROSTER">("ENEMY_TARGETS");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OKAY" | "HOSP">("ALL");
 
-  const [enemyTargets, setEnemyTargets] = useState<MemberStatusRow[]>(DEFAULT_DEMO_ENEMY);
-  const [friendlyMembers, setFriendlyMembers] = useState<MemberStatusRow[]>(DEFAULT_DEMO_FRIENDLY);
+  const [enemyTargets, setEnemyTargets] = useState<MemberStatusRow[]>(isLive ? [] : DEFAULT_DEMO_ENEMY);
+  const [friendlyMembers, setFriendlyMembers] = useState<MemberStatusRow[]>(isLive ? [] : DEFAULT_DEMO_FRIENDLY);
   const [isLoadingEnemy, setIsLoadingEnemy] = useState(false);
 
-  const [warMeta, setWarMeta] = useState({
-    opponentName: "Storm Heralds",
-    opponentId: 57574,
-    ourScore: 2409,
-    oppScore: 1573,
-    lead: 836,
-    isWon: true,
-  });
+  const [warMeta, setWarMeta] = useState<{
+    opponentName: string;
+    opponentId: number;
+    ourScore: number;
+    oppScore: number;
+    lead: number;
+    isWon: boolean;
+  } | null>(
+    isLive
+      ? null
+      : {
+          opponentName: "Storm Heralds",
+          opponentId: 57574,
+          ourScore: 2409,
+          oppScore: 1573,
+          lead: 836,
+          isWon: true,
+        }
+  );
 
   // Pull live data when API key is active
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      if (!isLive) {
+        setEnemyTargets(DEFAULT_DEMO_ENEMY);
+        setFriendlyMembers(DEFAULT_DEMO_FRIENDLY);
+        setWarMeta({
+          opponentName: "Storm Heralds",
+          opponentId: 57574,
+          ourScore: 2409,
+          oppScore: 1573,
+          lead: 836,
+          isWon: true,
+        });
+      }
+      return;
+    }
 
     let isMounted = true;
     const fetchLiveWarData = async () => {
       try {
         // 1. Fetch our faction & ranked war metadata
-        const facRes = await fetch(`/api/torn/faction?selections=basic,chain&key=${encodeURIComponent(apiKey)}`);
+        const facRes = await fetch(`/api/torn/faction?selections=basic,chain,rankedwars&key=${encodeURIComponent(apiKey)}`);
         const facData = await facRes.json();
 
         if (!isMounted) return;
@@ -105,73 +130,78 @@ export default function WarRoomPage() {
             };
           });
           setFriendlyMembers(friendlyRows);
+        } else {
+          setFriendlyMembers([]);
         }
 
         // 2. Identify Opponent Faction ID from Ranked War
-        let oppId = 57574;
-        let oppName = "Storm Heralds";
-
         const rawRw = facData.ranked_wars || facData.rankedwars;
         const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
 
         if (rwList.length > 0) {
           const rw = rwList[0] as any;
-          const ourId = userProfile?.factionId || 57693;
-          const ourFac = rw.factions?.find((f: { id: number }) => f.id === ourId);
-          const oppFac = rw.factions?.find((f: { id: number }) => f.id !== ourId);
+          const ourId = userProfile?.factionId;
+          const ourFac = ourId ? rw.factions?.find((f: { id: number }) => f.id === ourId) : rw.factions?.[0];
+          const oppFac = ourId ? rw.factions?.find((f: { id: number }) => f.id !== ourId) : rw.factions?.[1];
 
           if (ourFac && oppFac) {
-            oppId = oppFac.id;
-            oppName = oppFac.name;
+            const oppId = oppFac.id;
             setWarMeta({
-              opponentName: oppFac.name,
-              opponentId: oppFac.id,
-              ourScore: ourFac.score,
-              oppScore: oppFac.score,
-              lead: ourFac.score - oppFac.score,
-              isWon: rw.winner === ourId,
+              opponentName: oppFac.name || "Opponent",
+              opponentId: oppFac.id || 0,
+              ourScore: ourFac.score || 0,
+              oppScore: oppFac.score || 0,
+              lead: (ourFac.score || 0) - (oppFac.score || 0),
+              isWon: rw.winner === (ourId || ourFac.id),
             });
+
+            // 3. Fetch Enemy Opponent Members directly via Torn API basic selection
+            setIsLoadingEnemy(true);
+            const oppRes = await fetch(`/api/torn/faction/${oppId}?selections=basic&key=${encodeURIComponent(apiKey)}`);
+            const oppData = await oppRes.json();
+            setIsLoadingEnemy(false);
+
+            if (oppData.members && typeof oppData.members === "object" && isMounted) {
+              const nowSec = Math.floor(Date.now() / 1000);
+              const rawEnemy: Array<{ id: number; name: string; level: number; status?: { state: string; description: string; until?: number }; is_revivable?: boolean }> =
+                Array.isArray(oppData.members)
+                  ? oppData.members
+                  : Object.entries(oppData.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+
+              const enemyRows: MemberStatusRow[] = rawEnemy.map((m) => {
+                const state =
+                  m.status?.state === "Hospital"
+                    ? "Hospital"
+                    : m.status?.state === "Traveling" || m.status?.state === "Abroad"
+                    ? "Traveling"
+                    : "Okay";
+                const remainingMins =
+                  m.status?.until && m.status.until > nowSec ? Math.ceil((m.status.until - nowSec) / 60) : undefined;
+
+                return {
+                  id: m.id,
+                  name: m.name,
+                  level: m.level,
+                  status: state,
+                  hospitalRemainingMinutes: remainingMins,
+                  details: m.status?.description || m.status?.state || "Active",
+                  priority: m.level >= 25 ? "High" : "Standard",
+                  isRevivable: m.is_revivable,
+                };
+              });
+              setEnemyTargets(enemyRows);
+            }
+          } else {
+            setWarMeta(null);
+            setEnemyTargets([]);
           }
-        }
-
-        // 3. Fetch Enemy Opponent Members directly via Torn API basic selection
-        setIsLoadingEnemy(true);
-        const oppRes = await fetch(`/api/torn/faction/${oppId}?selections=basic&key=${encodeURIComponent(apiKey)}`);
-        const oppData = await oppRes.json();
-        setIsLoadingEnemy(false);
-
-        if (oppData.members && typeof oppData.members === "object" && isMounted) {
-          const nowSec = Math.floor(Date.now() / 1000);
-          const rawEnemy: Array<{ id: number; name: string; level: number; status?: { state: string; description: string; until?: number }; is_revivable?: boolean }> =
-            Array.isArray(oppData.members)
-              ? oppData.members
-              : Object.entries(oppData.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
-
-          const enemyRows: MemberStatusRow[] = rawEnemy.map((m) => {
-            const state =
-              m.status?.state === "Hospital"
-                ? "Hospital"
-                : m.status?.state === "Traveling" || m.status?.state === "Abroad"
-                ? "Traveling"
-                : "Okay";
-            const remainingMins =
-              m.status?.until && m.status.until > nowSec ? Math.ceil((m.status.until - nowSec) / 60) : undefined;
-
-            return {
-              id: m.id,
-              name: m.name,
-              level: m.level,
-              status: state,
-              hospitalRemainingMinutes: remainingMins,
-              details: m.status?.description || m.status?.state || "Active",
-              priority: m.level >= 18 ? "High" : "Standard",
-              isRevivable: m.is_revivable,
-            };
-          });
-          setEnemyTargets(enemyRows);
+        } else {
+          // No active war
+          setWarMeta(null);
+          setEnemyTargets([]);
         }
       } catch {
-        // Silently preserve current state on error
+        // Silently preserve state
       }
     };
 
@@ -203,85 +233,103 @@ export default function WarRoomPage() {
             </h1>
             <span
               className={`px-2 py-0.5 text-xs font-semibold rounded-md border inline-flex items-center gap-1 ${
-                warMeta.isWon
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  : "bg-red-500/10 text-red-400 border-red-500/20 animate-pulse"
+                warMeta
+                  ? warMeta.isWon
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : "bg-red-500/10 text-red-400 border-red-500/20 animate-pulse"
+                  : "bg-slate-800 text-slate-400 border-slate-700"
               }`}
             >
-              {warMeta.isWon ? <Trophy className="w-3.5 h-3.5 text-emerald-400" /> : <Flame className="w-3.5 h-3.5 text-red-400" />}
-              <span>{warMeta.isWon ? "WAR VICTORY" : "LIVE WAR"}</span>
+              {warMeta ? (
+                warMeta.isWon ? <Trophy className="w-3.5 h-3.5 text-emerald-400" /> : <Flame className="w-3.5 h-3.5 text-red-400" />
+              ) : (
+                <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+              )}
+              <span>{warMeta ? (warMeta.isWon ? "WAR VICTORY" : "LIVE WAR") : isLive ? "STANDBY" : "DEMO"}</span>
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Opponent: <span className="font-semibold text-slate-200">{warMeta.opponentName}</span>{" "}
-            <span className="font-mono text-slate-400 tabular-nums">[#{warMeta.opponentId}]</span> | Score:{" "}
-            <span className="font-mono text-white tabular-nums">{warMeta.ourScore.toLocaleString()}</span> vs{" "}
-            <span className="font-mono text-slate-400 tabular-nums">{warMeta.oppScore.toLocaleString()}</span>
-          </p>
+          {warMeta ? (
+            <p className="text-xs text-slate-400 mt-0.5">
+              Opponent: <span className="font-semibold text-slate-200">{warMeta.opponentName}</span>{" "}
+              <span className="font-mono text-slate-400 tabular-nums">[#{warMeta.opponentId}]</span> | Score:{" "}
+              <span className="font-mono text-white tabular-nums">{warMeta.ourScore.toLocaleString()}</span> vs{" "}
+              <span className="font-mono text-slate-400 tabular-nums">{warMeta.oppScore.toLocaleString()}</span>
+            </p>
+          ) : (
+            <p className="text-xs text-slate-400 mt-0.5">
+              {isLive
+                ? "No active Ranked War currently detected for your faction. Matchmaking telemetry will activate automatically."
+                : "Previewing demo war telemetry."}
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs flex items-center gap-2">
-            <span className="text-slate-400">Score Lead:</span>
-            <span className={`font-mono font-bold tabular-nums ${warMeta.lead >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-              {warMeta.lead >= 0 ? `+${warMeta.lead.toLocaleString()}` : warMeta.lead.toLocaleString()} pts
-            </span>
+        {warMeta && (
+          <div className="flex items-center gap-2">
+            <div className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs flex items-center gap-2">
+              <span className="text-slate-400">Score Lead:</span>
+              <span className={`font-mono font-bold tabular-nums ${warMeta.lead >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                {warMeta.lead >= 0 ? `+${warMeta.lead.toLocaleString()}` : warMeta.lead.toLocaleString()} pts
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Enemy Availability / Sleep Heatmap */}
-      <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-400" />
-              Opponent Sleep & Availability Heatmap (UTC)
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Live schedule analysis for {warMeta.opponentName}. Green indicates optimal attack windows when enemy retaliation is lowest.
-            </p>
+      {warMeta && (
+        <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-400" />
+                Opponent Sleep & Availability Heatmap (UTC)
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Live schedule analysis for {warMeta.opponentName}. Green indicates optimal attack windows when enemy retaliation is lowest.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-emerald-500 inline-block" />
+                <span>Optimal Window (&gt;60% asleep)</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block" />
+                <span>Moderate</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded bg-red-600 inline-block" />
+                <span>High Alert</span>
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded bg-emerald-500 inline-block" />
-              <span>Optimal Window (&gt;60% asleep)</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block" />
-              <span>Moderate</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded bg-red-600 inline-block" />
-              <span>High Alert</span>
-            </span>
-          </div>
-        </div>
 
-        {/* 24 Hour Blocks */}
-        <div className="grid grid-cols-12 sm:grid-cols-24 gap-1 pt-1">
-          {Array.from({ length: 24 }).map((_, hour) => {
-            const isSleeping = hour >= 4 && hour <= 10;
-            const isModerate = hour === 3 || hour === 11 || hour === 12;
-            const bg = isSleeping ? "bg-emerald-600/80 hover:bg-emerald-500" : isModerate ? "bg-amber-600/80 hover:bg-amber-500" : "bg-red-600/80 hover:bg-red-500";
+          {/* 24 Hour Blocks */}
+          <div className="grid grid-cols-12 sm:grid-cols-24 gap-1 pt-1">
+            {Array.from({ length: 24 }).map((_, hour) => {
+              const isSleeping = hour >= 4 && hour <= 10;
+              const isModerate = hour === 3 || hour === 11 || hour === 12;
+              const bg = isSleeping ? "bg-emerald-600/80 hover:bg-emerald-500" : isModerate ? "bg-amber-600/80 hover:bg-amber-500" : "bg-red-600/80 hover:bg-red-500";
 
-            return (
-              <div key={hour} className="group relative flex flex-col items-center">
-                <div className={`w-full h-8 rounded-sm ${bg} transition-colors cursor-pointer`} />
-                <span className="text-[10px] text-slate-500 mt-1 font-mono tabular-nums">{hour.toString().padStart(2, "0")}</span>
+              return (
+                <div key={hour} className="group relative flex flex-col items-center">
+                  <div className={`w-full h-8 rounded-sm ${bg} transition-colors cursor-pointer`} />
+                  <span className="text-[10px] text-slate-500 mt-1 font-mono tabular-nums">{hour.toString().padStart(2, "0")}</span>
 
-                {/* Tooltip */}
-                <div className="absolute bottom-11 hidden group-hover:block z-20 px-2 py-1 bg-slate-950 border border-slate-700 text-[11px] text-white rounded whitespace-nowrap shadow-md pointer-events-none">
-                  <div className="font-mono tabular-nums">{hour}:00 UTC</div>
-                  <div className="text-slate-300">
-                    {isSleeping ? "78% Resting (Low defense)" : isModerate ? "45% Active" : "85% Peak Alert"}
+                  {/* Tooltip */}
+                  <div className="absolute bottom-11 hidden group-hover:block z-20 px-2 py-1 bg-slate-950 border border-slate-700 text-[11px] text-white rounded whitespace-nowrap shadow-md pointer-events-none">
+                    <div className="font-mono tabular-nums">{hour}:00 UTC</div>
+                    <div className="text-slate-300">
+                      {isSleeping ? "78% Resting (Low defense)" : isModerate ? "45% Active" : "85% Peak Alert"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Roster Container with Tabbed Separation */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
@@ -297,7 +345,7 @@ export default function WarRoomPage() {
               }`}
             >
               <Swords className="w-4 h-4 text-red-400" />
-              <span>Opponent Targets ({warMeta.opponentName})</span>
+              <span>Opponent Targets {warMeta ? `(${warMeta.opponentName})` : "(Standby)"}</span>
               <span className="px-1.5 py-0.2 rounded bg-slate-800 text-[10px] font-mono text-slate-300 tabular-nums">
                 {enemyTargets.length}
               </span>
@@ -312,7 +360,7 @@ export default function WarRoomPage() {
               }`}
             >
               <Users className="w-4 h-4 text-blue-400" />
-              <span>Friendly Roster ({userProfile?.factionName || "Mildly Dangerous"})</span>
+              <span>Friendly Roster ({userProfile?.factionName || (isLive ? "Your Faction" : "Mildly Dangerous")})</span>
               <span className="px-1.5 py-0.2 rounded bg-slate-800 text-[10px] font-mono text-slate-300 tabular-nums">
                 {friendlyMembers.length}
               </span>
@@ -352,9 +400,13 @@ export default function WarRoomPage() {
         <div className="px-4 py-2.5 bg-slate-950/30 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <span>
             {activeTab === "ENEMY_TARGETS" ? (
-              <>Showing enemy targets from <strong className="text-white">{warMeta.opponentName}</strong> with 1-click direct attack links.</>
+              warMeta ? (
+                <>Showing enemy targets from <strong className="text-white">{warMeta.opponentName}</strong> with 1-click direct attack links.</>
+              ) : (
+                <>No active war opponent targets. Matchmaking telemetry standby.</>
+              )
             ) : (
-              <>Showing faction teammates from <strong className="text-white">{userProfile?.factionName || "Mildly Dangerous"}</strong>. Coordinate revives and messages.</>
+              <>Showing faction teammates from <strong className="text-white">{userProfile?.factionName || (isLive ? "Your Faction" : "Mildly Dangerous")}</strong>. Coordinate revives and messages.</>
             )}
           </span>
           <span className="font-mono text-slate-400 tabular-nums">

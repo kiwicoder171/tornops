@@ -12,48 +12,90 @@ interface WarMemberReport {
   score: number;
 }
 
+const DEMO_PAYOUT_MEMBERS: WarMemberReport[] = [
+  { id: 4430788, name: "Eklatant", attacks: 221, score: 1015.76 },
+  { id: 4072152, name: "kisagikun", attacks: 80, score: 319.99 },
+  { id: 4158320, name: "Kakemannen", attacks: 53, score: 270.14 },
+  { id: 4535577, name: "EvilBadger", attacks: 40, score: 254.39 },
+  { id: 2869985, name: "RubberDuck3179", attacks: 45, score: 227.33 },
+  { id: 4533671, name: "SpyLord67", attacks: 20, score: 124.32 },
+  { id: 4437968, name: "tokof", attacks: 16, score: 85.89 },
+  { id: 4107230, name: "Flame24667", attacks: 13, score: 69.81 },
+  { id: 4533591, name: "Zom315", attacks: 3, score: 18.54 },
+  { id: 4533906, name: "RustyDaggers", attacks: 3, score: 17.20 },
+  { id: 4529441, name: "Nextactus", attacks: 1, score: 6.42 },
+];
+
 export default function PayoutCalculatorPage() {
   const { isLive, apiKey, userProfile } = useTorn();
   const [totalPool, setTotalPool] = useState<number>(100000000); // $100M reward pool
   const [copied, setCopied] = useState<boolean>(false);
 
-  const [realMembers, setRealMembers] = useState<WarMemberReport[]>([
-    { id: 4430788, name: "Eklatant", attacks: 221, score: 1015.76 },
-    { id: 4072152, name: "kisagikun", attacks: 80, score: 319.99 },
-    { id: 4158320, name: "Kakemannen", attacks: 53, score: 270.14 },
-    { id: 4535577, name: "EvilBadger", attacks: 40, score: 254.39 },
-    { id: 2869985, name: "RubberDuck3179", attacks: 45, score: 227.33 },
-    { id: 4533671, name: "SpyLord67", attacks: 20, score: 124.32 },
-    { id: 4437968, name: "tokof", attacks: 16, score: 85.89 },
-    { id: 4107230, name: "Flame24667", attacks: 13, score: 69.81 },
-    { id: 4533591, name: "Zom315", attacks: 3, score: 18.54 },
-    { id: 4533906, name: "RustyDaggers", attacks: 3, score: 17.20 },
-    { id: 4529441, name: "Nextactus", attacks: 1, score: 6.42 },
-  ]);
+  const [realMembers, setRealMembers] = useState<WarMemberReport[]>(isLive ? [] : DEMO_PAYOUT_MEMBERS);
 
-  const [warMeta, setWarMeta] = useState({
-    warId: 50506,
-    opponentName: "Storm Heralds",
-    ourRespectReward: 1663,
-    cachesWon: ["1x Melee Cache", "1x Medium Arms Cache"],
-  });
+  const [warMeta, setWarMeta] = useState<{
+    warId: number;
+    opponentName: string;
+    ourRespectReward: number;
+    cachesWon: string[];
+  } | null>(
+    isLive
+      ? null
+      : {
+          warId: 50506,
+          opponentName: "Storm Heralds",
+          ourRespectReward: 1663,
+          cachesWon: ["1x Melee Cache", "1x Medium Arms Cache"],
+        }
+  );
 
   // Pull live war report if connected
   useEffect(() => {
-    if (!isLive || !apiKey) return;
+    if (!isLive || !apiKey) {
+      if (!isLive) {
+        setRealMembers(DEMO_PAYOUT_MEMBERS);
+        setWarMeta({
+          warId: 50506,
+          opponentName: "Storm Heralds",
+          ourRespectReward: 1663,
+          cachesWon: ["1x Melee Cache", "1x Medium Arms Cache"],
+        });
+      }
+      return;
+    }
 
     let isMounted = true;
     const fetchWarReport = async () => {
       try {
-        const res = await fetch(`/api/torn/v2/faction/rankedwarreport?id=50506&key=${encodeURIComponent(apiKey)}`);
+        // First check faction ranked wars
+        const facRes = await fetch(`/api/torn/faction?selections=rankedwars&key=${encodeURIComponent(apiKey)}`);
+        const facData = await facRes.json();
+        if (!isMounted) return;
+
+        const rawRw = facData.ranked_wars || facData.rankedwars;
+        const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
+
+        let warIdToFetch: number | null = null;
+        if (rwList.length > 0) {
+          const firstWar = rwList[0] as any;
+          warIdToFetch = firstWar.id || firstWar.war_id;
+        }
+
+        if (!warIdToFetch) {
+          setRealMembers([]);
+          setWarMeta(null);
+          return;
+        }
+
+        const res = await fetch(`/api/torn/v2/faction/rankedwarreport?id=${warIdToFetch}&key=${encodeURIComponent(apiKey)}`);
         const data = await res.json();
 
         if (!isMounted || !data.rankedwarreport) return;
 
         const report = data.rankedwarreport;
-        const targetId = userProfile?.factionId || 57693;
-        const ourFac = report.factions?.find((f: { id: number }) => f.id === targetId);
-        const oppFac = report.factions?.find((f: { id: number }) => f.id !== targetId);
+        const targetId = userProfile?.factionId;
+        const ourFac = targetId ? report.factions?.find((f: { id: number }) => f.id === targetId) : report.factions?.[0];
+        const oppFac = targetId ? report.factions?.find((f: { id: number }) => f.id !== targetId) : report.factions?.[1];
 
         if (ourFac && Array.isArray(ourFac.members)) {
           const membersList = ourFac.members
@@ -62,11 +104,14 @@ export default function PayoutCalculatorPage() {
 
           setRealMembers(membersList);
           setWarMeta({
-            warId: report.id || 50506,
-            opponentName: oppFac?.name || "Storm Heralds",
-            ourRespectReward: ourFac.rewards?.respect || 1663,
+            warId: report.id || warIdToFetch,
+            opponentName: oppFac?.name || "Opponent",
+            ourRespectReward: ourFac.rewards?.respect || 0,
             cachesWon: ourFac.rewards?.items?.map((i: { quantity: number; name: string }) => `${i.quantity}x ${i.name}`) || [],
           });
+        } else {
+          setRealMembers([]);
+          setWarMeta(null);
         }
       } catch {
         // Retain current state
@@ -74,7 +119,7 @@ export default function PayoutCalculatorPage() {
     };
 
     fetchWarReport();
-  }, [isLive, apiKey]);
+  }, [isLive, apiKey, userProfile]);
 
   // Calculate payouts based on real attacks & war score
   const totalAttacks = realMembers.reduce((sum, m) => sum + m.attacks, 0);
@@ -122,7 +167,7 @@ export default function PayoutCalculatorPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `war_${warMeta.warId}_payouts.csv`;
+    link.download = `war_${warMeta?.warId || "report"}_payouts.csv`;
     link.click();
   };
 
@@ -136,27 +181,41 @@ export default function PayoutCalculatorPage() {
               <Calculator className="w-5 h-5 text-blue-500" />
               War Payout & Fair-Share Calculator
             </h1>
-            <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md flex items-center gap-1 font-mono">
-              <Trophy className="w-3.5 h-3.5 text-emerald-400" /> War #{warMeta.warId} ({userProfile?.factionName || "Mildly Dangerous"} vs {warMeta.opponentName})
-            </span>
+            {warMeta ? (
+              <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md flex items-center gap-1 font-mono">
+                <Trophy className="w-3.5 h-3.5 text-emerald-400" /> War #{warMeta.warId} ({userProfile?.factionName || (isLive ? "Your Faction" : "Mildly Dangerous")} vs {warMeta.opponentName})
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 rounded-md flex items-center gap-1 font-mono">
+                {isLive ? "STANDBY" : "DEMO"}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Ranked War Report: <span className="text-white font-mono font-medium tabular-nums">{totalAttacks} total hits</span> landed | Rewards:{" "}
-            <span className="text-emerald-400 font-mono font-medium tabular-nums">+{warMeta.ourRespectReward.toLocaleString()} Respect</span> & {warMeta.cachesWon.join(", ")}
+            {warMeta ? (
+              <>
+                Ranked War Report: <span className="text-white font-mono font-medium tabular-nums">{totalAttacks} total hits</span> landed | Rewards:{" "}
+                <span className="text-emerald-400 font-mono font-medium tabular-nums">+{warMeta.ourRespectReward.toLocaleString()} Respect</span> & {warMeta.cachesWon.join(", ")}
+              </>
+            ) : (
+              "No completed Ranked War reports available for your faction. Payouts will calculate automatically when a war report is retrieved."
+            )}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyJson}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors border border-slate-800 shadow-sm"
+            disabled={payouts.length === 0}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors border border-slate-800 shadow-sm"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
             <span>{copied ? "Copied JSON!" : "Copy Userscript JSON"}</span>
           </button>
           <button
             onClick={handleDownloadCsv}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+            disabled={payouts.length === 0}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
@@ -216,7 +275,7 @@ export default function PayoutCalculatorPage() {
           <div>
             <h3 className="text-sm font-semibold text-white">Fair-Share Member Payout Breakdown</h3>
             <p className="text-xs text-slate-400">
-              Ranked War #{warMeta.warId} Official Distribution
+              {warMeta ? `Ranked War #${warMeta.warId} Official Distribution` : "Awaiting Ranked War report"}
             </p>
           </div>
           <div className="text-right">
@@ -237,25 +296,33 @@ export default function PayoutCalculatorPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {payouts.map((m) => (
-                <tr key={m.playerId} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-4 py-3 font-medium text-white flex items-center gap-2">
-                    <span>{m.playerName}</span>
-                    <span className="text-slate-500 font-mono tabular-nums">[{m.playerId}]</span>
-                    {m.playerId === 4430788 && (
-                      <span className="px-1.5 py-0.2 text-[10px] bg-amber-500/10 text-amber-400 rounded border border-amber-500/20 font-medium">
-                        Top Hitter
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-emerald-400 font-bold tabular-nums">{m.attacks} hits</td>
-                  <td className="px-4 py-3 font-mono text-blue-400 font-medium tabular-nums">{m.score}</td>
-                  <td className="px-4 py-3 font-mono text-slate-300 tabular-nums">{m.sharePct}%</td>
-                  <td className="px-4 py-3 font-mono font-bold text-emerald-400 text-right tabular-nums">
-                    ${m.finalPayout.toLocaleString()}
+              {payouts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-12 text-center text-xs text-zinc-500 font-mono">
+                    No participating hitters found. Conclude a Ranked War to generate fair-share payouts.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                payouts.map((m) => (
+                  <tr key={m.playerId} className="hover:bg-slate-800/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-white flex items-center gap-2">
+                      <span>{m.playerName}</span>
+                      <span className="text-slate-500 font-mono tabular-nums">[{m.playerId}]</span>
+                      {m.playerId === 4430788 && (
+                        <span className="px-1.5 py-0.2 text-[10px] bg-amber-500/10 text-amber-400 rounded border border-amber-500/20 font-medium">
+                          Top Hitter
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-emerald-400 font-bold tabular-nums">{m.attacks} hits</td>
+                    <td className="px-4 py-3 font-mono text-blue-400 font-medium tabular-nums">{m.score}</td>
+                    <td className="px-4 py-3 font-mono text-slate-300 tabular-nums">{m.sharePct}%</td>
+                    <td className="px-4 py-3 font-mono font-bold text-emerald-400 text-right tabular-nums">
+                      ${m.finalPayout.toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
