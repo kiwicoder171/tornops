@@ -45,7 +45,7 @@ export default function PayoutCalculatorPage() {
     let isMounted = true;
     const fetchWarReport = async () => {
       try {
-        const res = await fetch(`/api/torn/faction?id=50506&selections=rankedwarreport&key=${encodeURIComponent(apiKey)}`);
+        const res = await fetch(`/api/torn/v2/faction/rankedwarreport?id=50506&key=${encodeURIComponent(apiKey)}`);
         const data = await res.json();
 
         if (!isMounted || !data.rankedwarreport) return;

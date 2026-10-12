@@ -15,7 +15,9 @@ import {
   ArrowUpRight,
   ExternalLink,
   Flame,
+  Loader2,
 } from "lucide-react";
+import { useTorn } from "@/context/TornContext";
 
 interface MemberActivity {
   id: number;
@@ -120,11 +122,88 @@ const mockEnemyRoster: MemberActivity[] = [
 ];
 
 export default function EnemyHeatmapPage() {
-  const [targetFactionId, setTargetFactionId] = useState<string>("89412");
+  const { isLive, apiKey } = useTorn();
+  const [targetFactionId, setTargetFactionId] = useState<string>("57574");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [enemyRoster, setEnemyRoster] = useState<MemberActivity[]>(mockEnemyRoster);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
 
-  const filteredRoster = mockEnemyRoster.filter((m) => {
+  const handleScanOpponent = async () => {
+    if (!targetFactionId.trim()) return;
+    if (!isLive || !apiKey) {
+      setScanMessage("Running in Demo Preview. Connect your Torn API key in the top bar to scan live enemy factions!");
+      setTimeout(() => setScanMessage(null), 4000);
+      return;
+    }
+
+    setIsScanning(true);
+    setScanMessage(null);
+    try {
+      const res = await fetch(`/api/torn/faction/${targetFactionId.trim()}?selections=basic&key=${encodeURIComponent(apiKey)}`);
+      const data = await res.json();
+
+      if (data.error) {
+        setScanMessage(`Scan error: ${data.error.error || "Invalid Faction ID"}`);
+        setIsScanning(false);
+        return;
+      }
+
+      if (data.members && typeof data.members === "object") {
+        const rawMembers = Array.isArray(data.members)
+          ? data.members
+          : Object.entries(data.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+
+        const liveRoster: MemberActivity[] = rawMembers.map((m: any) => {
+          const stateStr =
+            m.status?.state === "Hospital"
+              ? "IN HOSPITAL"
+              : m.status?.state === "Abroad" || m.status?.state === "Traveling"
+              ? "TRAVELING"
+              : m.last_action?.status === "Online"
+              ? "ONLINE"
+              : "DEEP SLEEP";
+
+          const lastHour = m.last_action?.timestamp ? new Date(m.last_action.timestamp * 1000).getUTCHours() : 0;
+          const timezone: MemberActivity["timezone"] =
+            lastHour >= 12 && lastHour <= 20
+              ? "Europe (GMT/CET)"
+              : lastHour >= 21 || lastHour <= 5
+              ? "Americas (EST/PST)"
+              : "Asia/Oceania (AEST)";
+
+          const sleepHours =
+            timezone === "Europe (GMT/CET)"
+              ? [23, 0, 1, 2, 3, 4, 5, 6]
+              : timezone === "Americas (EST/PST)"
+              ? [4, 5, 6, 7, 8, 9, 10, 11]
+              : [13, 14, 15, 16, 17, 18, 19, 20];
+
+          return {
+            id: m.id,
+            name: m.name,
+            level: m.level,
+            timezone,
+            status: stateStr,
+            lastAction: m.last_action?.relative || "Unknown",
+            sleepHours,
+            ffMultiplier: m.level >= 50 ? "1.80x" : "2.50x",
+          };
+        });
+
+        setEnemyRoster(liveRoster);
+        setScanMessage(`✓ Loaded live roster for ${data.name} [${data.tag || targetFactionId}] (${liveRoster.length} members)`);
+        setTimeout(() => setScanMessage(null), 5000);
+      }
+    } catch {
+      setScanMessage("Network error during opponent scan");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const filteredRoster = enemyRoster.filter((m) => {
     const matchesSearch =
       m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.id.toString().includes(searchQuery);
@@ -141,7 +220,7 @@ export default function EnemyHeatmapPage() {
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
               WARFARE TACTICS • PRO
             </span>
-            <span className="text-xs text-zinc-400 font-mono">TCT 11:45:00</span>
+            <span className="text-xs text-zinc-400 font-mono">TCT LIVE RADAR</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Moon className="w-5 h-5 text-purple-400" />
@@ -153,22 +232,42 @@ export default function EnemyHeatmapPage() {
         </div>
 
         {/* Target Faction Selector */}
-        <div className="flex items-center gap-2 bg-[#0d0d0f] border border-[#222225] p-1.5 rounded-lg">
-          <span className="text-xs text-zinc-400 pl-2 font-mono">Opponent ID:</span>
-          <input
-            id="targetFactionId"
-            name="targetFactionId"
-            aria-label="Opponent Faction ID"
-            type="text"
-            value={targetFactionId}
-            onChange={(e) => setTargetFactionId(e.target.value)}
-            className="w-24 bg-black border border-[#27272a] px-2 py-1 rounded text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-            placeholder="Faction ID"
-          />
-          <button className="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
-            <Search className="w-3.5 h-3.5" />
-            <span>Scan Opponent</span>
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-center gap-2 bg-[#0d0d0f] border border-[#222225] p-1.5 rounded-lg">
+            <span className="text-xs text-zinc-400 pl-2 font-mono">Opponent ID:</span>
+            <input
+              id="targetFactionId"
+              name="targetFactionId"
+              aria-label="Opponent Faction ID"
+              type="text"
+              value={targetFactionId}
+              onChange={(e) => setTargetFactionId(e.target.value)}
+              className="w-24 bg-black border border-[#27272a] px-2 py-1 rounded text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+              placeholder="Faction ID"
+            />
+            <button
+              onClick={handleScanOpponent}
+              disabled={isScanning}
+              className="px-3 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-900 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              {isScanning ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Scanning...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Scan Opponent</span>
+                </>
+              )}
+            </button>
+          </div>
+          {scanMessage && (
+            <span className="text-xs text-purple-300 font-mono bg-purple-950/40 border border-purple-800/60 px-2.5 py-1 rounded">
+              {scanMessage}
+            </span>
+          )}
         </div>
       </div>
 

@@ -80,16 +80,19 @@ export default function OverviewPage() {
           setChainData(data.chain);
         }
 
-        if (data.basic) {
-          setFactionStats({
-            members: data.basic.members || 19,
-            respect: data.basic.respect || 10465,
-            tag: data.basic.tag || "MD",
-          });
-        }
+        const membersCount = data.members && typeof data.members === "object" ? Object.keys(data.members).length : (data.basic?.members || 20);
+        const respectVal = data.respect ?? data.basic?.respect ?? 10465;
+        const tagVal = data.tag ?? data.basic?.tag ?? "MD";
 
-        // Process Ranked Wars
-        const rwList = Array.isArray(data.rankedwars) ? data.rankedwars : [];
+        setFactionStats({
+          members: membersCount,
+          respect: respectVal,
+          tag: tagVal,
+        });
+
+        // Process Ranked Wars (handles both Torn v1 dictionary and array)
+        const rawRw = data.ranked_wars || data.rankedwars;
+        const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
         if (rwList.length > 0) {
           const rw = rwList[0];
           const ourFacId = userProfile?.factionId || 57693;

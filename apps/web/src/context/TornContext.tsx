@@ -44,7 +44,7 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/torn/user?selections=profile,faction&key=${encodeURIComponent(key.trim())}`);
+      const res = await fetch(`/api/torn/user?selections=profile&key=${encodeURIComponent(key.trim())}`);
       const data = await res.json();
 
       if (data.error) {
@@ -57,9 +57,9 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
       const playerId = rawProfile.id || rawProfile.player_id;
       const name = rawProfile.name;
       const level = rawProfile.level || 0;
-      const factionId = rawProfile.faction_id || data.faction?.id;
+      const factionId = rawProfile.faction_id || data.faction?.faction_id || data.faction?.id;
 
-      let factionName = data.faction?.name || "Mildly Dangerous";
+      let factionName = data.faction?.faction_name || data.faction?.name || "Mildly Dangerous";
       let position = data.faction?.position || rawProfile.rank || "Member";
       let isLeader = false;
       let isCoLeader = false;

@@ -57,21 +57,20 @@ export default function WarRoomPage() {
     const fetchLiveWarData = async () => {
       try {
         // 1. Fetch our faction & ranked war metadata
-        const facRes = await fetch(`/api/torn/faction?selections=members,rankedwars&key=${encodeURIComponent(apiKey)}`);
+        const facRes = await fetch(`/api/torn/faction?selections=basic,chain&key=${encodeURIComponent(apiKey)}`);
         const facData = await facRes.json();
 
         if (!isMounted) return;
 
-        // Friendly members mapping
-        if (Array.isArray(facData.members)) {
+        // Friendly members mapping (handles Torn v1 object dictionary)
+        if (facData.members && typeof facData.members === "object") {
           const nowSec = Math.floor(Date.now() / 1000);
-          const friendlyRows: MemberStatusRow[] = facData.members.map((m: {
-            id: number;
-            name: string;
-            level: number;
-            status: { state: string; description: string; until?: number };
-            is_revivable?: boolean;
-          }) => {
+          const rawMembers: Array<{ id: number; name: string; level: number; status?: { state: string; description: string; until?: number }; is_revivable?: boolean }> =
+            Array.isArray(facData.members)
+              ? facData.members
+              : Object.entries(facData.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+
+          const friendlyRows: MemberStatusRow[] = rawMembers.map((m) => {
             const state =
               m.status?.state === "Hospital"
                 ? "Hospital"
@@ -87,7 +86,7 @@ export default function WarRoomPage() {
               level: m.level,
               status: state,
               hospitalRemainingMinutes: remainingMins,
-              details: m.status?.description,
+              details: m.status?.description || m.status?.state || "Active",
               priority: m.level >= 20 ? "High" : "Standard",
               isRevivable: m.is_revivable,
             };
@@ -99,8 +98,11 @@ export default function WarRoomPage() {
         let oppId = 57574;
         let oppName = "Storm Heralds";
 
-        if (Array.isArray(facData.rankedwars) && facData.rankedwars.length > 0) {
-          const rw = facData.rankedwars[0];
+        const rawRw = facData.ranked_wars || facData.rankedwars;
+        const rwList = Array.isArray(rawRw) ? rawRw : rawRw && typeof rawRw === "object" ? Object.values(rawRw) : [];
+
+        if (rwList.length > 0) {
+          const rw = rwList[0] as any;
           const ourId = userProfile?.factionId || 57693;
           const ourFac = rw.factions?.find((f: { id: number }) => f.id === ourId);
           const oppFac = rw.factions?.find((f: { id: number }) => f.id !== ourId);
@@ -119,21 +121,20 @@ export default function WarRoomPage() {
           }
         }
 
-        // 3. Fetch Enemy Opponent Members directly via Torn API
+        // 3. Fetch Enemy Opponent Members directly via Torn API basic selection
         setIsLoadingEnemy(true);
-        const oppRes = await fetch(`/api/torn/faction?id=${oppId}&selections=members&key=${encodeURIComponent(apiKey)}`);
+        const oppRes = await fetch(`/api/torn/faction/${oppId}?selections=basic&key=${encodeURIComponent(apiKey)}`);
         const oppData = await oppRes.json();
         setIsLoadingEnemy(false);
 
-        if (Array.isArray(oppData.members) && isMounted) {
+        if (oppData.members && typeof oppData.members === "object" && isMounted) {
           const nowSec = Math.floor(Date.now() / 1000);
-          const enemyRows: MemberStatusRow[] = oppData.members.map((m: {
-            id: number;
-            name: string;
-            level: number;
-            status: { state: string; description: string; until?: number };
-            is_revivable?: boolean;
-          }) => {
+          const rawEnemy: Array<{ id: number; name: string; level: number; status?: { state: string; description: string; until?: number }; is_revivable?: boolean }> =
+            Array.isArray(oppData.members)
+              ? oppData.members
+              : Object.entries(oppData.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+
+          const enemyRows: MemberStatusRow[] = rawEnemy.map((m) => {
             const state =
               m.status?.state === "Hospital"
                 ? "Hospital"
@@ -149,7 +150,7 @@ export default function WarRoomPage() {
               level: m.level,
               status: state,
               hospitalRemainingMinutes: remainingMins,
-              details: m.status?.description,
+              details: m.status?.description || m.status?.state || "Active",
               priority: m.level >= 18 ? "High" : "Standard",
               isRevivable: m.is_revivable,
             };
