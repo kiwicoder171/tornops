@@ -27,3 +27,8 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent skills & local tooling
+.agents/
+skills-lock.json
+
