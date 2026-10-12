@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "PRISMA_SKIP_POSTINSTALL_GENERATE=1 pnpm install",
+  "installCommand": "pnpm install",
   "buildCommand": "pnpm build",
   "outputDirectory": ".next"
 }
