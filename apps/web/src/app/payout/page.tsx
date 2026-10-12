@@ -172,8 +172,11 @@ export default function PayoutCalculatorPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400 block mb-1 font-medium">Total Cash Reward Pool ($)</label>
+            <label htmlFor="totalPool" className="text-xs text-slate-400 block mb-1 font-medium">Total Cash Reward Pool ($)</label>
             <input
+              id="totalPool"
+              name="totalPool"
+              aria-label="Total Cash Reward Pool ($)"
               type="number"
               value={totalPool}
               onChange={(e) => setTotalPool(Number(e.target.value) || 0)}
@@ -183,8 +186,11 @@ export default function PayoutCalculatorPage() {
           </div>
 
           <div>
-            <label className="text-xs text-slate-400 block mb-1 font-medium">Hit Weight Ratio</label>
+            <label htmlFor="hitWeightRatio" className="text-xs text-slate-400 block mb-1 font-medium">Hit Weight Ratio</label>
             <input
+              id="hitWeightRatio"
+              name="hitWeightRatio"
+              aria-label="Hit Weight Ratio"
               type="text"
               readOnly
               value="50% Hit Frequency / 50% War Score"

@@ -116,10 +116,13 @@ export default function BankingLedgerPage() {
             ) : (
               <form onSubmit={handleMemberRequest} className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">
+                  <label htmlFor="withdrawAmount" className="text-xs font-medium text-slate-300 block mb-1">
                     Amount to Withdraw ($)
                   </label>
                   <input
+                    id="withdrawAmount"
+                    name="withdrawAmount"
+                    aria-label="Amount to Withdraw ($)"
                     type="number"
                     placeholder="e.g. 5000000"
                     value={requestedAmount}
@@ -130,10 +133,13 @@ export default function BankingLedgerPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-slate-300 block mb-1">
+                  <label htmlFor="withdrawReason" className="text-xs font-medium text-slate-300 block mb-1">
                     Reason for Withdrawal
                   </label>
                   <input
+                    id="withdrawReason"
+                    name="withdrawReason"
+                    aria-label="Reason for Withdrawal"
                     type="text"
                     placeholder="e.g. War morphine restock / Flight funds"
                     value={requestReason}

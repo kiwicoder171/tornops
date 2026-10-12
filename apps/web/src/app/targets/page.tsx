@@ -328,6 +328,9 @@ export default function LevelingTargetsPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
+            id="searchTarget"
+            name="searchTarget"
+            aria-label="Search by name or Torn ID"
             type="text"
             placeholder="Search by name or Torn ID..."
             value={search}

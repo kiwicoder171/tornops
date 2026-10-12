@@ -158,10 +158,13 @@ Drop an application or message me if you'd like an invite!`;
       {/* Filter Toolbar */}
       <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center text-xs">
         <div>
-          <label className="text-[11px] font-mono text-zinc-400 block mb-1.5">
+          <label htmlFor="minLevel" className="text-[11px] font-mono text-zinc-400 block mb-1.5">
             Minimum Level: <span className="text-white font-bold">{minLevel}</span>
           </label>
           <input
+            id="minLevel"
+            name="minLevel"
+            aria-label="Minimum Level"
             type="range"
             min={10}
             max={80}
@@ -172,10 +175,13 @@ Drop an application or message me if you'd like an invite!`;
         </div>
 
         <div>
-          <label className="text-[11px] font-mono text-zinc-400 block mb-1.5">
+          <label htmlFor="minAttacks" className="text-[11px] font-mono text-zinc-400 block mb-1.5">
             Min Attacks Won: <span className="text-white font-bold">{minAttacks}</span>
           </label>
           <input
+            id="minAttacks"
+            name="minAttacks"
+            aria-label="Minimum Attacks Won"
             type="range"
             min={100}
             max={3000}
@@ -187,8 +193,11 @@ Drop an application or message me if you'd like an invite!`;
         </div>
 
         <div>
-          <label className="text-[11px] font-mono text-zinc-400 block mb-1.5">Search Candidate</label>
+          <label htmlFor="searchCandidate" className="text-[11px] font-mono text-zinc-400 block mb-1.5">Search Candidate</label>
           <input
+            id="searchCandidate"
+            name="searchCandidate"
+            aria-label="Search Candidate"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -198,8 +207,10 @@ Drop an application or message me if you'd like an invite!`;
         </div>
 
         <div className="flex items-center gap-3 pt-4 sm:pt-0">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
+          <label htmlFor="factionlessOnly" className="flex items-center gap-2 cursor-pointer select-none">
             <input
+              id="factionlessOnly"
+              name="factionlessOnly"
               type="checkbox"
               checked={factionlessOnly}
               onChange={(e) => setFactionlessOnly(e.target.checked)}

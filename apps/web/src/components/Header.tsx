@@ -78,7 +78,11 @@ export function Header() {
             <div className="relative">
               <Key className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5" />
               <input
+                id="headerApiKey"
+                name="headerApiKey"
+                aria-label="Paste Torn API Key"
                 type="password"
+                autoComplete="off"
                 placeholder="Paste Torn API Key..."
                 value={inputKey}
                 onChange={(e) => setInputKey(e.target.value)}

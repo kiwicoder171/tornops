@@ -89,14 +89,19 @@ export default function TodoBoardPage() {
       {/* Task Creation Input */}
       <form onSubmit={handleAddTask} className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex flex-col sm:flex-row items-center gap-3">
         <input
+          id="newTaskTitle"
+          name="newTaskTitle"
+          aria-label="Add a new task"
           type="text"
           placeholder="Add a new task (e.g. 'Complete 25 hits', 'Fly for Xanax', 'Train 500 Energy')..."
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
           className="flex-1 w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
         />
-        <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer shrink-0">
+        <label htmlFor="isFactionWide" className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer shrink-0">
           <input
+            id="isFactionWide"
+            name="isFactionWide"
             type="checkbox"
             checked={isFactionWide}
             onChange={(e) => setIsFactionWide(e.target.checked)}

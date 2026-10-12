@@ -361,6 +361,9 @@ export default function ReviveDispatchPage() {
           <div className="relative w-64">
             <Search className="w-3.5 h-3.5 text-[#71717a] absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
+              id="reviveSearch"
+              name="reviveSearch"
+              aria-label="Search member or casualty"
               type="text"
               placeholder="Search member or casualty..."
               value={searchQuery}
@@ -609,7 +612,7 @@ export default function ReviveDispatchPage() {
                       </button>
 
                       <Link
-                        href={`https://www.torn.com/factions.php?step=your#/tab=armory`}
+                        href={`https://www.torn.com/factions.php?step=your#/tab=armoury`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1 transition-all"
@@ -642,10 +645,12 @@ export default function ReviveDispatchPage() {
 
             <form onSubmit={handleAddPatient} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label htmlFor="newRequestName" className="block text-xs font-medium text-[#a1a1aa] mb-1">
                   Member In-Game Name
                 </label>
                 <input
+                  id="newRequestName"
+                  name="newRequestName"
                   type="text"
                   required
                   placeholder="e.g. ShadowSniper"
@@ -656,10 +661,12 @@ export default function ReviveDispatchPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label htmlFor="newRequestId" className="block text-xs font-medium text-[#a1a1aa] mb-1">
                   Torn Player ID (XID)
                 </label>
                 <input
+                  id="newRequestId"
+                  name="newRequestId"
                   type="number"
                   required
                   placeholder="e.g. 2841029"
@@ -696,10 +703,12 @@ export default function ReviveDispatchPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label htmlFor="newRequestReason" className="block text-xs font-medium text-[#a1a1aa] mb-1">
                   Hospital Reason / Note
                 </label>
                 <input
+                  id="newRequestReason"
+                  name="newRequestReason"
                   type="text"
                   placeholder="e.g. Retaliating on enemy #1, chain at 1:40!"
                   value={newRequestReason}

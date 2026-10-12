@@ -133,6 +133,10 @@ export default function SettingsPage() {
         {/* Add Key Form */}
         <form onSubmit={handleAddKey} className="p-5 bg-slate-950/60 border-t border-slate-800 flex flex-col sm:flex-row items-center gap-3">
           <input
+            id="poolApiKey"
+            name="poolApiKey"
+            aria-label="Add personal API key to pool"
+            autoComplete="off"
             type="password"
             placeholder="Add personal API key to help faction war polling..."
             value={newKey}

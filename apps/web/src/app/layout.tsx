@@ -7,6 +7,9 @@ import { TornProvider } from "@/context/TornContext";
 export const metadata: Metadata = {
   title: "Torn Faction Operations Suite",
   description: "Advanced intelligence, Ranked War watchdog, banking ledger, and payout engine for Torn City factions",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

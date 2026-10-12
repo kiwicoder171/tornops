@@ -284,7 +284,7 @@ export default function PricingPage() {
             </button>
 
             <a
-              href="https://www.torn.com/item.php#Xanax"
+              href="https://www.torn.com/item.php#drugs"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors shadow-sm"

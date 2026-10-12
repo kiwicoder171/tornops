@@ -156,6 +156,9 @@ export default function EnemyHeatmapPage() {
         <div className="flex items-center gap-2 bg-[#0d0d0f] border border-[#222225] p-1.5 rounded-lg">
           <span className="text-xs text-zinc-400 pl-2 font-mono">Opponent ID:</span>
           <input
+            id="targetFactionId"
+            name="targetFactionId"
+            aria-label="Opponent Faction ID"
             type="text"
             value={targetFactionId}
             onChange={(e) => setTargetFactionId(e.target.value)}
@@ -313,6 +316,9 @@ export default function EnemyHeatmapPage() {
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
+                id="filterEnemyPlayer"
+                name="filterEnemyPlayer"
+                aria-label="Filter enemy player"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

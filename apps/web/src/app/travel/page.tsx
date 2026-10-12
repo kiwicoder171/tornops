@@ -351,8 +351,10 @@ export default function TravelPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-[#a1a1aa] flex items-center gap-1 cursor-pointer">
+            <label htmlFor="hasAirstrip" className="text-[#a1a1aa] flex items-center gap-1 cursor-pointer">
               <input
+                id="hasAirstrip"
+                name="hasAirstrip"
                 type="checkbox"
                 checked={hasAirstrip}
                 onChange={(e) => setHasAirstrip(e.target.checked)}
@@ -392,6 +394,9 @@ export default function TravelPage() {
         <div className="relative w-64">
           <Search className="w-3.5 h-3.5 text-[#71717a] absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input
+            id="travelSearch"
+            name="travelSearch"
+            aria-label="Search country or item"
             type="text"
             placeholder="Search country or item..."
             value={searchQuery}
