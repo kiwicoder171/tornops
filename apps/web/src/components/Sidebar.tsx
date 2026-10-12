@@ -41,21 +41,20 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    title: "OPERATIONS",
+    title: "WAR & COMBAT",
     items: [
-      { name: "Overview", href: "/", icon: Flame },
       { name: "War Room", href: "/war", icon: Swords, badge: "LIVE", badgeVariant: "red" },
-      { name: "Payout Engine", href: "/payout", icon: Calculator },
-      { name: "Sleep Heatmap", href: "/heatmap", icon: Moon },
+      { name: "Enemy Sleep Radar", href: "/heatmap", icon: Moon },
       { name: "Revive Dispatch", href: "/revives", icon: HeartPulse },
+      { name: "Payout Engine", href: "/payout", icon: Calculator },
     ],
   },
   {
-    title: "FACTION MANAGEMENT",
+    title: "FACTION OPERATIONS",
     items: [
       { name: "Timezones & Shifts", href: "/coverage", icon: Globe, badge: "NEW", badgeVariant: "emerald" },
-      { name: "Armory & Loaners", href: "/armory", icon: ShieldAlert },
       { name: "OC 2.0 Optimizer", href: "/oc", icon: Users },
+      { name: "Armory & Loaners", href: "/armory", icon: ShieldAlert },
       { name: "Vault & Banking", href: "/banking", icon: Landmark },
       { name: "Recruitment Radar", href: "/recruitment", icon: UserPlus },
     ],
@@ -69,7 +68,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "SETTINGS & ACCESS",
+    title: "SYSTEM & SETTINGS",
     items: [
       { name: "Free Access & Roadmap", href: "/pricing", icon: Tag },
       { name: "Settings & API Keys", href: "/settings", icon: Settings },
@@ -164,7 +163,29 @@ export function Sidebar() {
       </div>
 
       {/* Categorized Navigation List */}
-      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-2.5 py-3 space-y-3.5 overflow-y-auto custom-scrollbar">
+        {/* Primary Hub Overview */}
+        <div className="pb-1.5 border-b border-[#18181b]">
+          <Link
+            href="/"
+            className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors duration-100 ${
+              pathname === "/"
+                ? "bg-[#151519] text-white font-medium border border-[#26262b] shadow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-[#101013] border border-transparent"
+            }`}
+          >
+            <div className="flex items-center gap-2.5 truncate">
+              <Flame
+                className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                  pathname === "/" ? "text-amber-400" : "text-zinc-500 group-hover:text-amber-400"
+                }`}
+              />
+              <span className="truncate font-medium">Overview</span>
+            </div>
+            <span className="text-[10px] text-zinc-500 font-mono">HUB</span>
+          </Link>
+        </div>
+
         {navSections.map((section) => (
           <div key={section.title} className="space-y-0.5">
             <div className="px-2 py-1 text-[9px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
