@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useTorn } from "@/context/TornContext";
+import { playTacticalSound } from "@/lib/sound";
 import {
   Plane,
   Clock,
@@ -17,6 +19,7 @@ import {
   Sparkles,
   ArrowRight,
   Info,
+  Radio,
 } from "lucide-react";
 
 interface OverseasDestination {
@@ -180,25 +183,55 @@ const DESTINATIONS: OverseasDestination[] = [
 ];
 
 export default function TravelPage() {
+  const { userProfile, isLive } = useTorn();
   const [carryCapacity, setCarryCapacity] = useState(29); // 5 base + 10 suitcase + 10 faction perk + 4 WLT
   const [hasAirstrip, setHasAirstrip] = useState(true);
   const [filterType, setFilterType] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [soundAlerts, setSoundAlerts] = useState(true);
 
-  // Active Flight Timer simulation (User can simulate a live flight)
+  // Check if live player is traveling or abroad
+  const isPlayerTraveling =
+    userProfile?.status?.state === "Traveling" || userProfile?.status?.state === "Abroad";
+
+  // Active Flight Timer simulation or live sync
   const [isSimulatingFlight, setIsSimulatingFlight] = useState(true);
   const [flightDestination, setFlightDestination] = useState("Switzerland");
   const [flightSecondsLeft, setFlightSecondsLeft] = useState(482); // ~8 mins left
+  const hasWarnedRef = useRef(false);
+
+  // Auto-sync with live Torn telemetry if traveling
+  useEffect(() => {
+    if (isPlayerTraveling && userProfile?.status?.until) {
+      const remaining = Math.max(0, userProfile.status.until - Math.floor(Date.now() / 1000));
+      setFlightSecondsLeft(remaining);
+      setFlightDestination(userProfile.status.description.replace(/^Traveling to /i, "").replace(/^In /i, "") || "Destination");
+      setIsSimulatingFlight(false);
+    }
+  }, [isPlayerTraveling, userProfile?.status?.until, userProfile?.status?.description]);
 
   // Decrement seconds
   useEffect(() => {
-    if (!isSimulatingFlight || flightSecondsLeft <= 0) return;
+    if (flightSecondsLeft <= 0) return;
     const interval = setInterval(() => {
-      setFlightSecondsLeft((prev) => Math.max(0, prev - 1));
+      setFlightSecondsLeft((prev) => {
+        const next = Math.max(0, prev - 1);
+        if (next <= 300 && next > 0 && !hasWarnedRef.current && soundAlerts) {
+          playTacticalSound("warning");
+          hasWarnedRef.current = true;
+        }
+        if (next > 300) {
+          hasWarnedRef.current = false;
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isSimulatingFlight, flightSecondsLeft]);
+  }, [flightSecondsLeft, soundAlerts]);
+
+  const testAlarm = () => {
+    playTacticalSound("warning");
+  };
 
   const minutesLeft = Math.floor(flightSecondsLeft / 60);
   const secondsRemainder = flightSecondsLeft % 60;
@@ -229,6 +262,15 @@ export default function TravelPage() {
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   100% FREE CITIZEN TOOL
                 </span>
+                {isPlayerTraveling ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                    <Radio className="w-3 h-3 mr-1 animate-pulse" /> LIVE TELEMETRY
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#141416] text-[#71717a] border border-[#222225]">
+                    SIMULATION MODE
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#a1a1aa] mt-0.5">
                 Mug-defense countdown timers, live plushie & flower stock, and profit-per-minute calculations.
@@ -237,7 +279,16 @@ export default function TravelPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={testAlarm}
+            title="Preview Mug Audio Alert"
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-[#27272a] bg-[#141416] text-[#a1a1aa] hover:text-white hover:border-amber-500/40 transition-colors flex items-center gap-1.5"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            Test Alarm
+          </button>
+
           <button
             onClick={() => setSoundAlerts(!soundAlerts)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition-colors ${

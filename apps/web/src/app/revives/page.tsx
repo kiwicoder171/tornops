@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   HeartPulse,
@@ -19,6 +19,8 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { useTorn } from "@/context/TornContext";
+import { playTacticalSound } from "@/lib/sound";
 
 interface HospitalPatient {
   id: number;
@@ -144,12 +146,69 @@ const INITIAL_REVIVERS: ReviverContract[] = [
 ];
 
 export default function ReviveDispatchPage() {
+  const { isLive, apiKey } = useTorn();
   const [patients, setPatients] = useState<HospitalPatient[]>(INITIAL_PATIENTS);
   const [revivers, setRevivers] = useState<ReviverContract[]>(INITIAL_REVIVERS);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<"queue" | "revivers" | "payouts">("queue");
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  // Live hospital triage polling
+  useEffect(() => {
+    if (!isLive || !apiKey) return;
+
+    let isMounted = true;
+    const fetchHospitalized = async () => {
+      try {
+        const res = await fetch(`/api/torn/faction?selections=basic&key=${encodeURIComponent(apiKey)}`);
+        const data = await res.json();
+        if (!isMounted || !data.members) return;
+
+        const nowSec = Math.floor(Date.now() / 1000);
+        const rawMembers = Array.isArray(data.members)
+          ? data.members
+          : Object.entries(data.members).map(([id, m]) => ({ id: Number(id), ...(m as object) } as any));
+
+        const liveCasualties: HospitalPatient[] = rawMembers
+          .filter((m: any) => m.status?.state === "Hospital")
+          .map((m: any) => {
+            const untilSec = m.status?.until || nowSec + 3600;
+            const remainingMins = Math.max(1, Math.ceil((untilSec - nowSec) / 60));
+
+            return {
+              id: m.id,
+              name: m.name,
+              role: m.level >= 25 ? "Key War Combatant" : "Faction Member",
+              hospitalReason: m.status?.description || "Hospitalized casualty",
+              minutesRemaining: remainingMins,
+              priority: m.level >= 25 ? ("CRITICAL" as const) : ("HIGH" as const),
+              chance: 92,
+              energyCost: 25,
+              status: "WAITING" as const,
+              requestedAt: "Live Telemetry",
+            };
+          });
+
+        if (liveCasualties.length > 0) {
+          setPatients((prev) => {
+            const liveIds = new Set(liveCasualties.map((c) => c.id));
+            const oldUnmatched = prev.filter((p) => !liveIds.has(p.id));
+            return [...liveCasualties, ...oldUnmatched];
+          });
+        }
+      } catch {
+        // Silently preserve
+      }
+    };
+
+    fetchHospitalized();
+    const interval = setInterval(fetchHospitalized, 12000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [isLive, apiKey]);
 
   // Request Revive Modal state
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -161,10 +220,12 @@ export default function ReviveDispatchPage() {
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
+    if (soundEnabled) playTacticalSound("tick");
     setTimeout(() => setCopiedText(null), 2500);
   };
 
   const handleMarkRevived = (patientId: number) => {
+    if (soundEnabled) playTacticalSound("chime");
     setPatients((prev) =>
       prev.map((p) => {
         if (p.id === patientId) {
@@ -182,6 +243,8 @@ export default function ReviveDispatchPage() {
   const handleAddPatient = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRequestName.trim() || !newRequestId.trim()) return;
+
+    if (soundEnabled) playTacticalSound("siren");
 
     const newPatient: HospitalPatient = {
       id: parseInt(newRequestId, 10) || Math.floor(Math.random() * 900000) + 1000000,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTorn } from "@/context/TornContext";
-import { Key, ShieldCheck, LogOut, Loader2, AlertCircle } from "lucide-react";
+import { Key, ShieldCheck, LogOut, Loader2, AlertCircle, Search } from "lucide-react";
 
 export function Header() {
   const { maskedKey, isLive, isLoading, userProfile, error, saveApiKey, disconnect } = useTorn();
@@ -40,12 +40,50 @@ export function Header() {
             <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-400" /> {error}
           </span>
         )}
+
+        {/* Command Palette Trigger */}
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+          className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-lg bg-[#0d0d0f] hover:bg-[#18181c] border border-[#222225] hover:border-[#38383f] text-xs text-zinc-400 hover:text-white transition-all shadow-sm"
+          title="Open Command Palette (Cmd+K)"
+        >
+          <Search className="w-3.5 h-3.5 text-zinc-500" />
+          <span>Quick Actions</span>
+          <kbd className="text-[10px] bg-[#141416] px-1.5 py-0.5 rounded border border-[#27272a] font-mono text-zinc-400">
+            ⌘K
+          </kbd>
+        </button>
       </div>
 
-      {/* Right: User Identity & API Key Controls */}
-      <div>
+      {/* Right: User Identity, Live Vitals & API Key Controls */}
+      <div className="flex items-center gap-3">
         {isLive && userProfile ? (
           <div className="flex items-center gap-2.5 text-xs">
+            {/* Live Character Vitals (Energy / Nerve / Life) */}
+            {userProfile.energy && (
+              <div className="hidden xl:flex items-center gap-2 bg-[#0d0d0f] border border-[#222225] px-2.5 py-1.5 rounded-lg text-[11px] font-mono">
+                {/* Energy */}
+                <div className="flex items-center gap-1 text-emerald-400" title="Current Energy">
+                  <span className="font-bold">⚡</span>
+                  <span>{userProfile.energy.current}/{userProfile.energy.max}</span>
+                </div>
+                {/* Nerve */}
+                {userProfile.nerve && (
+                  <div className="flex items-center gap-1 text-red-400 border-l border-[#222225] pl-2" title="Current Nerve">
+                    <span className="font-bold">🎯</span>
+                    <span>{userProfile.nerve.current}/{userProfile.nerve.max}</span>
+                  </div>
+                )}
+                {/* Life */}
+                {userProfile.life && (
+                  <div className="flex items-center gap-1 text-blue-400 border-l border-[#222225] pl-2" title="Current Life">
+                    <span className="font-bold">❤️</span>
+                    <span>{userProfile.life.current}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center gap-2 bg-[#0d0d0f] border border-[#222225] px-3 py-1.5 rounded-lg shadow-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <div className="flex items-center gap-1.5 text-zinc-200">

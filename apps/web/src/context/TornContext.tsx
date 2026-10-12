@@ -13,6 +13,11 @@ export interface TornUserProfile {
   isLeader?: boolean;
   isCoLeader?: boolean;
   hasAA?: boolean;
+  energy?: { current: number; max: number };
+  nerve?: { current: number; max: number };
+  happy?: { current: number; max: number };
+  life?: { current: number; max: number };
+  status?: { description: string; state: string; color: string; until?: number };
 }
 
 interface TornContextType {
@@ -94,6 +99,11 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
         isLeader,
         isCoLeader,
         hasAA,
+        energy: data.energy ? { current: data.energy.current, max: data.energy.maximum } : undefined,
+        nerve: data.nerve ? { current: data.nerve.current, max: data.nerve.maximum } : undefined,
+        happy: data.happy ? { current: data.happy.current, max: data.happy.maximum } : undefined,
+        life: data.life ? { current: data.life.current, max: data.life.maximum } : undefined,
+        status: data.status ? { description: data.status.description, state: data.status.state, color: data.status.color, until: data.status.until } : undefined,
       };
 
       setApiKey(key.trim());

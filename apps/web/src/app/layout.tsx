@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
+import { CommandPalette } from "@/components/CommandPalette";
 import { TornProvider } from "@/context/TornContext";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="flex min-h-screen bg-black text-zinc-100 antialiased selection:bg-blue-600 selection:text-white">
         <TornProvider>
+          <CommandPalette />
           <Sidebar />
           <div className="flex-1 flex flex-col h-screen overflow-hidden">
             <Header />
