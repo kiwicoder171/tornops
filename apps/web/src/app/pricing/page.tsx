@@ -206,29 +206,20 @@ export default function PricingPage() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleCopyName}
+              title="Copy NongGuyver [4552150]"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141417] hover:bg-[#1c1c20] border border-[#27272a] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
             >
               <Copy className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{copied ? "Copied!" : "Copy Creator"}</span>
+              <span>{copied ? "Copied!" : "Copy Recipient"}</span>
             </button>
 
             <Link
               href={`https://www.torn.com/profiles.php?XID=${creatorId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1a1a20] hover:bg-[#25252e] border border-[#2e2e38] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Creator Profile</span>
-            </Link>
-
-            <Link
-              href="https://www.torn.com/item.php#drugs"
-              target="_blank"
-              rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs font-medium text-emerald-300 hover:text-white transition-colors"
             >
-              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
               <span>Send in Torn</span>
             </Link>
           </div>
