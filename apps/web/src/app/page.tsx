@@ -300,205 +300,257 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* Tactical Modules Navigation */}
-      {/* War & Combat Operations */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-500"></span>
-            War & Combat Operations
-          </h2>
-          <span className="text-[11px] text-[#71717a]">Ranked War battle coordination</span>
+      {/* Tactical Modules Directory */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* War & Combat Operations */}
+        <div className="p-4 bg-[#0e0e11] border border-[#222225] rounded-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#18181b]">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                <h2 className="text-xs font-semibold text-white uppercase tracking-wider">
+                  War & Combat Intelligence
+                </h2>
+              </div>
+              <span className="text-[11px] text-zinc-500 font-mono">Ranked Wars & Battles</span>
+            </div>
+
+            <div className="divide-y divide-[#18181b] mt-1">
+              <Link
+                href="/war"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-red-500/10 text-red-400 group-hover:bg-red-500/20 transition-colors">
+                    <Swords className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-red-400 transition-colors flex items-center gap-2">
+                      Ranked War Room
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-red-500/10 text-red-400 border border-red-500/20">
+                        LIVE
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Live hospital timers, chain countdowns, and 1-click direct attack links.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
+              <Link
+                href="/heatmap"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                      Enemy Sleep Heatmap
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                        PRO
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      24h TCT opponent activity radar to predict offline 250-point push windows.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
+              <Link
+                href="/revives"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                    <ShieldAlert className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      War Revive Dispatch
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Live hospital triage board, 1-click reviver links, and automated Xanax payout ledger.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
+              <Link
+                href="/payout"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                      Fair-Share War Payouts
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      War pot allocation algorithm with clutch bonuses, CSV export, and vault payloads.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Link
-            href="/war"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-red-500/40 rounded-xl transition-all group flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-red-500/10 text-red-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Swords className="w-4 h-4" />
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-red-400 transition-colors" />
-              </div>
-              <h3 className="font-semibold text-white text-sm">Ranked War Room</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Live hospital timers, chain telemetry, and one-click direct attack links.
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-red-400 font-medium">
-              Open War Room &rarr;
-            </div>
-          </Link>
 
-          <Link
-            href="/heatmap"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-purple-500/40 rounded-xl transition-all group flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-500/20 text-purple-300">
-                  PRO
-                </span>
+        {/* Faction & Economy Operations */}
+        <div className="p-4 bg-[#0e0e11] border border-[#222225] rounded-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#18181b]">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                <h2 className="text-xs font-semibold text-white uppercase tracking-wider">
+                  Faction Operations & Economy
+                </h2>
               </div>
-              <h3 className="font-semibold text-white text-sm">Enemy Sleep Heatmap</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                24h TCT sleep radar to predict opponent offline windows for easy 250-point pushes.
-              </p>
+              <span className="text-[11px] text-zinc-500 font-mono">Logistics & Citizen Suite</span>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-purple-400 font-medium">
-              Predict Sleep Window &rarr;
-            </div>
-          </Link>
 
-          <Link
-            href="/revives"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-red-500/40 rounded-xl transition-all group flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-red-500/10 text-red-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <ShieldAlert className="w-4 h-4" />
+            <div className="divide-y divide-[#18181b] mt-1">
+              <Link
+                href="/armory"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-amber-400 transition-colors flex items-center gap-2">
+                      Armory & Loaner Item Tracker
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Track loaned armor & RW weapons, overdue item recalls, and drug usage audits.
+                    </div>
+                  </div>
                 </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-red-500/20 text-red-300">
-                  LIVE
-                </span>
-              </div>
-              <h3 className="font-semibold text-white text-sm">War Revive Dispatch</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Live hospital triage board, 1-click reviver links, and automated Xanax payout ledger.
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-red-400 font-medium">
-              Open Hospital Queue &rarr;
-            </div>
-          </Link>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
 
-          <Link
-            href="/payout"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-blue-500/40 rounded-xl transition-all group flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Calculator className="w-4 h-4" />
+              <Link
+                href="/recruitment"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                      Faction Recruitment Radar
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Scan active factionless players with 1-click personalized pitch letters.
+                    </div>
+                  </div>
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-blue-400 transition-colors" />
-              </div>
-              <h3 className="font-semibold text-white text-sm">Fair-Share Payouts</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                War reward allocation algorithm with clutch bonuses, CSV export, and vault payload.
-              </p>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
+              <Link
+                href="/travel"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      Safe-Landing Flight & Stock Radar
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        FREE
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Mug-defense arrival countdown alarms and live overseas stock checker.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
+              <Link
+                href="/pricing"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                      Xanax Passes & Pricing Tiers
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Recruit, War Pass, and Commander subscriptions payable via in-game Xanax.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-blue-400 font-medium">
-              Calculate Payouts &rarr;
-            </div>
-          </Link>
+          </div>
         </div>
       </div>
 
-      {/* Faction & Operations Modules */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-            Faction & Citizen Operations
-          </h2>
-          <span className="text-[11px] text-[#71717a]">Armory, recruiting & global economy</span>
+      {/* Quick Torn City Launchpad */}
+      <div className="p-3.5 bg-[#0a0a0c] border border-[#1c1c1f] rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-zinc-400">
+          <span className="text-[11px] font-medium text-zinc-300">Torn Quick Links:</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/armory"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-amber-500/40 rounded-xl transition-all group flex flex-col justify-between"
+            href="https://www.torn.com/factions.php?step=your#/tab=armoury"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-md bg-[#121215] hover:bg-[#1a1a1e] text-zinc-300 hover:text-white border border-[#222225] transition-colors text-[11px]"
           >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-amber-400 transition-colors" />
-              </div>
-              <h3 className="font-semibold text-white text-sm">Armory & Loaners</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Track loaned armor & RW weapons, overdue item recalls, and drug usage audits.
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-amber-400 font-medium">
-              Audit Armory &rarr;
-            </div>
+            Faction Armory
           </Link>
-
           <Link
-            href="/recruitment"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-blue-500/40 rounded-xl transition-all group flex flex-col justify-between"
+            href="https://www.torn.com/hospitalview.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-md bg-[#121215] hover:bg-[#1a1a1e] text-zinc-300 hover:text-white border border-[#222225] transition-colors text-[11px]"
           >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Users className="w-4 h-4" />
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/20 text-blue-300">
-                  RADAR
-                </span>
-              </div>
-              <h3 className="font-semibold text-white text-sm">Recruitment Radar</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Scan active factionless players with 1-click personalized pitch letters.
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-blue-400 font-medium">
-              Scout Members &rarr;
-            </div>
+            Hospital
           </Link>
-
           <Link
-            href="/travel"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-emerald-500/40 rounded-xl transition-all group flex flex-col justify-between"
+            href="https://www.torn.com/travelagency.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-md bg-[#121215] hover:bg-[#1a1a1e] text-zinc-300 hover:text-white border border-[#222225] transition-colors text-[11px]"
           >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-300">
-                  FREE
-                </span>
-              </div>
-              <h3 className="font-semibold text-white text-sm">Travel & Stock Radar</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Safe-landing mug alarms and overseas stock checker for plushies, flowers & Xanax.
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-emerald-400 font-medium">
-              View Flight Radar &rarr;
-            </div>
+            Travel Agency
           </Link>
-
           <Link
-            href="/pricing"
-            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-purple-500/40 rounded-xl transition-all group flex flex-col justify-between"
+            href="https://www.torn.com/gym.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-md bg-[#121215] hover:bg-[#1a1a1e] text-zinc-300 hover:text-white border border-[#222225] transition-colors text-[11px]"
           >
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-500/20 text-purple-300">
-                  XANAX
-                </span>
-              </div>
-              <h3 className="font-semibold text-white text-sm">Plans & Xanax Passes</h3>
-              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
-                Freemium tier access powered by in-game Xanax item transfers (inspired by TornCrew).
-              </p>
-            </div>
-            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-purple-400 font-medium">
-              Upgrade Access &rarr;
-            </div>
+            Gym
+          </Link>
+          <Link
+            href="https://www.torn.com/crimes.php"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-md bg-[#121215] hover:bg-[#1a1a1e] text-zinc-300 hover:text-white border border-[#222225] transition-colors text-[11px]"
+          >
+            Crimes 2.0
           </Link>
         </div>
       </div>

@@ -4,42 +4,47 @@
   :root {
     --background: #000000;
     --foreground: #f4f4f5;
-    --card: #0d0d0f;
-    --card-hover: #161619;
+    --surface-0: #000000;
+    --surface-1: #08080a;
+    --surface-2: #0e0e11;
+    --surface-3: #151518;
+    --surface-4: #1c1c20;
+    --card: #0e0e11;
+    --card-hover: #151518;
     --card-foreground: #f4f4f5;
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
     --primary-foreground: #ffffff;
-    --muted: #18181b;
+    --muted: #161619;
     --muted-foreground: #a1a1aa;
-    --accent: #38bdf8;
-    --accent-foreground: #000000;
-    --destructive: #ef4444;
     --border: #222225;
-    --border-subtle: #1c1c1f;
+    --border-subtle: #18181b;
+    --border-hover: #2e2e33;
+    --destructive: #ef4444;
   }
 
   body {
     background-color: #000000;
     color: #f4f4f5;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
   }
 
-  /* Custom Sleek Scrollbar */
+  /* Custom Sleek Minimalist Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #000000;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
     background: #27272a;
-    border-radius: 3px;
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -48,7 +53,7 @@
 
   /* Text Selection */
   ::selection {
-    background: rgba(37, 99, 235, 0.4);
+    background: rgba(59, 130, 246, 0.35);
     color: #ffffff;
   }
 }

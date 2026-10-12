@@ -40,42 +40,37 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    title: "WAR & COMBAT",
+    title: "OPERATIONS",
     items: [
       { name: "Overview", href: "/", icon: Flame },
       { name: "War Room", href: "/war", icon: Swords, badge: "LIVE", badgeVariant: "red" },
       { name: "Payout Engine", href: "/payout", icon: Calculator },
-      { name: "Enemy Sleep Heatmap", href: "/heatmap", icon: Moon, badge: "PRO", badgeVariant: "purple" },
-      { name: "Revive Dispatch", href: "/revives", icon: HeartPulse, badge: "NEW", badgeVariant: "emerald" },
+      { name: "Sleep Heatmap", href: "/heatmap", icon: Moon, badge: "PRO", badgeVariant: "purple" },
+      { name: "Revive Dispatch", href: "/revives", icon: HeartPulse },
     ],
   },
   {
-    title: "FACTION OPERATIONS",
+    title: "FACTION MANAGEMENT",
     items: [
-      { name: "Armory & Loaners", href: "/armory", icon: ShieldAlert, badge: "NEW", badgeVariant: "emerald" },
+      { name: "Armory & Loaners", href: "/armory", icon: ShieldAlert },
       { name: "OC 2.0 Optimizer", href: "/oc", icon: Users },
       { name: "Vault & Banking", href: "/banking", icon: Landmark },
+      { name: "Recruitment Radar", href: "/recruitment", icon: UserPlus },
     ],
   },
   {
-    title: "RECRUITING & TALENT",
+    title: "CITIZEN TOOLS",
     items: [
-      { name: "Recruitment Radar", href: "/recruitment", icon: UserPlus, badge: "RADAR", badgeVariant: "blue" },
-    ],
-  },
-  {
-    title: "CITIZEN & TRAVEL",
-    items: [
-      { name: "Travel & Stock", href: "/travel", icon: Plane, badge: "SAFE", badgeVariant: "amber" },
-      { name: "Leveling Targets", href: "/targets", icon: Target, badge: "384", badgeVariant: "zinc" },
+      { name: "Travel & Stock", href: "/travel", icon: Plane },
+      { name: "Leveling Targets", href: "/targets", icon: Target },
       { name: "Task Board", href: "/todo", icon: Kanban },
     ],
   },
   {
-    title: "ACCOUNT & ACCESS",
+    title: "SETTINGS & ACCESS",
     items: [
-      { name: "Plans & Xanax", href: "/pricing", icon: Tag, badge: "XANAX", badgeVariant: "purple" },
-      { name: "Settings & Keys", href: "/settings", icon: Settings },
+      { name: "Plans & Xanax", href: "/pricing", icon: Tag },
+      { name: "Settings & API Keys", href: "/settings", icon: Settings },
     ],
   },
 ];
@@ -91,7 +86,6 @@ export function Sidebar() {
 
   useEffect(() => {
     if (!isLive || !apiKey) {
-      // Demo mock state
       setChainCount(0);
       setChainTimeout(0);
       return;
@@ -136,49 +130,42 @@ export function Sidebar() {
   const getBadgeClass = (variant?: string) => {
     switch (variant) {
       case "red":
-        return "bg-red-500/15 text-red-400 border border-red-500/30";
+        return "bg-red-500/10 text-red-400 border border-red-500/20";
       case "purple":
-        return "bg-purple-500/15 text-purple-300 border border-purple-500/30";
+        return "bg-purple-500/10 text-purple-300 border border-purple-500/20";
       case "emerald":
-        return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+        return "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       case "blue":
-        return "bg-blue-500/15 text-blue-400 border border-blue-500/30";
-      case "amber":
-        return "bg-amber-500/15 text-amber-300 border border-amber-500/30";
+        return "bg-blue-500/10 text-blue-400 border border-blue-500/20";
       default:
         return "bg-[#18181b] text-zinc-400 border border-[#27272a]";
     }
   };
 
   return (
-    <aside className="w-64 bg-black border-r border-[#222225] flex flex-col h-screen sticky top-0 select-none z-40">
+    <aside className="w-60 bg-[#08080a] border-r border-[#1a1a1d] flex flex-col h-screen sticky top-0 select-none z-40">
       {/* Brand Header */}
-      <div className="p-4 border-b border-[#222225] flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
-            <Shield className="w-4 h-4" />
+      <div className="px-4 py-3.5 border-b border-[#1a1a1d] flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-6 h-6 rounded-md bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 group-hover:border-blue-500/40 transition-colors">
+            <Shield className="w-3.5 h-3.5" />
           </div>
-          <div className="truncate">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-white text-sm tracking-wide">TORN</span>
-              <span className="font-extrabold text-blue-400 text-sm tracking-wide">OPS</span>
-            </div>
-            <p className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase truncate">
-              {userProfile?.factionName ? `${userProfile.factionName}` : "Mildly Dangerous"}
-            </p>
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-white text-xs tracking-tight">TORN</span>
+            <span className="font-bold text-blue-400 text-xs tracking-tight">OPS</span>
           </div>
-        </div>
+        </Link>
 
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#141416] border border-[#27272a] text-blue-400 shrink-0">
-          MD#57693
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-zinc-400 bg-[#121215] border border-[#222225] shrink-0">
+          {userProfile?.factionId ? `#${userProfile.factionId}` : "#57693"}
         </span>
       </div>
 
       {/* Categorized Navigation List */}
-      <nav className="flex-1 p-3 space-y-4 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto custom-scrollbar">
         {navSections.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <div className="px-2 pb-1 text-[10px] font-mono font-bold text-zinc-300 tracking-wider">
+          <div key={section.title} className="space-y-0.5">
+            <div className="px-2 py-1 text-[9px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
               {section.title}
             </div>
             {section.items.map((item) => {
@@ -189,16 +176,16 @@ export function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                  className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors duration-100 ${
                     isActive
-                      ? "bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm"
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-[#141417] border border-transparent"
+                      ? "bg-[#151519] text-white font-medium border border-[#26262b] shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-[#101013] border border-transparent"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
                     <Icon
                       className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                        isActive ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-300"
+                        isActive ? "text-blue-400" : "text-zinc-500 group-hover:text-zinc-400"
                       }`}
                     />
                     <span className="truncate">{item.name}</span>
@@ -206,7 +193,7 @@ export function Sidebar() {
 
                   {item.badge && (
                     <span
-                      className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold shrink-0 ${getBadgeClass(
+                      className={`px-1 py-0.2 rounded text-[9px] font-mono font-medium shrink-0 ${getBadgeClass(
                         item.badgeVariant
                       )}`}
                     >
@@ -220,49 +207,48 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Persistent Chain Telemetry Mini-Widget */}
-      <div className="p-3 border-t border-[#1c1c1f] bg-black">
+      {/* Minimalist Chain Telemetry Widget */}
+      <div className="p-2.5 border-t border-[#1a1a1d] bg-[#08080a]">
         <Link
           href="/war"
-          className={`block p-2.5 rounded-lg border transition-all ${
+          className={`block p-2 rounded-md border transition-all ${
             isEmergency
-              ? "bg-red-950/40 border-red-500/50 hover:border-red-400 shadow-md shadow-red-950/30 animate-pulse"
+              ? "bg-red-950/20 border-red-500/40 text-red-200"
               : isWarning
-              ? "bg-amber-950/30 border-amber-500/40 hover:border-amber-300"
+              ? "bg-amber-950/20 border-amber-500/30 text-amber-200"
               : isChainActive
-              ? "bg-[#0d0d0f] border-[#222225] hover:border-blue-500/50"
-              : "bg-[#0d0d0f] border-[#222225] hover:border-[#3f3f46]"
+              ? "bg-[#0e0e11] border-[#222225] text-zinc-300 hover:border-blue-500/30"
+              : "bg-[#0c0c0e] border-[#1c1c1f] text-zinc-400 hover:border-[#2a2a2e]"
           }`}
         >
           <div className="flex items-center justify-between text-xs mb-1">
-            <span className="flex items-center gap-1.5 font-bold text-zinc-300 text-[11px]">
-              <Activity className={`w-3.5 h-3.5 ${isChainActive ? "text-blue-400" : "text-zinc-500"}`} />
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-300">
+              <Activity className={`w-3 h-3 ${isChainActive ? "text-blue-400" : "text-zinc-500"}`} />
               Chain Status
             </span>
             <span
-              className={`font-mono text-[10px] font-bold px-1.5 py-0.2 rounded ${
+              className={`font-mono text-[10px] px-1.5 py-0.2 rounded ${
                 isEmergency
-                  ? "bg-red-500/30 text-red-300"
+                  ? "bg-red-500/20 text-red-300 font-bold"
                   : isWarning
-                  ? "bg-amber-500/30 text-amber-300"
+                  ? "bg-amber-500/20 text-amber-300 font-bold"
                   : isChainActive
-                  ? "bg-blue-500/20 text-blue-300"
-                  : "bg-[#18181b] text-zinc-400 border border-[#27272a]"
+                  ? "bg-blue-500/10 text-blue-300 font-semibold"
+                  : "text-zinc-500 font-normal"
               }`}
             >
-              {isChainActive ? `#${chainCount}` : "INACTIVE"}
+              {isChainActive ? `#${chainCount}` : "Standby"}
             </span>
           </div>
 
           <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
             <span>Timeout:</span>
-            <span className={`font-bold tabular-nums ${isEmergency ? "text-red-400" : isWarning ? "text-amber-400" : "text-zinc-100"}`}>
+            <span className={`font-semibold tabular-nums ${isEmergency ? "text-red-400" : isWarning ? "text-amber-400" : "text-zinc-200"}`}>
               {isChainActive ? formatChainTime(chainTimeout) : "00:00"}
             </span>
           </div>
 
-          {/* Mini Timeout Progress Bar */}
-          <div className="w-full bg-[#1c1c1f] h-1 rounded-full mt-1.5 overflow-hidden">
+          <div className="w-full bg-[#18181b] h-1 rounded-full mt-1.5 overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${
                 isEmergency ? "bg-red-500" : isWarning ? "bg-amber-500" : "bg-blue-500"
@@ -275,16 +261,15 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* Plans & Telemetry Bar */}
-      <div className="px-3 py-2.5 border-t border-[#1c1c1f] bg-[#070708] flex items-center justify-between text-[11px] text-zinc-400">
-        <Link href="/pricing" className="flex items-center gap-1.5 text-zinc-300 hover:text-purple-300 transition-colors">
-          <Tag className="w-3 h-3 text-purple-400" />
-          <span className="font-semibold text-[10px]">Free Tier</span>
-        </Link>
-        <span className="font-mono text-emerald-400 text-[10px] flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          {isLive ? "API Live" : "Demo Mode"}
+      {/* Footer Status Bar */}
+      <div className="px-3 py-2 border-t border-[#1a1a1d] bg-[#050506] flex items-center justify-between text-[10px] text-zinc-500">
+        <span className="font-mono flex items-center gap-1 text-zinc-400">
+          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
+          {isLive ? "Live API" : "Demo Mode"}
         </span>
+        <Link href="/pricing" className="text-zinc-400 hover:text-white transition-colors">
+          Free Tier
+        </Link>
       </div>
     </aside>
   );

@@ -121,11 +121,11 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-24 p-4 animate-in fade-in">
       <div
-        className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-xl w-full shadow-2xl overflow-hidden"
+        className="bg-[#0e0e11] border border-[#222225] rounded-xl max-w-xl w-full shadow-2xl overflow-hidden"
         onKeyDown={handleListKeyDown}
       >
         {/* Search Input Bar */}
-        <div className="p-3.5 border-b border-[#222226] flex items-center gap-3">
+        <div className="p-3 border-b border-[#1c1c1f] flex items-center gap-3">
           <Search className="w-4 h-4 text-zinc-400 shrink-0" />
           <input
             autoFocus
@@ -139,15 +139,15 @@ export function CommandPalette() {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
+            className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#18181c] border border-[#27272a] text-[10px] text-zinc-400 font-mono">
+          <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#161619] border border-[#242428] text-[9px] text-zinc-400 font-mono">
             ESC
           </kbd>
         </div>
 
         {/* Action List */}
-        <div className="max-h-80 overflow-y-auto p-2 space-y-1">
+        <div className="max-h-80 overflow-y-auto p-1.5 space-y-0.5">
           {filteredItems.length === 0 ? (
             <div className="p-6 text-center text-xs text-zinc-500">
               No matching modules or actions found.
@@ -162,25 +162,25 @@ export function CommandPalette() {
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full p-2.5 rounded-lg text-left flex items-center justify-between transition-colors text-xs ${
-                    isSelected ? "bg-blue-600 text-white" : "text-zinc-300 hover:bg-[#18181c]"
+                  className={`w-full px-2.5 py-2 rounded-md text-left flex items-center justify-between transition-colors text-xs ${
+                    isSelected
+                      ? "bg-[#18181d] text-white border border-[#282830]"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-[#121215] border border-transparent"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isSelected ? "text-white" : "text-zinc-400"}`} />
+                    <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-blue-400" : "text-zinc-500"}`} />
                     <span className="font-medium">{item.title}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold ${
-                        isSelected ? "bg-white/20 text-white" : "bg-[#18181c] text-zinc-500 border border-[#24242a]"
-                      }`}
+                      className="text-[9px] font-mono px-1.5 py-0.2 rounded uppercase bg-[#141417] text-zinc-400 border border-[#202025]"
                     >
                       {item.category}
                     </span>
                     {item.isExternal && (
-                      <ExternalLink className={`w-3 h-3 ${isSelected ? "text-white" : "text-zinc-500"}`} />
+                      <ExternalLink className={`w-3 h-3 ${isSelected ? "text-blue-400" : "text-zinc-500"}`} />
                     )}
                   </div>
                 </button>
