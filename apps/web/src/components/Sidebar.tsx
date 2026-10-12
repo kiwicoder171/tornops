@@ -285,14 +285,27 @@ export function Sidebar() {
       </div>
 
       {/* Footer Status Bar */}
-      <div className="px-3 py-2 border-t border-[#1a1a1d] bg-[#050506] flex items-center justify-between text-[10px] text-zinc-500">
-        <span className="font-mono flex items-center gap-1 text-zinc-400">
-          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
-          {isLive ? "Live API" : "Demo Mode"}
-        </span>
-        <Link href="/pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-          100% Free Access
-        </Link>
+      <div className="px-3 py-2 border-t border-[#1a1a1d] bg-[#050506] flex flex-col gap-1 text-[10px] text-zinc-500">
+        <div className="flex items-center justify-between">
+          <span className="font-mono flex items-center gap-1 text-zinc-400">
+            <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
+            {isLive ? "Live API" : "Demo Mode"}
+          </span>
+          <Link href="/pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+            100% Free Access
+          </Link>
+        </div>
+        <div className="flex items-center justify-between pt-1 border-t border-[#141416] text-[9px] text-zinc-500">
+          <span>Created by</span>
+          <a
+            href="https://www.torn.com/profiles.php?XID=4552150"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-400 hover:text-amber-400 font-mono transition-colors"
+          >
+            NongGuyver [4552150]
+          </a>
+        </div>
       </div>
     </aside>
   );

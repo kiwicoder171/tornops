@@ -26,12 +26,12 @@ export default function PricingPage() {
   const { userProfile, isLive } = useTorn();
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Recipient details for optional tips
-  const recipientName = "Mildly Dangerous";
-  const recipientId = 57693;
+  // Creator details for optional tips & support
+  const creatorName = "NongGuyver";
+  const creatorId = 4552150;
 
   const handleCopyName = () => {
-    navigator.clipboard.writeText(`${recipientName} [${recipientId}]`);
+    navigator.clipboard.writeText(`${creatorName} [${creatorId}]`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -178,22 +178,27 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Optional Community Tip Jar */}
+      {/* Optional Creator Support / Tip Jar */}
       <div className="bg-[#0b0b0d] border border-[#1e1e22] rounded-xl p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-amber-400 font-medium">
               <Heart className="w-3.5 h-3.5 fill-amber-400/20 text-amber-400" />
-              <span>Optional Community Tip Jar</span>
+              <span>Optional Creator Support & Tip Jar</span>
             </div>
             <h3 className="text-sm font-semibold text-white">
-              Enjoying the tools? Faction tips are welcome!
+              Enjoying the tools? Creator tips are welcome!
             </h3>
             <p className="text-xs text-zinc-400">
               100% voluntary. You never have to pay anything to use the suite. Any Xanax or items sent to{" "}
-              <span className="text-zinc-200 font-mono font-medium">
-                {recipientName} [{recipientId}]
-              </span>{" "}
+              <Link
+                href={`https://www.torn.com/profiles.php?XID=${creatorId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:text-amber-300 font-mono font-medium underline underline-offset-2 transition-colors"
+              >
+                {creatorName} [{creatorId}]
+              </Link>{" "}
               help maintain hosting and development.
             </p>
           </div>
@@ -204,16 +209,26 @@ export default function PricingPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141417] hover:bg-[#1c1c20] border border-[#27272a] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
             >
               <Copy className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{copied ? "Copied!" : "Copy Recipient"}</span>
+              <span>{copied ? "Copied!" : "Copy Creator"}</span>
             </button>
 
             <Link
-              href="https://www.torn.com/item.php#drugs"
+              href={`https://www.torn.com/profiles.php?XID=${creatorId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1a1a20] hover:bg-[#25252e] border border-[#2e2e38] text-xs font-medium text-zinc-300 hover:text-white transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Creator Profile</span>
+            </Link>
+
+            <Link
+              href="https://www.torn.com/item.php#drugs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs font-medium text-emerald-300 hover:text-white transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>Send in Torn</span>
             </Link>
           </div>
