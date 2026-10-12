@@ -15,6 +15,7 @@ import {
   Calculator,
   Shield,
   Activity,
+  ShieldAlert,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 import { formatChainTime } from "@torn/shared";
@@ -297,90 +298,203 @@ export default function OverviewPage() {
       </div>
 
       {/* Tactical Modules Navigation */}
-      <div>
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">Tactical Operations Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* War & Combat Operations */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+            War & Combat Operations
+          </h2>
+          <span className="text-[11px] text-[#71717a]">Ranked War battle coordination</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             href="/war"
-            className="p-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group flex flex-col justify-between"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-red-500/40 rounded-xl transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-red-500/10 text-red-400 rounded-lg group-hover:scale-105 transition-transform">
                   <Swords className="w-4 h-4" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-red-400 transition-colors" />
               </div>
               <h3 className="font-semibold text-white text-sm">Ranked War Room</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Live hospital timers, enemy sleep windows, and one-click direct attack links.
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Live hospital timers, chain telemetry, and one-click direct attack links.
               </p>
             </div>
-            <div className="mt-4 pt-2.5 border-t border-slate-800 text-[11px] text-blue-400 font-medium">
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-red-400 font-medium">
               Open War Room &rarr;
             </div>
           </Link>
 
           <Link
-            href="/payout"
-            className="p-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group flex flex-col justify-between"
+            href="/heatmap"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-purple-500/40 rounded-xl transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg group-hover:scale-105 transition-transform">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-500/20 text-purple-300">
+                  PRO
+                </span>
+              </div>
+              <h3 className="font-semibold text-white text-sm">Enemy Sleep Heatmap</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                24h TCT sleep radar to predict opponent offline windows for easy 250-point pushes.
+              </p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-purple-400 font-medium">
+              Predict Sleep Window &rarr;
+            </div>
+          </Link>
+
+          <Link
+            href="/revives"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-red-500/40 rounded-xl transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-red-500/10 text-red-400 rounded-lg group-hover:scale-105 transition-transform">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-red-500/20 text-red-300">
+                  LIVE
+                </span>
+              </div>
+              <h3 className="font-semibold text-white text-sm">War Revive Dispatch</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Live hospital triage board, 1-click reviver links, and automated Xanax payout ledger.
+              </p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-red-400 font-medium">
+              Open Hospital Queue &rarr;
+            </div>
+          </Link>
+
+          <Link
+            href="/payout"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-blue-500/40 rounded-xl transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:scale-105 transition-transform">
                   <Calculator className="w-4 h-4" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-blue-400 transition-colors" />
               </div>
               <h3 className="font-semibold text-white text-sm">Fair-Share Payouts</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                War reward allocation algorithm with clutch bonuses, CSV export, and userscript payload.
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                War reward allocation algorithm with clutch bonuses, CSV export, and vault payload.
               </p>
             </div>
-            <div className="mt-4 pt-2.5 border-t border-slate-800 text-[11px] text-blue-400 font-medium">
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-blue-400 font-medium">
               Calculate Payouts &rarr;
             </div>
           </Link>
+        </div>
+      </div>
 
+      {/* Faction & Operations Modules */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+            Faction & Citizen Operations
+          </h2>
+          <span className="text-[11px] text-[#71717a]">Armory, recruiting & global economy</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
-            href="/targets"
-            className="p-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group flex flex-col justify-between"
+            href="/armory"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-amber-500/40 rounded-xl transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg group-hover:scale-105 transition-transform">
-                  <Target className="w-4 h-4" />
+                  <Shield className="w-4 h-4" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-[#71717a] group-hover:text-amber-400 transition-colors" />
               </div>
-              <h3 className="font-semibold text-white text-sm">Baldr Leveling Targets</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                384 curated high-XP / low-stat targets with live status checks and instant attack buttons.
+              <h3 className="font-semibold text-white text-sm">Armory & Loaners</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Track loaned armor & RW weapons, overdue item recalls, and drug usage audits.
               </p>
             </div>
-            <div className="mt-4 pt-2.5 border-t border-slate-800 text-[11px] text-blue-400 font-medium">
-              Browse Targets &rarr;
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-amber-400 font-medium">
+              Audit Armory &rarr;
             </div>
           </Link>
 
           <Link
-            href="/oc"
-            className="p-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group flex flex-col justify-between"
+            href="/recruitment"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-blue-500/40 rounded-xl transition-all group flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg group-hover:scale-105 transition-transform">
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:scale-105 transition-transform">
                   <Users className="w-4 h-4" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/20 text-blue-300">
+                  RADAR
+                </span>
               </div>
-              <h3 className="font-semibold text-white text-sm">Crimes 2.0 Planner</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Team assignment optimizer with role-gated AA controls and member skill check.
+              <h3 className="font-semibold text-white text-sm">Recruitment Radar</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Scan active factionless players with 1-click personalized pitch letters.
               </p>
             </div>
-            <div className="mt-4 pt-2.5 border-t border-slate-800 text-[11px] text-blue-400 font-medium">
-              Plan Crimes &rarr;
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-blue-400 font-medium">
+              Scout Members &rarr;
+            </div>
+          </Link>
+
+          <Link
+            href="/travel"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-emerald-500/40 rounded-xl transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg group-hover:scale-105 transition-transform">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-300">
+                  FREE
+                </span>
+              </div>
+              <h3 className="font-semibold text-white text-sm">Travel & Stock Radar</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Safe-landing mug alarms and overseas stock checker for plushies, flowers & Xanax.
+              </p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-emerald-400 font-medium">
+              View Flight Radar &rarr;
+            </div>
+          </Link>
+
+          <Link
+            href="/pricing"
+            className="p-4 bg-[#0d0d0f] hover:bg-[#141416] border border-[#222225] hover:border-purple-500/40 rounded-xl transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg group-hover:scale-105 transition-transform">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-purple-500/20 text-purple-300">
+                  XANAX
+                </span>
+              </div>
+              <h3 className="font-semibold text-white text-sm">Plans & Xanax Passes</h3>
+              <p className="text-xs text-[#a1a1aa] mt-1 leading-relaxed">
+                Freemium tier access powered by in-game Xanax item transfers (inspired by TornCrew).
+              </p>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-[#1f1f23] text-[11px] text-purple-400 font-medium">
+              Upgrade Access &rarr;
             </div>
           </Link>
         </div>
