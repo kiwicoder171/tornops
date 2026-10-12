@@ -1,13 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useTorn } from "@/context/TornContext";
-import { Key, ShieldCheck, LogOut, Loader2, AlertCircle, Search } from "lucide-react";
+import { Key, ShieldCheck, LogOut, Loader2, AlertCircle, Search, Clock } from "lucide-react";
 
 export function Header() {
   const { maskedKey, isLive, isLoading, userProfile, error, saveApiKey, disconnect } = useTorn();
   const [inputKey, setInputKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tctClock, setTctClock] = useState<string>("00:00:00");
+
+  useEffect(() => {
+    const updateTct = () => {
+      const d = new Date();
+      const h = d.getUTCHours().toString().padStart(2, "0");
+      const m = d.getUTCMinutes().toString().padStart(2, "0");
+      const s = d.getUTCSeconds().toString().padStart(2, "0");
+      setTctClock(`${h}:${m}:${s}`);
+    };
+    updateTct();
+    const timer = setInterval(updateTct, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +49,17 @@ export function Header() {
             <span className="tracking-tight text-[11px]">DEMO MODE</span>
           </div>
         )}
+
+        {/* Live Torn City Time (TCT) Clock Pill */}
+        <Link
+          href="/coverage"
+          title="Torn City Time (Click to open Timezone & Shift Coverage Hub)"
+          className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0e0e11] hover:bg-[#151519] border border-[#222225] hover:border-emerald-500/40 text-xs font-mono text-emerald-400 tabular-nums transition-colors"
+        >
+          <Clock className="w-3 h-3 text-emerald-400 animate-pulse" />
+          <span>{tctClock}</span>
+          <span className="text-[10px] text-zinc-500 font-semibold uppercase">TCT</span>
+        </Link>
 
         {error && (
           <span className="text-xs text-red-400 flex items-center gap-1.5 font-mono bg-red-950/30 border border-red-900/50 px-2 py-0.5 rounded">

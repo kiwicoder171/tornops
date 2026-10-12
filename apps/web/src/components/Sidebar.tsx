@@ -21,6 +21,7 @@ import {
   UserPlus,
   Plane,
   Tag,
+  Globe,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 import { formatChainTime } from "@torn/shared";
@@ -52,6 +53,7 @@ const navSections: NavSection[] = [
   {
     title: "FACTION MANAGEMENT",
     items: [
+      { name: "Timezones & Shifts", href: "/coverage", icon: Globe, badge: "NEW", badgeVariant: "emerald" },
       { name: "Armory & Loaners", href: "/armory", icon: ShieldAlert },
       { name: "OC 2.0 Optimizer", href: "/oc", icon: Users },
       { name: "Vault & Banking", href: "/banking", icon: Landmark },

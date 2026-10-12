@@ -152,3 +152,43 @@ test("OC 2.0 Optimizer matches highest skilled members and identifies stalled in
   assert.equal(stalled.length, 1);
   assert.equal(stalled[0].playerName, "SleepyHead");
 });
+
+test("Timezone conversion and 24h TCT coverage calculations", async () => {
+  const {
+    isHourInRange,
+    localHourToTctHour,
+    tctHourToLocalHour,
+    isMemberAwakeAtTct,
+    compute24hCoverage,
+    analyzeCoverageShifts,
+    DEMO_FACTION_TIMEZONES,
+  } = await import("../dist/timezone.js");
+
+  // Local hour 12:00 in UTC+7 is 05:00 TCT (12 - 7 = 5)
+  assert.equal(localHourToTctHour(12, 7), 5);
+  // Local hour 02:00 in UTC-4 is 06:00 TCT (2 - (-4) = 6)
+  assert.equal(localHourToTctHour(2, -4), 6);
+  // TCT hour 05:00 in UTC+7 is 12:00 Local (5 + 7 = 12)
+  assert.equal(tctHourToLocalHour(5, 7), 12);
+
+  // Wrap around midnight checks
+  assert.equal(isHourInRange(23, 22, 6), true);
+  assert.equal(isHourInRange(3, 22, 6), true);
+  assert.equal(isHourInRange(12, 22, 6), false);
+
+  // Check demo member awake calculation
+  const ek = DEMO_FACTION_TIMEZONES[0]; // Eklatant, UTC+1, awake 7-23
+  // At 12:00 TCT, local time is 13:00 -> awake
+  assert.equal(isMemberAwakeAtTct(ek, 12), true);
+  // At 03:00 TCT, local time is 04:00 -> asleep
+  assert.equal(isMemberAwakeAtTct(ek, 3), false);
+
+  // Compute 24h coverage
+  const coverage = compute24hCoverage(DEMO_FACTION_TIMEZONES);
+  assert.equal(coverage.length, 24);
+  assert.ok(coverage[14].awakeCount > 0);
+
+  // Analyze shift alerts
+  const alerts = analyzeCoverageShifts(coverage);
+  assert.ok(alerts.length > 0);
+});

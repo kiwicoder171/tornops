@@ -18,6 +18,7 @@ import {
   Settings,
   ExternalLink,
   Command,
+  Globe,
 } from "lucide-react";
 
 interface PaletteItem {
@@ -38,6 +39,7 @@ const ITEMS: PaletteItem[] = [
   { id: "payout", title: "Fair-Share War Payout Engine", category: "WAR", icon: Calculator, href: "/payout" },
 
   // Faction
+  { id: "coverage", title: "Faction Timezones & 24h TCT Shift Coverage Hub", category: "FACTION", icon: Globe, href: "/coverage" },
   { id: "armory", title: "Armory & Loaner Item Tracker", category: "FACTION", icon: Shield, href: "/armory" },
   { id: "oc", title: "Crimes 2.0 Planner", category: "FACTION", icon: Users, href: "/oc" },
   { id: "banking", title: "Vault & Banking Ledger", category: "FACTION", icon: Building2, href: "/banking" },

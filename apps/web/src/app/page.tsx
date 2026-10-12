@@ -16,9 +16,13 @@ import {
   Shield,
   Activity,
   ShieldAlert,
+  Globe,
+  Sun,
+  Moon,
+  Sparkles,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
-import { formatChainTime } from "@torn/shared";
+import { formatChainTime, DEMO_FACTION_TIMEZONES, compute24hCoverage, isMemberAwakeAtTct } from "@torn/shared";
 
 interface LiveChainData {
   current: number;
@@ -63,6 +67,22 @@ export default function OverviewPage() {
     respect: 10465,
     tag: "MD",
   });
+
+  // Synchronized TCT clock & shift telemetry
+  const [tctNow, setTctNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setTctNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const curTctHour = tctNow.getUTCHours();
+  const curTctMinute = tctNow.getUTCMinutes();
+  const curTctSecond = tctNow.getUTCSeconds();
+  const tctTimeStr = `${curTctHour.toString().padStart(2, "0")}:${curTctMinute
+    .toString()
+    .padStart(2, "0")}:${curTctSecond.toString().padStart(2, "0")} TCT`;
+  const awakeNowCount = DEMO_FACTION_TIMEZONES.filter((m) => isMemberAwakeAtTct(m, curTctHour)).length;
+  const coverage24h = compute24hCoverage(DEMO_FACTION_TIMEZONES);
 
   // If live key is connected, poll live faction telemetry
   useEffect(() => {
@@ -300,6 +320,63 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      {/* Global Faction Shift Radar (TCT) */}
+      <div className="p-4 bg-gradient-to-r from-emerald-950/20 via-[#0e0e11] to-zinc-950 border border-emerald-900/40 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0">
+            <Globe className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
+                Faction Global Shift Radar
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  {tctTimeStr}
+                </span>
+              </h2>
+            </div>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              <strong className="text-white font-mono">{awakeNowCount}</strong> of{" "}
+              <strong className="text-white font-mono">{DEMO_FACTION_TIMEZONES.length}</strong> roster members are active in their daytime window right now.
+            </p>
+          </div>
+        </div>
+
+        {/* 24-Hour Mini TCT Sparkline */}
+        <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-0.5 bg-zinc-950/80 p-1.5 rounded-lg border border-zinc-800">
+            {coverage24h.map((s) => {
+              const isCur = s.hour === curTctHour;
+              return (
+                <div
+                  key={s.hour}
+                  title={`${s.label} TCT: ${s.awakeCount} awake`}
+                  className={`w-1.5 rounded-xs transition-all ${
+                    isCur
+                      ? "bg-cyan-400 h-6 ring-1 ring-cyan-300"
+                      : s.riskLevel === "CRITICAL"
+                      ? "bg-red-500/60 h-2.5"
+                      : s.riskLevel === "MODERATE"
+                      ? "bg-amber-500/70 h-4"
+                      : "bg-emerald-500/80 h-5"
+                  }`}
+                />
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/coverage"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Open Coverage Hub</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Tactical Modules Directory */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* War & Combat Operations */}
@@ -419,6 +496,29 @@ export default function OverviewPage() {
             </div>
 
             <div className="divide-y divide-[#18181b] mt-1">
+              <Link
+                href="/coverage"
+                className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-white group-hover:text-emerald-400 transition-colors flex items-center gap-2">
+                      Timezones & 24h Shift Coverage
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        NEW
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      Global 24h TCT roster heatmap, awake clocks, chain guard shifts & war availability.
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0 ml-2" />
+              </Link>
+
               <Link
                 href="/armory"
                 className="group flex items-center justify-between py-3 hover:bg-[#151519] px-2 -mx-2 rounded-lg transition-colors"
