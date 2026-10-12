@@ -49,7 +49,7 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/torn/user?selections=profile&key=${encodeURIComponent(key.trim())}`);
+      const res = await fetch(`/api/torn/user?selections=profile,bars&key=${encodeURIComponent(key.trim())}`);
       const data = await res.json();
 
       if (data.error) {

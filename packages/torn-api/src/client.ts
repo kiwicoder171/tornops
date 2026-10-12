@@ -158,8 +158,8 @@ export class TornApiClient {
    */
   public async getRankedWarReport(warId: number): Promise<unknown> {
     return this.request(
-      "/faction",
-      { selections: "rankedwarreport", id: warId },
+      "/faction/rankedwarreport",
+      { id: warId },
       "FACTION",
       300 // Cache for 5 minutes
     );

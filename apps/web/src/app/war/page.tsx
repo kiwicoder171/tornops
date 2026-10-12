@@ -31,13 +31,26 @@ interface MemberStatusRow {
   isRevivable?: boolean;
 }
 
+const DEFAULT_DEMO_ENEMY: MemberStatusRow[] = [
+  { id: 4440528, name: "NightStalker", level: 64, status: "Okay", details: "Ready to fight", priority: "High" },
+  { id: 4102931, name: "ShadowBane", level: 52, status: "Hospital", hospitalRemainingMinutes: 48, details: "Hospitalized casualty", priority: "High" },
+  { id: 3912048, name: "Valkyrie", level: 45, status: "Okay", details: "Online in Torn", priority: "Standard" },
+  { id: 3829104, name: "IronHide", level: 38, status: "Traveling", details: "Traveling to Switzerland", priority: "Standard" },
+];
+
+const DEFAULT_DEMO_FRIENDLY: MemberStatusRow[] = [
+  { id: 4430788, name: "Eklatant", level: 75, status: "Okay", details: "Active Commander", priority: "High" },
+  { id: 4072152, name: "kisagikun", level: 42, status: "Okay", details: "In Torn City", priority: "High" },
+  { id: 4552150, name: "NongGuyver", level: 6, status: "Okay", details: "Rookie Newcomer", priority: "Standard" },
+];
+
 export default function WarRoomPage() {
   const { isLive, apiKey, userProfile } = useTorn();
   const [activeTab, setActiveTab] = useState<"ENEMY_TARGETS" | "FRIENDLY_ROSTER">("ENEMY_TARGETS");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OKAY" | "HOSP">("ALL");
 
-  const [enemyTargets, setEnemyTargets] = useState<MemberStatusRow[]>([]);
-  const [friendlyMembers, setFriendlyMembers] = useState<MemberStatusRow[]>([]);
+  const [enemyTargets, setEnemyTargets] = useState<MemberStatusRow[]>(DEFAULT_DEMO_ENEMY);
+  const [friendlyMembers, setFriendlyMembers] = useState<MemberStatusRow[]>(DEFAULT_DEMO_FRIENDLY);
   const [isLoadingEnemy, setIsLoadingEnemy] = useState(false);
 
   const [warMeta, setWarMeta] = useState({
@@ -364,7 +377,14 @@ export default function WarRoomPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {filtered.map((t) => (
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-xs text-zinc-500 font-mono">
+                    No roster members match the selected filter.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-3 font-medium text-white flex items-center gap-2">
                     <User className="w-3.5 h-3.5 text-slate-500" />
@@ -429,7 +449,7 @@ export default function WarRoomPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

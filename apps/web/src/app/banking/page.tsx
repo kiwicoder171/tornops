@@ -34,6 +34,9 @@ export default function BankingLedgerPage() {
 
   // Check if current user is leadership with AA
   const isLeader =
+    userProfile?.isLeader ||
+    userProfile?.isCoLeader ||
+    userProfile?.hasAA ||
     userProfile?.position?.toLowerCase().includes("leader") ||
     userProfile?.position?.toLowerCase().includes("co-leader") ||
     false;

@@ -51,8 +51,9 @@ export default function PayoutCalculatorPage() {
         if (!isMounted || !data.rankedwarreport) return;
 
         const report = data.rankedwarreport;
-        const ourFac = report.factions?.find((f: { id: number }) => f.id === 57693);
-        const oppFac = report.factions?.find((f: { id: number }) => f.id !== 57693);
+        const targetId = userProfile?.factionId || 57693;
+        const ourFac = report.factions?.find((f: { id: number }) => f.id === targetId);
+        const oppFac = report.factions?.find((f: { id: number }) => f.id !== targetId);
 
         if (ourFac && Array.isArray(ourFac.members)) {
           const membersList = ourFac.members
@@ -136,7 +137,7 @@ export default function PayoutCalculatorPage() {
               War Payout & Fair-Share Calculator
             </h1>
             <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md flex items-center gap-1 font-mono">
-              <Trophy className="w-3.5 h-3.5 text-emerald-400" /> War #{warMeta.warId} (Mildly Dangerous vs {warMeta.opponentName})
+              <Trophy className="w-3.5 h-3.5 text-emerald-400" /> War #{warMeta.warId} ({userProfile?.factionName || "Mildly Dangerous"} vs {warMeta.opponentName})
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
