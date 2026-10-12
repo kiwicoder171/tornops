@@ -70,8 +70,21 @@ export default function OverviewPage() {
 
   // Synchronized TCT clock & shift telemetry
   const [tctNow, setTctNow] = useState<Date>(new Date());
+  const [factionMembers, setFactionMembers] = useState(DEMO_FACTION_TIMEZONES);
+
   useEffect(() => {
     const t = setInterval(() => setTctNow(new Date()), 1000);
+    try {
+      const stored = localStorage.getItem("torn_faction_timezones_v1");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setFactionMembers(parsed);
+        }
+      }
+    } catch {
+      // Storage error fallback
+    }
     return () => clearInterval(t);
   }, []);
 
@@ -81,8 +94,8 @@ export default function OverviewPage() {
   const tctTimeStr = `${curTctHour.toString().padStart(2, "0")}:${curTctMinute
     .toString()
     .padStart(2, "0")}:${curTctSecond.toString().padStart(2, "0")} TCT`;
-  const awakeNowCount = DEMO_FACTION_TIMEZONES.filter((m) => isMemberAwakeAtTct(m, curTctHour)).length;
-  const coverage24h = compute24hCoverage(DEMO_FACTION_TIMEZONES);
+  const awakeNowCount = factionMembers.filter((m) => isMemberAwakeAtTct(m, curTctHour)).length;
+  const coverage24h = compute24hCoverage(factionMembers);
 
   // If live key is connected, poll live faction telemetry
   useEffect(() => {
@@ -330,14 +343,17 @@ export default function OverviewPage() {
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
                 Faction Global Shift Radar
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span
+                  suppressHydrationWarning
+                  className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                >
                   {tctTimeStr}
                 </span>
               </h2>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
               <strong className="text-white font-mono">{awakeNowCount}</strong> of{" "}
-              <strong className="text-white font-mono">{DEMO_FACTION_TIMEZONES.length}</strong> roster members are active in their daytime window right now.
+              <strong className="text-white font-mono">{factionMembers.length}</strong> roster members are active in their daytime window right now.
             </p>
           </div>
         </div>

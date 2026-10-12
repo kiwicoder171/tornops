@@ -57,7 +57,7 @@ export function Header() {
           className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0e0e11] hover:bg-[#151519] border border-[#222225] hover:border-emerald-500/40 text-xs font-mono text-emerald-400 tabular-nums transition-colors"
         >
           <Clock className="w-3 h-3 text-emerald-400 animate-pulse" />
-          <span>{tctClock}</span>
+          <span suppressHydrationWarning>{tctClock}</span>
           <span className="text-[10px] text-zinc-500 font-semibold uppercase">TCT</span>
         </Link>
 

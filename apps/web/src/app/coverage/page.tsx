@@ -41,11 +41,29 @@ import {
 
 const STORAGE_KEY = "torn_faction_timezones_v1";
 
+function getMemberLocalTime(tz: string, fallbackOffset: number, date: Date): string {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  } catch {
+    const localHour = tctHourToLocalHour(date.getUTCHours(), fallbackOffset);
+    const ampm = localHour >= 12 ? "PM" : "AM";
+    const h12 = localHour % 12 === 0 ? 12 : localHour % 12;
+    return `${h12}:${date.getUTCMinutes().toString().padStart(2, "0")} ${ampm}`;
+  }
+}
+
 export default function FactionCoveragePage() {
   const { isLive, apiKey, userProfile } = useTorn();
 
   // Current real-time TCT Clock (UTC)
   const [now, setNow] = useState<Date>(new Date());
+  const [isNewMember, setIsNewMember] = useState(false);
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
@@ -236,6 +254,7 @@ export default function FactionCoveragePage() {
 
   // Open modal for current logged-in user
   const handleOpenSelfEdit = () => {
+    setIsNewMember(false);
     const myId = userProfile?.playerId || 4552150;
     const existing = members.find((m) => m.memberId === myId);
 
@@ -270,14 +289,43 @@ export default function FactionCoveragePage() {
 
   // Open modal for specific member (Leader edit or self)
   const handleOpenMemberEdit = (member: FactionMemberAvailability) => {
+    setIsNewMember(false);
     setEditingMember({ ...member });
+    setIsModalOpen(true);
+  };
+
+  // Open modal to add a brand new member (Leader action)
+  const handleOpenAddNewMember = () => {
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York";
+    const preset = GLOBAL_TIMEZONES_PRESET.find((p) => p.value === browserTz) || GLOBAL_TIMEZONES_PRESET[3];
+    const newMember: FactionMemberAvailability = {
+      memberId: Math.floor(4000000 + Math.random() * 900000),
+      name: "",
+      level: 50,
+      position: "Member",
+      timezone: preset.value,
+      timezoneLabel: preset.label,
+      utcOffset: preset.offset,
+      awakeStartLocal: 8,
+      awakeEndLocal: 23,
+      chainWatchStartTct: 12,
+      chainWatchEndTct: 18,
+      warPreference: "ALL",
+      ocReady: true,
+      ocPreferredTct: "12:00 - 18:00 TCT",
+      lastActionStatus: "Online",
+      inGameStatus: "Okay",
+      notes: "Faction member",
+    };
+    setEditingMember(newMember);
+    setIsNewMember(true);
     setIsModalOpen(true);
   };
 
   // Save member form
   const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingMember) return;
+    if (!editingMember || !editingMember.name.trim()) return;
 
     const exists = members.some((m) => m.memberId === editingMember.memberId);
     let updated: FactionMemberAvailability[];
@@ -290,6 +338,7 @@ export default function FactionCoveragePage() {
     saveRoster(updated);
     setIsModalOpen(false);
     setEditingMember(null);
+    setIsNewMember(false);
   };
 
   // Auto-detect timezone helper inside modal
@@ -345,7 +394,10 @@ export default function FactionCoveragePage() {
             <Clock className="w-4 h-4 text-emerald-400 animate-pulse" />
             <div className="flex flex-col">
               <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Torn City Time</span>
-              <span className="text-sm font-bold font-mono text-emerald-400 tabular-nums">
+              <span
+                suppressHydrationWarning
+                className="text-sm font-bold font-mono text-emerald-400 tabular-nums"
+              >
                 {tctTimeFormatted}
               </span>
             </div>
@@ -503,7 +555,7 @@ export default function FactionCoveragePage() {
         </div>
 
         {/* Hourly Heatmap Columns */}
-        <div className="grid grid-cols-6 sm:grid-cols-12 lg:grid-cols-24 gap-1.5 pt-2">
+        <div className="grid grid-cols-6 sm:grid-cols-12 xl:grid-cols-[repeat(24,minmax(0,1fr))] gap-1.5 pt-2">
           {coverageData.map((slot) => {
             const isCurrent = slot.hour === currentTctHour;
             const isSelected = selectedHourHighlight === slot.hour;
@@ -617,7 +669,7 @@ export default function FactionCoveragePage() {
           </div>
         </div>
 
-        {/* War Timing filter */}
+        {/* War Timing filter & Add Member */}
         <div className="flex items-center gap-2 text-xs">
           <span className="text-zinc-500 font-mono">War Pref:</span>
           <select
@@ -629,6 +681,16 @@ export default function FactionCoveragePage() {
             <option value="WEEKEND">Weekend Warriors</option>
             <option value="WEEKDAY">Weekday Fighters</option>
           </select>
+
+          {isLeader && (
+            <button
+              onClick={handleOpenAddNewMember}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-semibold transition-colors shrink-0"
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              <span>+ Add Member</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -659,13 +721,8 @@ export default function FactionCoveragePage() {
                   const isAwake = isMemberAwakeAtTct(member, currentTctHour);
                   const isOnChainDuty = isMemberOnChainWatchAtTct(member, currentTctHour);
 
-                  // Calculate member's local time string
-                  const memberLocalHour = tctHourToLocalHour(currentTctHour, member.utcOffset);
-                  const localAmPm = memberLocalHour >= 12 ? "PM" : "AM";
-                  const displayLocal12 = memberLocalHour % 12 === 0 ? 12 : memberLocalHour % 12;
-                  const localTimeString = `${displayLocal12}:${currentTctMinute
-                    .toString()
-                    .padStart(2, "0")} ${localAmPm}`;
+                  // Calculate member's local time string with exact timezone and DST accuracy
+                  const localTimeString = getMemberLocalTime(member.timezone, member.utcOffset, now);
 
                   // Convert awake local hours to TCT display string
                   const awakeStartTct = localHourToTctHour(member.awakeStartLocal, member.utcOffset);
@@ -730,7 +787,10 @@ export default function FactionCoveragePage() {
                           )}
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold font-mono text-white text-xs tabular-nums">
+                              <span
+                                suppressHydrationWarning
+                                className="font-bold font-mono text-white text-xs tabular-nums"
+                              >
                                 {localTimeString}
                               </span>
                               <span
@@ -845,7 +905,9 @@ export default function FactionCoveragePage() {
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-emerald-400" />
                 <h3 className="font-bold text-sm text-white">
-                  Configure Timezone & Availability: {editingMember.name}
+                  {isNewMember
+                    ? "Add Faction Member Availability"
+                    : `Configure Timezone & Availability: ${editingMember.name}`}
                 </h3>
               </div>
               <button
@@ -858,6 +920,43 @@ export default function FactionCoveragePage() {
 
             {/* Modal Form */}
             <form onSubmit={handleSaveModal} className="p-5 space-y-4">
+              {/* New Member Info Fields */}
+              {isNewMember && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-zinc-900/60 border border-zinc-800 rounded-lg">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-zinc-300">Player Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. ShadowViper"
+                      value={editingMember.name}
+                      onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-zinc-300">Player ID</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 4552150"
+                      value={editingMember.memberId || ""}
+                      onChange={(e) => setEditingMember({ ...editingMember, memberId: Number(e.target.value) })}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-zinc-300">Role / Position</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Enforcer"
+                      value={editingMember.position || ""}
+                      onChange={(e) => setEditingMember({ ...editingMember, position: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              )}
               {/* Auto-detect button */}
               <div className="p-3 bg-zinc-900/80 border border-zinc-800 rounded-lg flex items-center justify-between">
                 <div className="space-y-0.5">
