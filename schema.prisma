@@ -230,3 +230,25 @@ model TodoTask {
   @@index([status])
   @@index([factionWide])
 }
+
+model FactionSpy {
+  id          String   @id @default(uuid())
+  factionId   Int      // The friendly faction ID
+  playerId    Int      // Target player ID
+  name        String?
+  strength    Float?
+  defense     Float?
+  speed       Float?
+  dexterity   Float?
+  total       Float
+  fairFight   Float?
+  source      String   @default("MANUAL") // MANUAL, FACTION_SPY, TORNSTATS, FFSCOUTER
+  spiedBy     String?
+  timestamp   Int      // Unix timestamp in seconds
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([factionId, playerId])
+  @@index([factionId])
+  @@index([playerId])
+}

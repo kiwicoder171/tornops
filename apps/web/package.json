@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "@torn/api": "workspace:*",
     "@torn/shared": "workspace:*",
     "lucide-react": "^1.16.0",

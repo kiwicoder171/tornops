@@ -300,19 +300,76 @@ export default function WarRoomPage() {
     }
   }, [isLive]);
 
+  // Sync local spies to Supabase Faction Cloud (teammate sharing)
+  const syncToCloud = useCallback(
+    async (records: PlayerSpyData[]) => {
+      const factionId = userProfile?.factionId;
+      if (!factionId || records.length === 0) return;
+      try {
+        await fetch("/api/spies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ factionId, spies: records }),
+        });
+      } catch (e) {
+        console.warn("Background team cloud sync:", e);
+      }
+    },
+    [userProfile?.factionId]
+  );
+
   const saveSpyDb = useCallback(
     (newDb: Record<number, PlayerSpyData>) => {
       setSpies(newDb);
       try {
         if (isLive) {
           localStorage.setItem(USER_SPY_STORAGE_KEY, JSON.stringify(newDb));
+          // Auto-sync new spies to teammates via Faction Cloud
+          syncToCloud(Object.values(newDb));
         }
       } catch (e) {
         console.error("Failed saving spies to localStorage", e);
       }
     },
-    [isLive]
+    [isLive, syncToCloud]
   );
+
+  // Background hydration: Pull shared spies uploaded by other teammates
+  useEffect(() => {
+    const factionId = userProfile?.factionId;
+    if (!isLive || !factionId) return;
+
+    const pullCloudSpies = async () => {
+      try {
+        const res = await fetch(`/api/spies?factionId=${factionId}`);
+        const data = await res.json();
+        if (data.configured && Array.isArray(data.spies) && data.spies.length > 0) {
+          setSpies((prev) => {
+            const merged = { ...prev };
+            let hasNew = false;
+            for (const s of data.spies) {
+              if (!merged[s.playerId] || (merged[s.playerId].source !== "MANUAL" && s.timestamp > (merged[s.playerId].timestamp || 0))) {
+                merged[s.playerId] = s;
+                hasNew = true;
+              }
+            }
+            if (hasNew && typeof window !== "undefined") {
+              try {
+                localStorage.setItem(USER_SPY_STORAGE_KEY, JSON.stringify(merged));
+              } catch {}
+            }
+            return merged;
+          });
+        }
+      } catch {
+        // Fallback gracefully if Supabase is still connecting
+      }
+    };
+
+    pullCloudSpies();
+    const interval = setInterval(pullCloudSpies, 30000); // Check for teammate updates every 30s
+    return () => clearInterval(interval);
+  }, [isLive, userProfile?.factionId]);
 
   // 2. Update Countdown Timer every second when war is in DECLARED stage
   useEffect(() => {
