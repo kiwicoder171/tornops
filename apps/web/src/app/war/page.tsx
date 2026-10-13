@@ -731,31 +731,64 @@ export default function WarRoomPage() {
   const handleFetchFFScouter = async () => {
     if (!apiKey || enemyTargets.length === 0) return;
     setIsSyncingFFScouter(true);
+    setSyncStatusMsg({ text: "Querying FFScouter combat radar network for enemy targets...", type: "info" });
     try {
-      const ids = enemyTargets.map((e) => e.id).slice(0, 50).join(",");
-      const res = await fetch(`/api/ffscouter?key=${encodeURIComponent(apiKey)}&targets=${encodeURIComponent(ids)}`);
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        const newDb = { ...spies };
-        for (const item of data) {
-          if (item.player_id && item.bs_estimate) {
-            const existing = newDb[item.player_id];
-            if (!existing || existing.source === "FFSCOUTER") {
-              newDb[item.player_id] = {
-                playerId: item.player_id,
-                total: item.bs_estimate,
-                fairFight: item.fair_fight,
+      const allIds = enemyTargets.map((e) => e.id);
+      let count = 0;
+      const newDb = { ...spies };
+      let hasError: string | null = null;
+
+      // Query in batches of 50
+      for (let i = 0; i < allIds.length; i += 50) {
+        const chunk = allIds.slice(i, i + 50).join(",");
+        const res = await fetch(`/api/ffscouter?key=${encodeURIComponent(apiKey)}&targets=${encodeURIComponent(chunk)}`);
+        const data = await res.json();
+
+        if (data?.error) {
+          hasError = data.error;
+          break;
+        }
+
+        if (Array.isArray(data)) {
+          for (const item of data) {
+            const pid = Number(item.player_id);
+            if (pid && item.bs_estimate) {
+              newDb[pid] = {
+                playerId: pid,
+                total: Number(item.bs_estimate),
+                fairFight: item.fair_fight ? Number(item.fair_fight) : undefined,
                 source: "FFSCOUTER",
                 spiedBy: "FFScouter Radar",
                 timestamp: item.last_updated || Math.floor(Date.now() / 1000),
               };
+              count++;
             }
           }
         }
-        saveSpyDb(newDb);
       }
-    } catch (err) {
-      console.error("FFScouter fetch error:", err);
+
+      if (hasError) {
+        if (hasError.toLowerCase().includes("sign up at ffscouter.com") || hasError.toLowerCase().includes("invalid api key")) {
+          setSyncStatusMsg({
+            text: "Free Activation Needed: Visit ffscouter.com, enter your Torn API key once (100% free), then click FFScouter Radar again!",
+            type: "error",
+          });
+        } else {
+          setSyncStatusMsg({
+            text: `FFScouter error: ${hasError}`,
+            type: "error",
+          });
+        }
+      } else {
+        saveSpyDb(newDb);
+        setSyncStatusMsg({
+          text: `Success! Synced ${count} combat radar estimates directly into your War Room.`,
+          type: "success",
+        });
+        setTimeout(() => setSyncStatusMsg(null), 5000);
+      }
+    } catch (err: any) {
+      setSyncStatusMsg({ text: "Failed to connect to FFScouter proxy.", type: "error" });
     } finally {
       setIsSyncingFFScouter(false);
     }
@@ -1059,6 +1092,48 @@ export default function WarRoomPage() {
               <span>Batch Paste Spies</span>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Synchronized Intel Status Notification */}
+      {syncStatusMsg && (
+        <div
+          className={`p-3.5 rounded-xl text-xs flex items-center justify-between border transition-all ${
+            syncStatusMsg.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+              : syncStatusMsg.type === "error"
+              ? "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              : "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {syncStatusMsg.type === "success" ? (
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : syncStatusMsg.type === "error" ? (
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            ) : (
+              <Radar className="w-4 h-4 text-cyan-400 animate-spin shrink-0" />
+            )}
+            <div className="leading-relaxed">
+              <span>{syncStatusMsg.text}</span>
+              {syncStatusMsg.text.includes("ffscouter.com") && (
+                <a
+                  href="https://ffscouter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 font-bold underline text-cyan-400 hover:text-cyan-300"
+                >
+                  Open ffscouter.com &rarr;
+                </a>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setSyncStatusMsg(null)}
+            className="text-slate-400 hover:text-white p-1 ml-3 rounded"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
