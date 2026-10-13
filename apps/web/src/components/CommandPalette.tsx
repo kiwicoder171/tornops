@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Command,
   Globe,
+  BookOpen,
 } from "lucide-react";
 
 interface PaletteItem {
@@ -54,6 +55,7 @@ const ITEMS: PaletteItem[] = [
   { id: "todo", title: "Faction Task Board", category: "CITIZEN", icon: CheckSquare, href: "/todo" },
 
   // Access
+  { id: "docs", title: "User Manual, Documentation & Changelog Hub", category: "ACCESS", icon: BookOpen, href: "/docs" },
   { id: "pricing", title: "Open Access & Roadmap (100% Free)", category: "ACCESS", icon: Zap, href: "/pricing" },
   { id: "settings", title: "System Settings & Key Pool", category: "ACCESS", icon: Settings, href: "/settings" },
 

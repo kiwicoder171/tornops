@@ -23,6 +23,7 @@ import {
   Tag,
   Globe,
   X,
+  BookOpen,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 import { formatChainTime } from "@torn/shared";
@@ -72,6 +73,7 @@ const navSections: NavSection[] = [
   {
     title: "SYSTEM & SETTINGS",
     items: [
+      { name: "User Manual & Docs", href: "/docs", icon: BookOpen, badge: "GUIDE", badgeVariant: "emerald" },
       { name: "Free Access & Roadmap", href: "/pricing", icon: Tag },
       { name: "Settings & API Keys", href: "/settings", icon: Settings },
     ],
