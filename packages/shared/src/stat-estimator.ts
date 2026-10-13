@@ -300,7 +300,7 @@ export function parseSpyReportText(input: string): Partial<PlayerSpyData> | null
 
   // Find Player Name
   const nameMatch = clean.match(/^([a-zA-Z0-9_\-\s]{2,20})\s*(?:\[|\()/);
-  const name = nameMatch ? nameMatch[1].trim() : undefined;
+  let name = nameMatch ? nameMatch[1].trim() : undefined;
 
   const extractNumber = (patterns: RegExp[]): number | undefined => {
     for (const p of patterns) {
@@ -359,6 +359,33 @@ export function parseSpyReportText(input: string): Partial<PlayerSpyData> | null
       else if (unit === "b") val *= 1_000_000_000;
       else if (unit === "t") val *= 1_000_000_000_000;
       total = Math.round(val);
+    }
+  }
+
+  // Support rows copied directly from tabular tools (e.g. Leader's Secret Tool / spreadsheets)
+  // Format examples: "PlayerName 9 416 2d", "PlayerName [12345] 416", "PlayerName 251k", "12345 416"
+  if (!total) {
+    const tokens = clean.split(/[\t\s]+/);
+    if (tokens.length >= 2) {
+      for (const token of tokens.slice(1)) {
+        const tokenMatch = token.match(/^([\d.]+)([kmbt])?$/i);
+        if (tokenMatch) {
+          let val = parseFloat(tokenMatch[1]);
+          const unit = tokenMatch[2]?.toLowerCase();
+          if (unit) {
+            const mult = unit === "k" ? 1e3 : unit === "m" ? 1e6 : unit === "b" ? 1e9 : 1e12;
+            total = Math.round(val * mult);
+            break;
+          } else if (val >= 50 && !["2d", "3d", "4d", "5d", "6d", "7d", "1w", "2w"].includes(token.toLowerCase())) {
+            // Stat value >= 50 (ignoring small level indices if separate)
+            total = Math.round(val);
+            break;
+          }
+        }
+      }
+      if (!name && !tokens[0].match(/^\d+$/)) {
+        name = tokens[0];
+      }
     }
   }
 

@@ -1663,14 +1663,14 @@ export default function WarRoomPage() {
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Paste multi-line spy dumps from Discord war channels or faction bots. TornOps will automatically extract Player IDs, names, and stat values.
+              Paste multi-line spy dumps from Discord, faction bots, spreadsheets, or your Leader&apos;s intel tool. TornOps automatically matches Player IDs, names, and stat numbers.
             </p>
 
             <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
-              <div className="text-slate-300 font-semibold text-[10px] uppercase">Supported Examples:</div>
-              <div>NightStalker [4440528] Total: 210M</div>
-              <div>ShadowBane [4102931] Str: 14M Def: 12M Spd: 18M Dex: 10M (54M)</div>
-              <div>[3912048] 85,000,000 BS</div>
+              <div className="text-slate-300 font-semibold text-[10px] uppercase">Supported Formats:</div>
+              <div>&bull; Leader Tool: <span className="text-cyan-400">NightStalker 9 416 2d</span> or <span className="text-cyan-400">Valkyrie 251k</span></div>
+              <div>&bull; Discord / Bots: <span className="text-emerald-400">Apex [98765] Total: 250M</span></div>
+              <div>&bull; Breakdown: <span className="text-amber-400">Shadow [123] Str: 14M Def: 12M Spd: 18M Dex: 10M</span></div>
             </div>
 
             <textarea
