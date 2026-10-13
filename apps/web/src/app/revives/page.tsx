@@ -338,7 +338,7 @@ export default function ReviveDispatchPage() {
       </div>
 
       {/* Triage Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
           <div className="flex items-center justify-between text-xs text-[#a1a1aa] mb-1">
             <span>In Hospital Waiting</span>
@@ -381,11 +381,11 @@ export default function ReviveDispatchPage() {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex items-center justify-between border-b border-[#222225] pb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#222225] pb-2">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
           <button
             onClick={() => setActiveTab("queue")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shrink-0 ${
               activeTab === "queue"
                 ? "bg-[#1f1f23] text-white border border-[#3f3f46]"
                 : "text-[#a1a1aa] hover:text-white"
@@ -396,7 +396,7 @@ export default function ReviveDispatchPage() {
           </button>
           <button
             onClick={() => setActiveTab("revivers")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shrink-0 ${
               activeTab === "revivers"
                 ? "bg-[#1f1f23] text-white border border-[#3f3f46]"
                 : "text-[#a1a1aa] hover:text-white"
@@ -407,7 +407,7 @@ export default function ReviveDispatchPage() {
           </button>
           <button
             onClick={() => setActiveTab("payouts")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shrink-0 ${
               activeTab === "payouts"
                 ? "bg-[#1f1f23] text-white border border-[#3f3f46]"
                 : "text-[#a1a1aa] hover:text-white"
@@ -419,7 +419,7 @@ export default function ReviveDispatchPage() {
         </div>
 
         {activeTab === "queue" && (
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 text-[#71717a] absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               id="reviveSearch"
@@ -708,8 +708,8 @@ export default function ReviveDispatchPage() {
 
       {/* Modal: Request Priority Revive */}
       {showRequestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#0d0d0f] border border-[#27272a] rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#0d0d0f] border border-[#27272a] rounded-xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400">
                 <HeartPulse className="w-5 h-5" />

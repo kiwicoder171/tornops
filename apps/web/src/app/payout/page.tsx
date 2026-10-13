@@ -288,11 +288,11 @@ export default function PayoutCalculatorPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-950/70 text-slate-400 uppercase tracking-wider border-b border-slate-800 text-[11px]">
               <tr>
-                <th className="px-4 py-3 font-medium">Fighter</th>
-                <th className="px-4 py-3 font-medium">Attacks Landed</th>
-                <th className="px-4 py-3 font-medium">War Score</th>
-                <th className="px-4 py-3 font-medium">Pool Share (%)</th>
-                <th className="px-4 py-3 font-medium text-right">Calculated Payout ($)</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Fighter</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Attacks Landed</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">War Score</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Pool Share (%)</th>
+                <th className="px-4 py-3 font-medium text-right whitespace-nowrap">Calculated Payout ($)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
@@ -305,7 +305,7 @@ export default function PayoutCalculatorPage() {
               ) : (
                 payouts.map((m) => (
                   <tr key={m.playerId} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-white flex items-center gap-2">
+                    <td className="px-4 py-3 font-medium text-white flex items-center gap-2 whitespace-nowrap">
                       <span>{m.playerName}</span>
                       <span className="text-slate-500 font-mono tabular-nums">[{m.playerId}]</span>
                       {m.playerId === 4430788 && (
@@ -314,10 +314,10 @@ export default function PayoutCalculatorPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-emerald-400 font-bold tabular-nums">{m.attacks} hits</td>
-                    <td className="px-4 py-3 font-mono text-blue-400 font-medium tabular-nums">{m.score}</td>
-                    <td className="px-4 py-3 font-mono text-slate-300 tabular-nums">{m.sharePct}%</td>
-                    <td className="px-4 py-3 font-mono font-bold text-emerald-400 text-right tabular-nums">
+                    <td className="px-4 py-3 font-mono text-emerald-400 font-bold tabular-nums whitespace-nowrap">{m.attacks} hits</td>
+                    <td className="px-4 py-3 font-mono text-blue-400 font-medium tabular-nums whitespace-nowrap">{m.score}</td>
+                    <td className="px-4 py-3 font-mono text-slate-300 tabular-nums whitespace-nowrap">{m.sharePct}%</td>
+                    <td className="px-4 py-3 font-mono font-bold text-emerald-400 text-right tabular-nums whitespace-nowrap">
                       ${m.finalPayout.toLocaleString()}
                     </td>
                   </tr>

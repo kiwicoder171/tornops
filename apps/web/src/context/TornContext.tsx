@@ -29,6 +29,9 @@ interface TornContextType {
   error: string | null;
   saveApiKey: (key: string) => Promise<boolean>;
   disconnect: () => void;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: (open: boolean) => void;
+  toggleMobileSidebar: () => void;
 }
 
 const TornContext = createContext<TornContextType | undefined>(undefined);
@@ -41,6 +44,9 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
   const [isLive, setIsLive] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+
+  const toggleMobileSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
 
   // Validate and load profile from an API key
   const validateAndLoad = async (key: string): Promise<boolean> => {
@@ -154,6 +160,9 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
         error,
         saveApiKey,
         disconnect,
+        isMobileSidebarOpen,
+        setIsMobileSidebarOpen,
+        toggleMobileSidebar,
       }}
     >
       {children}

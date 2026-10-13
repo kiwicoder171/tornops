@@ -22,6 +22,7 @@ import {
   Plane,
   Tag,
   Globe,
+  X,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 import { formatChainTime } from "@torn/shared";
@@ -78,12 +79,28 @@ const navSections: NavSection[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isLive, apiKey, userProfile } = useTorn();
+  const { isLive, apiKey, userProfile, isMobileSidebarOpen, setIsMobileSidebarOpen } = useTorn();
 
   // Persistent live chain ticker in sidebar
   const [chainCount, setChainCount] = useState<number>(0);
   const [chainTimeout, setChainTimeout] = useState<number>(0);
   const [chainMax, setChainMax] = useState<number>(10);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [pathname, setIsMobileSidebarOpen]);
+
+  // Close mobile sidebar on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isMobileSidebarOpen) {
+        setIsMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileSidebarOpen, setIsMobileSidebarOpen]);
 
   useEffect(() => {
     if (!isLive || !apiKey) {
@@ -143,11 +160,15 @@ export function Sidebar() {
     }
   };
 
-  return (
-    <aside className="w-60 bg-[#08080a] border-r border-[#1a1a1d] flex flex-col h-screen sticky top-0 select-none z-40">
+  const renderContent = (isMobile: boolean) => (
+    <div className="flex flex-col h-full">
       {/* Brand Header */}
       <div className="px-4 py-3.5 border-b border-[#1a1a1d] flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link
+          href="/"
+          onClick={() => isMobile && setIsMobileSidebarOpen(false)}
+          className="flex items-center gap-2 group"
+        >
           <div className="w-6 h-6 rounded-md bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 group-hover:border-blue-500/40 transition-colors">
             <Shield className="w-3.5 h-3.5" />
           </div>
@@ -157,9 +178,20 @@ export function Sidebar() {
           </div>
         </Link>
 
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-zinc-400 bg-[#121215] border border-[#222225] shrink-0">
-          {userProfile?.factionId ? `#${userProfile.factionId}` : "#57693"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-zinc-400 bg-[#121215] border border-[#222225] shrink-0">
+            {userProfile?.factionId ? `#${userProfile.factionId}` : "#57693"}
+          </span>
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="p-1.5 text-zinc-400 hover:text-white hover:bg-[#16161a] rounded-md transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Categorized Navigation List */}
@@ -168,7 +200,8 @@ export function Sidebar() {
         <div className="pb-1.5 border-b border-[#18181b]">
           <Link
             href="/"
-            className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors duration-100 ${
+            onClick={() => isMobile && setIsMobileSidebarOpen(false)}
+            className={`group flex items-center justify-between px-2.5 py-2 rounded-md text-xs transition-colors duration-100 ${
               pathname === "/"
                 ? "bg-[#151519] text-white font-medium border border-[#26262b] shadow-sm"
                 : "text-zinc-400 hover:text-zinc-200 hover:bg-[#101013] border border-transparent"
@@ -199,7 +232,8 @@ export function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors duration-100 ${
+                  onClick={() => isMobile && setIsMobileSidebarOpen(false)}
+                  className={`group flex items-center justify-between px-2.5 py-2 rounded-md text-xs transition-colors duration-100 ${
                     isActive
                       ? "bg-[#151519] text-white font-medium border border-[#26262b] shadow-sm"
                       : "text-zinc-400 hover:text-zinc-200 hover:bg-[#101013] border border-transparent"
@@ -234,6 +268,7 @@ export function Sidebar() {
       <div className="p-2.5 border-t border-[#1a1a1d] bg-[#08080a]">
         <Link
           href="/war"
+          onClick={() => isMobile && setIsMobileSidebarOpen(false)}
           className={`block p-2 rounded-md border transition-all ${
             isEmergency
               ? "bg-red-950/20 border-red-500/40 text-red-200"
@@ -291,7 +326,11 @@ export function Sidebar() {
             <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
             {isLive ? "Live API" : "Demo Mode"}
           </span>
-          <Link href="/pricing" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+          <Link
+            href="/pricing"
+            onClick={() => isMobile && setIsMobileSidebarOpen(false)}
+            className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+          >
             100% Free Access
           </Link>
         </div>
@@ -307,6 +346,32 @@ export function Sidebar() {
           </a>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden lg:flex w-60 bg-[#08080a] border-r border-[#1a1a1d] flex-col h-screen sticky top-0 select-none z-30 shrink-0">
+        {renderContent(false)}
+      </aside>
+
+      {/* Mobile / Tablet Drawer Overlay & Panel */}
+      {isMobileSidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Panel */}
+          <aside className="relative w-72 max-w-[85vw] bg-[#08080a] border-r border-[#1a1a1d] flex flex-col h-full z-50 shadow-2xl animate-in slide-in-from-left duration-200 select-none">
+            {renderContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

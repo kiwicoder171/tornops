@@ -403,7 +403,7 @@ export default function EnemyHeatmapPage() {
             Awaiting target faction scan. Enter an Opponent Faction ID above to calculate 24-hour activity distribution and sleep windows.
           </div>
         ) : (
-          <div className="grid grid-cols-12 md:grid-cols-24 gap-1.5 py-2">
+          <div className="grid grid-cols-6 sm:grid-cols-12 md:grid-cols-24 gap-1 sm:gap-1.5 py-2">
             {mockHourlyOnlineRates.map((h, i) => {
               const isPushGolden = h.rate <= 20;
               const isPeak = h.rate >= 75;
@@ -419,7 +419,7 @@ export default function EnemyHeatmapPage() {
               return (
                 <div
                   key={h.hour}
-                  className={`flex flex-col items-center justify-between p-2 rounded border text-center transition-all hover:scale-105 cursor-pointer ${bgClass}`}
+                  className={`flex flex-col items-center justify-between p-1 sm:p-2 rounded border text-center transition-all hover:scale-105 cursor-pointer ${bgClass}`}
                   title={`Hour: ${h.hour} TCT - Active: ${h.rate}%`}
                 >
                   <span className="text-[9px] font-mono font-bold">{h.hour.slice(0, 2)}h</span>
@@ -492,13 +492,13 @@ export default function EnemyHeatmapPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#121215] text-[10px] font-mono text-zinc-400 uppercase tracking-wider border-b border-[#1f1f23]">
               <tr>
-                <th className="py-2.5 px-3">Enemy Target</th>
-                <th className="py-2.5 px-3">Level</th>
-                <th className="py-2.5 px-3">Est. Timezone</th>
-                <th className="py-2.5 px-3">Live Status</th>
-                <th className="py-2.5 px-3">Last Seen</th>
-                <th className="py-2.5 px-3">Fair Fight (FF)</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Enemy Target</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Level</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Est. Timezone</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Live Status</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Last Seen</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Fair Fight (FF)</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#18181c] text-zinc-300">
@@ -522,15 +522,15 @@ export default function EnemyHeatmapPage() {
               ) : (
                 filteredRoster.map((target) => (
                 <tr key={target.id} className="hover:bg-[#141418] transition-colors">
-                  <td className="py-3 px-3">
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <div className="font-semibold text-white flex items-center gap-1.5">
                       <span>{target.name}</span>
                       <span className="text-[10px] font-mono text-zinc-500">[{target.id}]</span>
                     </div>
                   </td>
-                  <td className="py-3 px-3 font-mono font-bold text-zinc-200">{target.level}</td>
-                  <td className="py-3 px-3 text-zinc-400">{target.timezone}</td>
-                  <td className="py-3 px-3">
+                  <td className="py-3 px-3 font-mono font-bold text-zinc-200 whitespace-nowrap">{target.level}</td>
+                  <td className="py-3 px-3 text-zinc-400 whitespace-nowrap">{target.timezone}</td>
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                         target.status === "DEEP SLEEP"
@@ -546,9 +546,9 @@ export default function EnemyHeatmapPage() {
                       {target.status}
                     </span>
                   </td>
-                  <td className="py-3 px-3 font-mono text-zinc-400">{target.lastAction}</td>
-                  <td className="py-3 px-3 font-mono font-bold text-amber-400">{target.ffMultiplier}</td>
-                  <td className="py-3 px-3 text-right">
+                  <td className="py-3 px-3 font-mono text-zinc-400 whitespace-nowrap">{target.lastAction}</td>
+                  <td className="py-3 px-3 font-mono font-bold text-amber-400 whitespace-nowrap">{target.ffMultiplier}</td>
+                  <td className="py-3 px-3 text-right whitespace-nowrap">
                     <a
                       href={`https://www.torn.com/loader.php?sid=attack&user2ID=${target.id}`}
                       target="_blank"

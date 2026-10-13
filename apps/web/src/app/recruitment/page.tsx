@@ -262,7 +262,7 @@ Drop an application or message me if you'd like an invite!`;
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <button
                   onClick={() => setActiveMessageModal(c)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-300 text-xs font-semibold transition-colors"
@@ -298,8 +298,8 @@ Drop an application or message me if you'd like an invite!`;
 
       {/* 1-Click Message Modal */}
       {activeMessageModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-lg w-full p-4 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#222226] pb-3">
               <div className="flex items-center gap-2 text-white font-bold text-sm">
                 <MessageSquare className="w-4 h-4 text-blue-400" />
@@ -320,7 +320,7 @@ Drop an application or message me if you'd like an invite!`;
               className="w-full bg-black border border-[#26262a] rounded-lg p-3 text-xs text-zinc-200 font-mono leading-relaxed resize-none focus:outline-none"
             />
 
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
               <span className="text-[11px] text-zinc-400">
                 Includes your faction link & perks automatically.
               </span>

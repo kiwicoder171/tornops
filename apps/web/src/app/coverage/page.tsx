@@ -432,7 +432,7 @@ export default function FactionCoveragePage() {
       </div>
 
       {/* Summary Vitals Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Awake Right Now */}
         <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 hover:border-emerald-500/40 transition-colors">
           <div className="flex items-center justify-between text-zinc-400 mb-1.5">
@@ -718,13 +718,13 @@ export default function FactionCoveragePage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-zinc-900/70 border-b border-zinc-800/80 text-zinc-400 font-mono uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="px-4 py-3">Member & Position</th>
-                <th className="px-4 py-3">Timezone & Local Clock</th>
-                <th className="px-4 py-3">Awake Hours (TCT)</th>
-                <th className="px-4 py-3">Chain Watch Duty (TCT)</th>
-                <th className="px-4 py-3">War Preference</th>
-                <th className="px-4 py-3">OC 2.0</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 whitespace-nowrap">Member & Position</th>
+                <th className="px-4 py-3 whitespace-nowrap">Timezone & Local Clock</th>
+                <th className="px-4 py-3 whitespace-nowrap">Awake Hours (TCT)</th>
+                <th className="px-4 py-3 whitespace-nowrap">Chain Watch Duty (TCT)</th>
+                <th className="px-4 py-3 whitespace-nowrap">War Preference</th>
+                <th className="px-4 py-3 whitespace-nowrap">OC 2.0</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/60 font-sans">
@@ -927,10 +927,10 @@ export default function FactionCoveragePage() {
 
       {/* Edit / Self-Service Modal */}
       {isModalOpen && editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#0f0f12] border border-zinc-800 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-[#0f0f12] border border-zinc-800 rounded-xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-emerald-400" />
                 <h3 className="font-bold text-sm text-white">
@@ -948,7 +948,7 @@ export default function FactionCoveragePage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSaveModal} className="p-5 space-y-4">
+            <form onSubmit={handleSaveModal} className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
               {/* New Member Info Fields */}
               {isNewMember && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-zinc-900/60 border border-zinc-800 rounded-lg">

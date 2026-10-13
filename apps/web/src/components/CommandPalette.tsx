@@ -121,9 +121,13 @@ export function CommandPalette() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-24 p-4 animate-in fade-in">
+    <div
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-10 sm:pt-20 p-3 sm:p-4 animate-in fade-in"
+      onClick={() => setIsOpen(false)}
+    >
       <div
         className="bg-[#0e0e11] border border-[#222225] rounded-xl max-w-xl w-full shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
         onKeyDown={handleListKeyDown}
       >
         {/* Search Input Bar */}

@@ -455,13 +455,13 @@ export default function TravelPage() {
 
       {/* Flight Parameters & Capacity Bar */}
       <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225] flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
             <span className="text-[#a1a1aa]">Your Carry Capacity:</span>
             <span className="font-mono font-bold text-white bg-[#141416] px-2.5 py-1 rounded border border-[#27272a]">
               {carryCapacity} items
             </span>
-            <span className="text-[11px] text-[#71717a]">(Suitcase + Faction Excursion)</span>
+            <span className="text-[11px] text-[#71717a] hidden sm:inline">(Suitcase + Faction Excursion)</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -486,26 +486,26 @@ export default function TravelPage() {
 
       {/* Filter Tabs & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#222225] pb-2">
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
           {(["ALL", "PLUSHIE", "FLOWER", "DRUG"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                 filterType === t
                   ? "bg-[#1f1f23] text-white border border-[#3f3f46]"
                   : "text-[#a1a1aa] hover:text-white"
               }`}
             >
               {t === "ALL" && "All Overseas Destinations"}
-              {t === "PLUSHIE" && "🧸 Plushies Only"}
-              {t === "FLOWER" && "🌸 Flowers Only"}
+              {t === "PLUSHIE" && "🧸 Plushies"}
+              {t === "FLOWER" && "🌸 Flowers"}
               {t === "DRUG" && "💊 Drugs (Xanax)"}
             </button>
           ))}
         </div>
 
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
           <Search className="w-3.5 h-3.5 text-[#71717a] absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input
             id="travelSearch"

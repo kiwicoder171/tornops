@@ -278,7 +278,7 @@ Thanks!`;
               </p>
             </div>
 
-            <div className="relative">
+            <div className="relative w-full sm:w-56">
               <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 id="armorySearch"
@@ -288,13 +288,13 @@ Thanks!`;
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search member or item..."
-                className="bg-black border border-[#27272a] pl-8 pr-3 py-1.5 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 w-56"
+                className="bg-black border border-[#27272a] pl-8 pr-3 py-1.5 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 w-full"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs whitespace-nowrap">
               <thead className="bg-[#121215] text-[10px] font-mono text-zinc-400 uppercase tracking-wider border-b border-[#1f1f23]">
                 <tr>
                   <th className="py-2.5 px-3">Borrower</th>
@@ -376,7 +376,7 @@ Thanks!`;
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs whitespace-nowrap">
               <thead className="bg-[#121215] text-[10px] font-mono text-zinc-400 uppercase tracking-wider border-b border-[#1f1f23]">
                 <tr>
                   <th className="py-2.5 px-3">Faction Member</th>
@@ -446,8 +446,8 @@ Thanks!`;
 
       {/* Recall Message Modal */}
       {selectedRecall && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#222226] pb-3">
               <div className="flex items-center gap-2 text-white font-bold text-sm">
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -455,7 +455,7 @@ Thanks!`;
               </div>
               <button
                 onClick={() => setSelectedRecall(null)}
-                className="text-zinc-500 hover:text-white text-xs font-mono"
+                className="text-zinc-500 hover:text-white text-xs font-mono p-1"
               >
                 ✕ Close
               </button>
@@ -463,19 +463,19 @@ Thanks!`;
 
             <textarea
               readOnly
-              rows={9}
+              rows={8}
               value={getRecallMessage(selectedRecall)}
               className="w-full bg-black border border-[#26262a] rounded-lg p-3 text-xs text-zinc-200 font-mono leading-relaxed resize-none focus:outline-none"
             />
 
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
               <span className="text-[11px] text-zinc-400">
                 Directs member to armory return tab.
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button
                   onClick={() => handleCopyRecall(selectedRecall)}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   {copiedRecall ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedRecall ? "Copied!" : "Copy Notice"}</span>
@@ -484,7 +484,7 @@ Thanks!`;
                   href={`https://www.torn.com/messages.php#/p=compose&XID=${selectedRecall.memberId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 bg-[#1c1c22] hover:bg-[#282830] text-zinc-200 border border-[#2e2e36] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-2 bg-[#1c1c22] hover:bg-[#282830] text-zinc-200 border border-[#2e2e36] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>Send on Torn</span>

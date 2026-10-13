@@ -342,10 +342,10 @@ export default function LevelingTargetsPage() {
         {/* Filters */}
         <div className="flex items-center flex-wrap gap-2">
           {/* Status Filter */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 p-0.5 rounded-lg">
+          <div className="flex items-center flex-wrap sm:flex-nowrap bg-slate-950 border border-slate-800 p-0.5 rounded-lg w-full sm:w-auto">
             <button
               onClick={() => setStatusFilter("ALL")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial px-2 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-colors ${
                 statusFilter === "ALL" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-white"
               }`}
             >
@@ -353,27 +353,27 @@ export default function LevelingTargetsPage() {
             </button>
             <button
               onClick={() => setStatusFilter("OKAY")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`flex-1 sm:flex-initial px-2 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
                 statusFilter === "OKAY" ? "bg-emerald-600/30 text-emerald-300 font-semibold" : "text-slate-400 hover:text-emerald-400"
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Available Only
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" /> Available
             </button>
             <button
               onClick={() => setStatusFilter("HOSPITAL")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`flex-1 sm:flex-initial px-2 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
                 statusFilter === "HOSPITAL" ? "bg-red-600/30 text-red-300 font-semibold" : "text-slate-400 hover:text-red-400"
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400" /> In Hospital
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" /> Hospital
             </button>
             <button
               onClick={() => setStatusFilter("TRAVELING")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`flex-1 sm:flex-initial px-2 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
                 statusFilter === "TRAVELING" ? "bg-blue-600/30 text-blue-300 font-semibold" : "text-slate-400 hover:text-blue-400"
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" /> Traveling
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" /> Traveling
             </button>
           </div>
 

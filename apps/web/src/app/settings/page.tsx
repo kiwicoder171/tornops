@@ -115,7 +115,7 @@ export default function SettingsPage() {
 
         <div className="divide-y divide-slate-800">
           {keys.map((k) => (
-            <div key={k.id} className="p-4 flex items-center justify-between">
+            <div key={k.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-slate-800 text-slate-300 rounded-lg">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -131,7 +131,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-end gap-4">
                 <span className="text-xs font-mono text-slate-400">
                   {k.callsLastMinute} req / min
                 </span>

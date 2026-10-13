@@ -32,3 +32,6 @@ Thumbs.db
 .agents/
 skills-lock.json
 
+# Local artifacts
+brag-output/
+
