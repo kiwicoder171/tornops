@@ -1,6 +1,7 @@
 export interface BattleStatEstimate {
   min: number;
   max: number;
+  pointEstimate: number;
   label: string;
   tier: "UNDERDOG" | "ROOKIE" | "MID_TIER" | "WAR_READY" | "HEAVY" | "APEX" | "TITAN";
   color: string;
@@ -16,53 +17,152 @@ export interface PlayerSpyData {
   dexterity?: number;
   total?: number;
   timestamp: number; // Unix timestamp in seconds
-  source: "TORNSTATS" | "FACTION_SPY" | "MANUAL" | "FAIR_FIGHT";
+  source: "TORNSTATS" | "FACTION_SPY" | "MANUAL" | "FAIR_FIGHT" | "FFSCOUTER";
   spiedBy?: string;
+  fairFight?: number;
 }
 
 /**
- * Formats large stat numbers into readable gaming abbreviations (e.g. 155.4M, 1.25B)
+ * Formats stat numbers into clean readable gaming units (e.g. 416, 1.46k, 21.3k, 102k, 251k, 15.4M)
  */
 export function formatStatNumber(num: number): string {
   if (num >= 1_000_000_000_000) {
-    return `${(num / 1_000_000_000_000).toFixed(2)}T`;
+    return `${(num / 1_000_000_000_000).toFixed(2)}t`;
   }
   if (num >= 1_000_000_000) {
-    return `${(num / 1_000_000_000).toFixed(2)}B`;
+    return `${(num / 1_000_000_000).toFixed(2)}b`;
   }
   if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(1)}M`;
+    const val = num / 1_000_000;
+    return val >= 100 ? `${Math.round(val)}m` : `${val.toFixed(1)}m`;
+  }
+  if (num >= 100_000) {
+    return `${Math.round(num / 1_000)}k`;
+  }
+  if (num >= 10_000) {
+    const val = num / 1_000;
+    return val % 1 === 0 ? `${val.toFixed(0)}k` : `${val.toFixed(1)}k`;
   }
   if (num >= 1_000) {
-    return `${(num / 1_000).toFixed(0)}k`;
+    const val = num / 1_000;
+    return `${val.toFixed(2).replace(/\.?0+$/, "")}k`;
   }
-  return num.toLocaleString();
+  return Math.round(num).toString();
 }
 
 /**
  * Algorithmic Battle Stat Estimator
- * Uses level, estimated training curve, and combat thresholds to estimate stat ranges.
+ * Uses level power-law gym progression curve and combat thresholds to estimate sharp point stats.
  */
 export function estimateBattleStats(level: number, ageDays: number = 365): BattleStatEstimate {
-  // Torn level-to-stat heuristic curve
-  if (level <= 15) {
+  // Torn level-to-stat heuristic curve calibrated against Torn gym milestones
+  if (level <= 1) {
     return {
-      min: 5_000,
-      max: 150_000,
-      label: "Under 150k",
+      min: 50,
+      max: 200,
+      pointEstimate: 100,
+      label: "~100",
       tier: "UNDERDOG",
       color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
       badge: "VERY LOW STATS",
     };
   }
 
-  if (level <= 25) {
-    const min = Math.max(100_000, level * 20_000);
-    const max = Math.min(2_500_000, Math.max(min * 3, ageDays * 3_000));
+  if (level === 2) {
     return {
-      min,
-      max,
-      label: `${formatStatNumber(min)} – ${formatStatNumber(max)}`,
+      min: 150,
+      max: 400,
+      pointEstimate: 260,
+      label: "~260",
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level === 3) {
+    return {
+      min: 250,
+      max: 600,
+      pointEstimate: 416,
+      label: "~416",
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level === 4) {
+    return {
+      min: 400,
+      max: 1_000,
+      pointEstimate: 676,
+      label: "~676",
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level <= 6) {
+    const point = Math.round(35 * Math.pow(level, 2.05));
+    return {
+      min: Math.round(point * 0.7),
+      max: Math.round(point * 1.5),
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level <= 10) {
+    const point = Math.round(34 * Math.pow(level, 1.98));
+    return {
+      min: Math.round(point * 0.65),
+      max: Math.round(point * 1.6),
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level <= 15) {
+    const point = Math.round(3_260 + Math.pow(level - 10, 2.3) * 280);
+    return {
+      min: Math.round(point * 0.6),
+      max: Math.round(point * 1.8),
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
+      tier: "UNDERDOG",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "VERY LOW STATS",
+    };
+  }
+
+  if (level <= 20) {
+    const point = Math.round(14_600 + Math.pow(level - 15, 2.25) * 1_500);
+    return {
+      min: Math.round(point * 0.6),
+      max: Math.round(point * 2.0),
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
+      tier: "ROOKIE",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badge: "LOW STATS",
+    };
+  }
+
+  if (level <= 25) {
+    const point = Math.round(70_800 + Math.pow(level - 20, 2.2) * 5_200);
+    return {
+      min: Math.round(point * 0.6),
+      max: Math.round(point * 2.5),
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
       tier: "ROOKIE",
       color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
       badge: "LOW STATS",
@@ -72,10 +172,12 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
   if (level <= 40) {
     const min = Math.max(2_000_000, (level - 20) * 1_000_000);
     const max = Math.min(25_000_000, Math.max(min * 4, ageDays * 25_000));
+    const point = Math.round((min + max) / 2);
     return {
       min,
       max,
-      label: `${formatStatNumber(min)} – ${formatStatNumber(max)}`,
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
       tier: "MID_TIER",
       color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
       badge: "MID STATS",
@@ -85,10 +187,12 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
   if (level <= 55) {
     const min = Math.max(20_000_000, (level - 35) * 4_000_000);
     const max = Math.min(120_000_000, Math.max(min * 4, ageDays * 80_000));
+    const point = Math.round((min + max) / 2);
     return {
       min,
       max,
-      label: `${formatStatNumber(min)} – ${formatStatNumber(max)}`,
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
       tier: "WAR_READY",
       color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
       badge: "WAR READY",
@@ -98,10 +202,12 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
   if (level <= 70) {
     const min = Math.max(80_000_000, (level - 50) * 15_000_000);
     const max = Math.min(500_000_000, Math.max(min * 3.5, ageDays * 250_000));
+    const point = Math.round((min + max) / 2);
     return {
       min,
       max,
-      label: `${formatStatNumber(min)} – ${formatStatNumber(max)}`,
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
       tier: "HEAVY",
       color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
       badge: "HEAVY HITTER",
@@ -111,10 +217,12 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
   if (level <= 85) {
     const min = 350_000_000;
     const max = 1_500_000_000;
+    const point = 750_000_000;
     return {
       min,
       max,
-      label: `${formatStatNumber(min)} – ${formatStatNumber(max)}`,
+      pointEstimate: point,
+      label: `~${formatStatNumber(point)}`,
       tier: "APEX",
       color: "text-red-400 bg-red-500/10 border-red-500/20",
       badge: "APEX COMBATANT",
@@ -125,7 +233,8 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
   return {
     min: 1_000_000_000,
     max: 10_000_000_000,
-    label: "1B – 10B+ (SE)",
+    pointEstimate: 3_000_000_000,
+    label: "~3B+",
     tier: "TITAN",
     color: "text-rose-400 bg-rose-500/15 border-rose-500/30",
     badge: "TITAN (AVOID SOLO)",

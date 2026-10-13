@@ -103,6 +103,24 @@ const DEFAULT_DEMO_SPIES: Record<number, PlayerSpyData> = {
     source: "FACTION_SPY",
     spiedBy: "Faction Discord Intel",
   },
+  3912048: {
+    playerId: 3912048,
+    name: "Valkyrie",
+    total: 22_000,
+    timestamp: Math.floor(Date.now() / 1000) - 86400 * 2,
+    source: "FFSCOUTER",
+    spiedBy: "FFScouter Radar",
+    fairFight: 1.45,
+  },
+  3829104: {
+    playerId: 3829104,
+    name: "IronHide",
+    total: 8_900,
+    timestamp: Math.floor(Date.now() / 1000) - 86400 * 5,
+    source: "FFSCOUTER",
+    spiedBy: "FFScouter Radar",
+    fairFight: 1.12,
+  },
 };
 
 const DEFAULT_DEMO_WAR_META: WarMeta = {
@@ -237,6 +255,7 @@ export default function WarRoomPage() {
   const [spies, setSpies] = useState<Record<number, PlayerSpyData>>({});
   const [tornStatsKey, setTornStatsKey] = useState("");
   const [isSyncingTornStats, setIsSyncingTornStats] = useState(false);
+  const [isSyncingFFScouter, setIsSyncingFFScouter] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
 
   // Modals state
@@ -708,6 +727,40 @@ export default function WarRoomPage() {
     }
   };
 
+  // Sync FFScouter Fair Fight Battle Stat Estimates
+  const handleFetchFFScouter = async () => {
+    if (!apiKey || enemyTargets.length === 0) return;
+    setIsSyncingFFScouter(true);
+    try {
+      const ids = enemyTargets.map((e) => e.id).slice(0, 50).join(",");
+      const res = await fetch(`/api/ffscouter?key=${encodeURIComponent(apiKey)}&targets=${encodeURIComponent(ids)}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const newDb = { ...spies };
+        for (const item of data) {
+          if (item.player_id && item.bs_estimate) {
+            const existing = newDb[item.player_id];
+            if (!existing || existing.source === "FFSCOUTER") {
+              newDb[item.player_id] = {
+                playerId: item.player_id,
+                total: item.bs_estimate,
+                fairFight: item.fair_fight,
+                source: "FFSCOUTER",
+                spiedBy: "FFScouter Radar",
+                timestamp: item.last_updated || Math.floor(Date.now() / 1000),
+              };
+            }
+          }
+        }
+        saveSpyDb(newDb);
+      }
+    } catch (err) {
+      console.error("FFScouter fetch error:", err);
+    } finally {
+      setIsSyncingFFScouter(false);
+    }
+  };
+
   // Filtering & Sorting
   const viewerLevel = userProfile?.level || 60;
   const displayedList = activeTab === "ENEMY_TARGETS" ? enemyTargets : friendlyMembers;
@@ -980,6 +1033,16 @@ export default function WarRoomPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleFetchFFScouter}
+              disabled={isSyncingFFScouter || !apiKey}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white transition-colors shadow-sm"
+              title="Query FFScouter network for Fair-Fight combat estimates"
+            >
+              <Radar className={`w-3.5 h-3.5 ${isSyncingFFScouter ? "animate-spin" : ""}`} />
+              <span>{isSyncingFFScouter ? "Scouting..." : "FFScouter Radar"}</span>
+            </button>
+
             <button
               onClick={() => setShowTornStatsModal(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm"
@@ -1282,29 +1345,52 @@ export default function WarRoomPage() {
                           <td className="px-4 py-3 whitespace-nowrap">
                             {spy && spy.total ? (
                               <div className="flex items-center gap-2">
-                                {/* Spied Badge */}
+                                {/* Spied or FFScouter Badge */}
                                 <div
                                   onClick={() => openSpyEditor(t)}
-                                  className="group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors"
+                                  className={`group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors ${
+                                    spy.source === "FFSCOUTER"
+                                      ? "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                      : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                  }`}
                                 >
-                                  <Eye className="w-3 h-3 text-emerald-400" />
+                                  {spy.source === "FFSCOUTER" ? (
+                                    <Radar className="w-3 h-3 text-cyan-400" />
+                                  ) : (
+                                    <Eye className="w-3 h-3 text-emerald-400" />
+                                  )}
                                   <span className="font-mono font-bold">{formatStatNumber(spy.total)}</span>
-                                  <span className="text-[10px] text-emerald-400/80 uppercase font-semibold">Spied</span>
+                                  <span
+                                    className={`text-[10px] uppercase font-semibold ${
+                                      spy.source === "FFSCOUTER" ? "text-cyan-400/90" : "text-emerald-400/80"
+                                    }`}
+                                  >
+                                    {spy.source === "FFSCOUTER" ? "FF-Est" : "Spied"}
+                                  </span>
 
                                   {/* Hover Tooltip with Str/Def/Spd/Dex */}
-                                  <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2.5 bg-slate-950 border border-slate-700 rounded-lg shadow-xl text-left min-w-[200px] pointer-events-none">
+                                  <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2.5 bg-slate-950 border border-slate-700 rounded-lg shadow-xl text-left min-w-[210px] pointer-events-none">
                                     <div className="text-[11px] font-bold text-white mb-1.5 flex items-center justify-between border-b border-slate-800 pb-1">
-                                      <span>Spy Report: {t.name}</span>
-                                      <span className="text-emerald-400 font-mono">{formatStatNumber(spy.total)}</span>
+                                      <span>{spy.source === "FFSCOUTER" ? "FF Combat Estimate" : "Spy Report"}: {t.name}</span>
+                                      <span className={`font-mono font-bold ${spy.source === "FFSCOUTER" ? "text-cyan-400" : "text-emerald-400"}`}>
+                                        {formatStatNumber(spy.total)}
+                                      </span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono">
-                                      <div className="text-slate-400">Str: <span className="text-slate-200">{spy.strength ? formatStatNumber(spy.strength) : "—"}</span></div>
-                                      <div className="text-slate-400">Def: <span className="text-slate-200">{spy.defense ? formatStatNumber(spy.defense) : "—"}</span></div>
-                                      <div className="text-slate-400">Spd: <span className="text-slate-200">{spy.speed ? formatStatNumber(spy.speed) : "—"}</span></div>
-                                      <div className="text-slate-400">Dex: <span className="text-slate-200">{spy.dexterity ? formatStatNumber(spy.dexterity) : "—"}</span></div>
-                                    </div>
-                                    <div className="text-[9px] text-slate-500 mt-2 border-t border-slate-800/60 pt-1">
-                                      Source: {spy.spiedBy || spy.source}
+                                    {spy.strength || spy.defense ? (
+                                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono">
+                                        <div className="text-slate-400">Str: <span className="text-slate-200">{spy.strength ? formatStatNumber(spy.strength) : "—"}</span></div>
+                                        <div className="text-slate-400">Def: <span className="text-slate-200">{spy.defense ? formatStatNumber(spy.defense) : "—"}</span></div>
+                                        <div className="text-slate-400">Spd: <span className="text-slate-200">{spy.speed ? formatStatNumber(spy.speed) : "—"}</span></div>
+                                        <div className="text-slate-400">Dex: <span className="text-slate-200">{spy.dexterity ? formatStatNumber(spy.dexterity) : "—"}</span></div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-[10px] text-slate-300">
+                                        Derived from Fair-Fight attack logs ({spy.fairFight ? `${spy.fairFight}x FF` : "Combat Telemetry"}).
+                                      </div>
+                                    )}
+                                    <div className="text-[9px] text-slate-500 mt-2 border-t border-slate-800/60 pt-1 flex items-center justify-between">
+                                      <span>Source: {spy.spiedBy || spy.source}</span>
+                                      <span>{Math.max(1, Math.round((Date.now() / 1000 - spy.timestamp) / 86400))}d ago</span>
                                     </div>
                                   </div>
                                 </div>
@@ -1316,19 +1402,19 @@ export default function WarRoomPage() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                {/* Algorithmic Estimate Badge */}
+                                {/* Algorithmic Point Estimate Badge */}
                                 <div
                                   onClick={() => openSpyEditor(t)}
                                   className="group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
                                 >
                                   <Sparkles className="w-3 h-3 text-amber-400" />
-                                  <span className="font-mono text-[11px] text-slate-200">{estimate.label}</span>
+                                  <span className="font-mono text-[11px] text-slate-200 font-medium">{estimate.label}</span>
                                   <span className="text-[10px] text-slate-400 font-mono">Est</span>
 
                                   {/* Tooltip */}
                                   <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2 bg-slate-950 border border-slate-700 rounded shadow-lg text-[10px] text-slate-300 whitespace-nowrap pointer-events-none">
-                                    <div>Algorithmic estimate based on Level {t.level} training curve.</div>
-                                    <div className="text-indigo-400 mt-0.5">Click to log or paste spy report</div>
+                                    <div>Gym progression regression model based on Level {t.level}.</div>
+                                    <div className="text-indigo-400 mt-0.5">Click to log verified spy or query FFScouter</div>
                                   </div>
                                 </div>
 
