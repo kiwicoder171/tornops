@@ -230,3 +230,62 @@ model TodoTask {
   @@index([status])
   @@index([factionWide])
 }
+
+model FactionSpy {
+  id          String   @id @default(uuid())
+  factionId   Int      // The friendly faction ID
+  playerId    Int      // Target player ID
+  name        String?
+  strength    Float?
+  defense     Float?
+  speed       Float?
+  dexterity   Float?
+  total       Float
+  fairFight   Float?
+  source      String   @default("MANUAL") // MANUAL, FACTION_SPY, TORNSTATS, FFSCOUTER
+  spiedBy     String?
+  timestamp   Int      // Unix timestamp in seconds
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([factionId, playerId])
+  @@index([factionId])
+  @@index([playerId])
+}
+
+model AttackLogEstimate {
+  id                String   @id @default(uuid())
+  factionId         Int
+  logId             Int?     @unique // Torn combat log ID
+  attackerId        Int
+  attackerName      String?
+  defenderId        Int
+  defenderName      String?
+  attackerTBS       Float?
+  fairFight         Float    // 1.00 to 3.00
+  minEstimatedTBS   Float
+  maxEstimatedTBS   Float
+  pointEstimatedTBS Float
+  timestamp         DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([factionId])
+  @@index([defenderId])
+  @@index([timestamp])
+}
+
+model TravelStock {
+  id           String   @id @default(uuid())
+  country      String   // e.g. "Switzerland", "Japan", "South Africa"
+  countryCode  String   // e.g. "che", "jpn", "zaf"
+  itemId       Int
+  itemName     String
+  category     String   // "Plushie" | "Flower" | "Drug" | "Item"
+  cost         Int      // Overseas purchase cost in $
+  currentStock Int      // Available count
+  updatedAt    DateTime @updatedAt
+
+  @@unique([country, itemId])
+  @@index([country])
+  @@index([category])
+}

@@ -34,6 +34,7 @@ interface PaletteItem {
 const ITEMS: PaletteItem[] = [
   // War
   { id: "war", title: "Ranked War Room", category: "WAR", icon: Swords, href: "/war" },
+  { id: "spies", title: "Faction Spy Vault & FF Reverse Solver", category: "WAR", icon: Target, href: "/spies" },
   { id: "heatmap", title: "Enemy Sleep Heatmap & Push Radar", category: "WAR", icon: Clock, href: "/heatmap" },
   { id: "revives", title: "War Revive Dispatch Board", category: "WAR", icon: HeartPulse, href: "/revives" },
   { id: "payout", title: "Fair-Share War Payout Engine", category: "WAR", icon: Calculator, href: "/payout" },

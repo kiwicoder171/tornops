@@ -45,6 +45,7 @@ const navSections: NavSection[] = [
     title: "WAR & COMBAT",
     items: [
       { name: "War Room", href: "/war", icon: Swords, badge: "LIVE", badgeVariant: "red" },
+      { name: "Spy Vault", href: "/spies", icon: Target, badge: "INTEL", badgeVariant: "blue" },
       { name: "Enemy Sleep Radar", href: "/heatmap", icon: Moon },
       { name: "Revive Dispatch", href: "/revives", icon: HeartPulse },
       { name: "Payout Engine", href: "/payout", icon: Calculator },
@@ -215,13 +216,13 @@ export function Sidebar() {
               />
               <span className="truncate font-medium">Overview</span>
             </div>
-            <span className="text-[10px] text-zinc-500 font-mono">HUB</span>
+            <span className="text-[10px] text-zinc-400 font-mono">HUB</span>
           </Link>
         </div>
 
         {navSections.map((section) => (
           <div key={section.title} className="space-y-0.5">
-            <div className="px-2 py-1 text-[9px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
+            <div className="px-2 py-1 text-[9px] font-mono font-medium text-zinc-400 uppercase tracking-wider">
               {section.title}
             </div>
             {section.items.map((item) => {
@@ -292,7 +293,7 @@ export function Sidebar() {
                   ? "bg-amber-500/20 text-amber-300 font-bold"
                   : isChainActive
                   ? "bg-blue-500/10 text-blue-300 font-semibold"
-                  : "text-zinc-500 font-normal"
+                  : "text-zinc-400 font-normal"
               }`}
             >
               {isChainActive ? `#${chainCount}` : "Standby"}
@@ -320,7 +321,7 @@ export function Sidebar() {
       </div>
 
       {/* Footer Status Bar */}
-      <div className="px-3 py-2 border-t border-[#1a1a1d] bg-[#050506] flex flex-col gap-1 text-[10px] text-zinc-500">
+      <div className="px-3 py-2 border-t border-[#1a1a1d] bg-[#050506] flex flex-col gap-1 text-[10px] text-zinc-400">
         <div className="flex items-center justify-between">
           <span className="font-mono flex items-center gap-1 text-zinc-400">
             <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
@@ -334,13 +335,13 @@ export function Sidebar() {
             100% Free Access
           </Link>
         </div>
-        <div className="flex items-center justify-between pt-1 border-t border-[#141416] text-[9px] text-zinc-500">
+        <div className="flex items-center justify-between pt-1 border-t border-[#141416] text-[9px] text-zinc-400">
           <span>Created by</span>
           <a
             href="https://www.torn.com/profiles.php?XID=4552150"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-400 hover:text-amber-400 font-mono transition-colors"
+            className="text-zinc-300 hover:text-amber-400 font-mono transition-colors"
           >
             NongGuyver [4552150]
           </a>

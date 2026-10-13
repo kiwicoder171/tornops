@@ -67,7 +67,7 @@ export function Header() {
         >
           <Clock className="w-3 h-3 text-emerald-400 animate-pulse" />
           <span suppressHydrationWarning className="text-[11px] sm:text-xs">{tctClock}</span>
-          <span className="text-[9px] sm:text-[10px] text-zinc-500 font-semibold uppercase">TCT</span>
+          <span className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase">TCT</span>
         </Link>
 
         {error && (

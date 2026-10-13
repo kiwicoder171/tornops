@@ -269,7 +269,7 @@ export default function WarRoomPage() {
   const [spyFormSpd, setSpyFormSpd] = useState("");
   const [spyFormDex, setSpyFormDex] = useState("");
   const [spyFormTotal, setSpyFormTotal] = useState("");
-  const [spyFormSource, setSpyFormSource] = useState<"MANUAL" | "FACTION_SPY" | "TORNSTATS">("MANUAL");
+  const [spyFormSource, setSpyFormSource] = useState<"MANUAL" | "FACTION_SPY" | "TORNSTATS" | "FAIR_FIGHT">("MANUAL");
 
   // Batch paste input
   const [batchRawText, setBatchRawText] = useState("");
@@ -626,7 +626,13 @@ export default function WarRoomPage() {
       setSpyFormDex(existing.dexterity ? existing.dexterity.toString() : "");
       setSpyFormTotal(existing.total ? existing.total.toString() : "");
       setSpyFormSource(
-        existing.source === "TORNSTATS" ? "TORNSTATS" : existing.source === "FACTION_SPY" ? "FACTION_SPY" : "MANUAL"
+        existing.source === "TORNSTATS"
+          ? "TORNSTATS"
+          : existing.source === "FACTION_SPY"
+          ? "FACTION_SPY"
+          : existing.source === "FAIR_FIGHT" || existing.source === "FFSCOUTER"
+          ? "FAIR_FIGHT"
+          : "MANUAL"
       );
     } else {
       setSpyFormStr("");
@@ -910,7 +916,7 @@ export default function WarRoomPage() {
                 warMeta?.stage === "DECLARED"
                   ? "bg-amber-500/10 text-amber-300 border-amber-500/30 animate-pulse"
                   : warMeta?.stage === "ONGOING"
-                  ? "bg-red-500/10 text-red-400 border-red-500/20 animate-pulse"
+                  ? "bg-red-500/15 text-red-300 font-bold border-red-500/30 animate-pulse"
                   : warMeta?.stage === "CONCLUDED"
                   ? warMeta.isWon
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
@@ -1086,7 +1092,7 @@ export default function WarRoomPage() {
               return (
                 <div key={hour} className="group relative flex flex-col items-center">
                   <div className={`w-full h-8 rounded-sm ${bg} transition-colors cursor-pointer`} />
-                  <span className="text-[10px] text-slate-500 mt-1 font-mono tabular-nums">{hour.toString().padStart(2, "0")}</span>
+                  <span className="text-[10px] text-slate-400 mt-1 font-mono tabular-nums">{hour.toString().padStart(2, "0")}</span>
 
                   {/* Tooltip */}
                   <div className="absolute bottom-11 hidden group-hover:block z-20 px-2 py-1 bg-slate-950 border border-slate-700 text-[11px] text-white rounded whitespace-nowrap shadow-md pointer-events-none">
@@ -1301,10 +1307,13 @@ export default function WarRoomPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 flex items-center gap-1 font-medium text-[11px]">
+              <label htmlFor="war-sort-option" className="text-slate-400 flex items-center gap-1 font-medium text-[11px]">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" /> Sort:
-              </span>
+              </label>
               <select
+                id="war-sort-option"
+                name="warSortOption"
+                aria-label="Sort target roster"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as any)}
                 className="bg-slate-900 border border-slate-700 text-slate-200 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-indigo-500"
@@ -1459,9 +1468,9 @@ export default function WarRoomPage() {
                       <tr key={t.id} className="hover:bg-slate-800/30 transition-colors">
                         {/* Player Name */}
                         <td className="px-4 py-3 font-medium text-white flex items-center gap-2 whitespace-nowrap">
-                          <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{t.name}</span>
-                          <span className="text-slate-500 font-mono tabular-nums">[{t.id}]</span>
+                          <span className="text-slate-400 font-mono tabular-nums">[{t.id}]</span>
                           {t.id === userProfile?.playerId && (
                             <span className="px-1.5 py-0.2 text-[10px] bg-blue-500/20 text-blue-300 rounded border border-blue-500/30 font-medium">
                               You
@@ -1481,12 +1490,12 @@ export default function WarRoomPage() {
                                 <div
                                   onClick={() => openSpyEditor(t)}
                                   className={`group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors ${
-                                    spy.source === "FFSCOUTER"
+                                    spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT"
                                       ? "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
                                       : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                                   }`}
                                 >
-                                  {spy.source === "FFSCOUTER" ? (
+                                  {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? (
                                     <Radar className="w-3 h-3 text-cyan-400" />
                                   ) : (
                                     <Eye className="w-3 h-3 text-emerald-400" />
@@ -1494,17 +1503,17 @@ export default function WarRoomPage() {
                                   <span className="font-mono font-bold">{formatStatNumber(spy.total)}</span>
                                   <span
                                     className={`text-[10px] uppercase font-semibold ${
-                                      spy.source === "FFSCOUTER" ? "text-cyan-400/90" : "text-emerald-400/80"
+                                      spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400/90" : "text-emerald-400/80"
                                     }`}
                                   >
-                                    {spy.source === "FFSCOUTER" ? "FF-Est" : "Spied"}
+                                    {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF-Est" : "Spied"}
                                   </span>
 
                                   {/* Hover Tooltip with Str/Def/Spd/Dex */}
                                   <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2.5 bg-slate-950 border border-slate-700 rounded-lg shadow-xl text-left min-w-[210px] pointer-events-none">
                                     <div className="text-[11px] font-bold text-white mb-1.5 flex items-center justify-between border-b border-slate-800 pb-1">
-                                      <span>{spy.source === "FFSCOUTER" ? "FF Combat Estimate" : "Spy Report"}: {t.name}</span>
-                                      <span className={`font-mono font-bold ${spy.source === "FFSCOUTER" ? "text-cyan-400" : "text-emerald-400"}`}>
+                                      <span>{spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF Combat Estimate" : "Spy Report"}: {t.name}</span>
+                                      <span className={`font-mono font-bold ${spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400" : "text-emerald-400"}`}>
                                         {formatStatNumber(spy.total)}
                                       </span>
                                     </div>
@@ -1612,7 +1621,7 @@ export default function WarRoomPage() {
                                 href={getDirectAttackUrl(t.id)}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-semibold transition-colors shadow-sm"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-700 hover:bg-red-600 text-white rounded text-xs font-bold transition-colors shadow-sm"
                               >
                                 <Flame className="w-3.5 h-3.5" /> Direct Attack
                               </a>
@@ -1731,14 +1740,18 @@ export default function WarRoomPage() {
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-slate-300 uppercase block mb-1">Intel Source</label>
+              <label htmlFor="spy-form-source" className="text-[11px] font-semibold text-slate-300 uppercase block mb-1">Intel Source</label>
               <select
+                id="spy-form-source"
+                name="spyFormSource"
+                aria-label="Intel Source"
                 value={spyFormSource}
                 onChange={(e) => setSpyFormSource(e.target.value as any)}
                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               >
                 <option value="MANUAL">Manual / In-Game Spy</option>
                 <option value="FACTION_SPY">Faction Discord Intel</option>
+                <option value="FAIR_FIGHT">Fair Fight Combat Estimate</option>
                 <option value="TORNSTATS">TornStats Spy</option>
               </select>
             </div>
