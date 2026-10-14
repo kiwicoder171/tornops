@@ -25,8 +25,10 @@ import {
   Calculator,
   Search,
   Upload,
+  ShieldCheck,
 } from "lucide-react";
 import { playTacticalSound } from "@/lib/sound";
+import { ApiTosTable } from "@/components/ApiTosTable";
 
 type DocTab = "MANUAL" | "CHANGELOG";
 
@@ -226,19 +228,30 @@ const RAW_FORUM_HTML = `<div style="max-width: 600px; font-family: Arial, sans-s
 
   <!-- LATEST RELEASE -->
   <div style="margin-bottom: 24px;">
-    <h3 style="color: #10b981; border-bottom: 1px solid #374151; padding-bottom: 6px; font-size: 16px; margin: 0 0 10px 0;">🚀 Latest Release: [v0.3.0] — 2026-10-14</h3>
-    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;"><strong>Release Name:</strong> Faction Spy Vault, Fair Fight Reverse Solver & Accessibility 100/100</div>
+    <h3 style="color: #10b981; border-bottom: 1px solid #374151; padding-bottom: 6px; font-size: 16px; margin: 0 0 10px 0;">🚀 Latest Release: [v0.3.1] — 2026-10-14</h3>
+    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;"><strong>Release Name:</strong> Torn City Official API ToS Compliance &amp; Zero-Key Security Hardening</div>
 
     <div style="margin-bottom: 10px;">
-      <strong style="color: #f3f4f6;">Combat Intelligence & Faction Vault:</strong>
+      <strong style="color: #f3f4f6;">API Rules &amp; Player Privacy Compliance:</strong>
       <ul style="margin: 6px 0 0 20px; padding: 0;">
-        <li><strong style="color: #e5e7eb;">Faction Spy Vault:</strong> Centralized battle stat repository with teammate auto-sync, search by name/ID, and freshness decay indicators (Fresh &lt;14d, Aging 15-45d, Stale &gt;45d).</li>
-        <li><strong style="color: #e5e7eb;">Fair Fight (FF) Reverse Solver:</strong> Precise mathematical engine that computes defender Total Battle Stats from attack log modifiers with tight error margins and multi-hit Bayesian intersection.</li>
-        <li><strong style="color: #e5e7eb;">Bulk Clipboard Importer:</strong> One-click parser supporting multi-line spy logs from leader spreadsheets, bots, and clipboard exports with automatic ID recognition.</li>
-        <li><strong style="color: #e5e7eb;">War Room Radar Integration:</strong> Combat estimate badges and radar tooltips injected directly into the live enemy war roster.</li>
-        <li><strong style="color: #e5e7eb;">100/100 Lighthouse UI Quality:</strong> Full WCAG AA color contrast, complete keyboard accessibility, and zero lag.</li>
+        <li><strong style="color: #e5e7eb;">Mandatory API ToS Disclosure Table:</strong> Implemented the required Torn API Terms of Service table directly at all key entry points (Connect Modal, Settings page, and /docs).</li>
+        <li><strong style="color: #e5e7eb;">Zero Key / Partial Key Display:</strong> Completely eliminated all display of keys, masked keys, or obfuscated keys anywhere on the platform. Key pooling interfaces have been removed.</li>
+        <li><strong style="color: #e5e7eb;">Strict Client-Side Storage:</strong> All Public API keys are stored exclusively in the player's local browser (<code style="color: #93c5fd;">localStorage</code>) and are never stored on any central server database.</li>
+        <li><strong style="color: #e5e7eb;">Explicit ToS Consent:</strong> Added mandatory user acknowledgement checkbox prior to key connection.</li>
+        <li><strong style="color: #e5e7eb;">Instant Key Erasure:</strong> 1-click Disconnect immediately wipes credentials and cache from local browser storage.</li>
       </ul>
     </div>
+  </div>
+
+  <!-- HISTORICAL RELEASES -->
+  <div style="margin-bottom: 24px;">
+    <h4 style="color: #fbbf24; margin: 0 0 6px 0; font-size: 14px;">[v0.3.0] — 2026-10-14 (Faction Spy Vault &amp; Fair Fight Solver)</h4>
+    <ul style="margin: 0 0 0 20px; padding: 0;">
+      <li><strong style="color: #e5e7eb;">Faction Spy Vault:</strong> Centralized battle stat repository with teammate auto-sync, search by name/ID, and freshness decay indicators.</li>
+      <li><strong style="color: #e5e7eb;">Fair Fight (FF) Reverse Solver:</strong> Precise mathematical engine that computes defender Total Battle Stats from attack log modifiers.</li>
+      <li><strong style="color: #e5e7eb;">Bulk Clipboard Importer:</strong> One-click parser supporting multi-line spy logs with automatic ID recognition.</li>
+      <li><strong style="color: #e5e7eb;">War Room Radar Integration:</strong> Combat estimate badges and radar tooltips injected directly into the live enemy war roster.</li>
+    </ul>
   </div>
 
   <hr style="border: 0; border-top: 1px solid #374151; margin: 20px 0;" />
@@ -392,6 +405,24 @@ export default function DocsPage() {
             <div className="px-2 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold border-b border-slate-800 mb-2">
               Module Quick Jump
             </div>
+            {/* Quick Jump: API Compliance & ToS */}
+            <a
+              href="#compliance"
+              onClick={() => setActiveNav("compliance")}
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition ${
+                activeNav === "compliance"
+                  ? "bg-slate-800 text-white font-bold border border-slate-700"
+                  : "text-emerald-400 hover:text-emerald-300 hover:bg-slate-800/40"
+              }`}
+            >
+              <div className="flex items-center gap-2 truncate">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                <span className="truncate">API Compliance &amp; ToS</span>
+              </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 shrink-0">
+                Mandate
+              </span>
+            </a>
             {DOC_SECTIONS.map((sec) => {
               const Icon = sec.icon;
               const isActive = activeNav === sec.id;
@@ -422,6 +453,50 @@ export default function DocsPage() {
 
           {/* Main Documentation Content Area */}
           <main className="lg:col-span-3 space-y-12">
+            {/* Torn API Terms of Service & Security Compliance Section */}
+            <section
+              id="compliance"
+              className="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-6 sm:p-7 space-y-6 scroll-mt-24 shadow-xl"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold">Policy &amp; Rules</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                        Official Mandate
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-tight">
+                      Torn City API Compliance &amp; Terms of Service (ToS)
+                    </h2>
+                  </div>
+                </div>
+
+                <Link
+                  href="/settings"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition self-start sm:self-auto"
+                >
+                  <span>API Settings</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-cyan-400" />
+                </Link>
+              </div>
+
+              <div className="text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+                <p>
+                  TornOps is engineered from the ground up to strictly comply with all Torn City third-party developer rules and API guidelines. We maintain a zero-compromise security posture regarding player credentials and privacy.
+                </p>
+                <p className="text-slate-400 text-xs">
+                  Review the official disclosure table below for exact specifications regarding key access requirements, client-side storage, and our zero-sharing policy.
+                </p>
+              </div>
+
+              {/* Render Full API ToS Table */}
+              <ApiTosTable />
+            </section>
             {DOC_SECTIONS.map((sec) => {
               const Icon = sec.icon;
               return (

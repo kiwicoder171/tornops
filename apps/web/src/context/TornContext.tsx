@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { maskApiKey } from "@torn/shared";
 
 export interface TornUserProfile {
   playerId: number;
@@ -153,7 +152,7 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
     <TornContext.Provider
       value={{
         apiKey,
-        maskedKey: apiKey ? maskApiKey(apiKey) : "",
+        maskedKey: "",
         isLive,
         isLoading,
         userProfile,

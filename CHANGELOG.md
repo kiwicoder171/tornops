@@ -25,19 +25,30 @@
 
   <!-- LATEST RELEASE -->
   <div style="margin-bottom: 24px;">
-    <h3 style="color: #10b981; border-bottom: 1px solid #374151; padding-bottom: 6px; font-size: 16px; margin: 0 0 10px 0;">🚀 Latest Release: [v0.3.0] — 2026-10-14</h3>
-    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;"><strong>Release Name:</strong> Faction Spy Vault, Fair Fight Reverse Solver & Accessibility 100/100</div>
+    <h3 style="color: #10b981; border-bottom: 1px solid #374151; padding-bottom: 6px; font-size: 16px; margin: 0 0 10px 0;">🚀 Latest Release: [v0.3.1] — 2026-10-14</h3>
+    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;"><strong>Release Name:</strong> Torn City Official API ToS Compliance &amp; Zero-Key Security Hardening</div>
 
     <div style="margin-bottom: 10px;">
-      <strong style="color: #f3f4f6;">Combat Intelligence & Faction Vault:</strong>
+      <strong style="color: #f3f4f6;">API Rules &amp; Player Privacy Compliance:</strong>
       <ul style="margin: 6px 0 0 20px; padding: 0;">
-        <li><strong style="color: #e5e7eb;">Faction Spy Vault:</strong> Centralized battle stat repository with teammate auto-sync, search by name/ID, and freshness decay indicators (Fresh &lt;14d, Aging 15-45d, Stale &gt;45d).</li>
-        <li><strong style="color: #e5e7eb;">Fair Fight (FF) Reverse Solver:</strong> Precise mathematical engine that computes defender Total Battle Stats from attack log modifiers with tight error margins and multi-hit Bayesian intersection.</li>
-        <li><strong style="color: #e5e7eb;">Bulk Clipboard Importer:</strong> One-click parser supporting multi-line spy logs from leader spreadsheets, bots, and clipboard exports with automatic ID recognition.</li>
-        <li><strong style="color: #e5e7eb;">War Room Radar Integration:</strong> Combat estimate badges and radar tooltips injected directly into the live enemy war roster.</li>
-        <li><strong style="color: #e5e7eb;">100/100 Lighthouse UI Quality:</strong> Full WCAG AA color contrast, complete keyboard accessibility, and zero lag.</li>
+        <li><strong style="color: #e5e7eb;">Mandatory API ToS Disclosure Table:</strong> Implemented the required Torn API Terms of Service table directly at all key entry points (Connect Modal, Settings page, and /docs).</li>
+        <li><strong style="color: #e5e7eb;">Zero Key / Partial Key Display:</strong> Completely eliminated all display of keys, masked keys, or obfuscated keys anywhere on the platform. Key pooling interfaces have been removed.</li>
+        <li><strong style="color: #e5e7eb;">Strict Client-Side Storage:</strong> All Public API keys are stored exclusively in the player's local browser (<code style="color: #93c5fd;">localStorage</code>) and are never stored on any central server database.</li>
+        <li><strong style="color: #e5e7eb;">Explicit ToS Consent:</strong> Added mandatory user acknowledgement checkbox prior to key connection.</li>
+        <li><strong style="color: #e5e7eb;">Instant Key Erasure:</strong> 1-click Disconnect immediately wipes credentials and cache from local browser storage.</li>
       </ul>
     </div>
+  </div>
+
+  <!-- HISTORICAL RELEASES -->
+  <div style="margin-bottom: 24px;">
+    <h4 style="color: #fbbf24; margin: 0 0 6px 0; font-size: 14px;">[v0.3.0] — 2026-10-14 (Faction Spy Vault &amp; Fair Fight Solver)</h4>
+    <ul style="margin: 0 0 0 20px; padding: 0;">
+      <li><strong style="color: #e5e7eb;">Faction Spy Vault:</strong> Centralized battle stat repository with teammate auto-sync, search by name/ID, and freshness decay indicators.</li>
+      <li><strong style="color: #e5e7eb;">Fair Fight (FF) Reverse Solver:</strong> Precise mathematical engine that computes defender Total Battle Stats from attack log modifiers.</li>
+      <li><strong style="color: #e5e7eb;">Bulk Clipboard Importer:</strong> One-click parser supporting multi-line spy logs with automatic ID recognition.</li>
+      <li><strong style="color: #e5e7eb;">War Room Radar Integration:</strong> Combat estimate badges and radar tooltips injected into the live enemy war roster.</li>
+    </ul>
   </div>
 
   <hr style="border: 0; border-top: 1px solid #374151; margin: 20px 0;" />
@@ -117,6 +128,16 @@
 ---
 
 ## 🛠️ Internal Project Ledger (Markdown)
+
+### [0.3.1] — 2026-10-14 (Torn API Official Terms of Service & Security Hardening)
+    Torn API Compliance & Player Privacy:
+        [COMPLIANCE] Completely eliminated all display of keys, masked keys, or obfuscated keys across the entire platform. Removed mock keys and key pooling interfaces from settings.
+        [COMPLIANCE] Built and deployed official ApiTosTable component adhering strictly to Torn API developer rules.
+        [COMPLIANCE] Integrated ApiTosTable and explicit ToS consent checkbox into the Connect API Key modal dialog (Header.tsx).
+        [COMPLIANCE] Overhauled Settings page (apps/web/src/app/settings/page.tsx) to embed the official ToS table, 1-click local storage erasure, and in-game revocation links.
+        [COMPLIANCE] Integrated official API Compliance & ToS section and quick-jump anchor into the user documentation manual (/docs).
+        [COMPLIANCE] Enforced strict client-side-only storage (localStorage) for Public Access keys; verified zero database persistence for API keys.
+        [PASSED] Production Build: Clean Next.js 15 production build across all 24 routes with zero type/lint errors.
 
 ### [0.3.0] — 2026-10-14 (Faction Spy Vault & Fair Fight Reverse Engine)
     Combat & Intel:
