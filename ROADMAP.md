@@ -1,3 +1,5 @@
+> 🧠 **Obsidian Hub**: [[_Brain/Projects/Torn|Torn]] · [[Antigravity/Torn/CONTEXT|Torn/CONTEXT.md]]
+
 # TornOps Product Roadmap
 
 ## Upcoming Releases

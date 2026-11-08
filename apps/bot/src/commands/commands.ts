@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { prisma } from "@torn/db";
 import { TornApiClient, encryptApiKey, maskApiKey } from "@torn/api";
-import { formatChainTime, getDirectAttackUrl, BALDR_TARGETS } from "@torn/shared";
+import { formatChainTime, getDirectAttackUrl, BALDR_TARGETS, formatArmorChip } from "@torn/shared";
 
 
 export const slashCommandsData = [
@@ -166,10 +166,12 @@ export async function handleCommandInteraction(
         .setColor(0x38bdf8)
         .setDescription(
           enemies
-            .map(
-              (e) =>
-                `• **${e.name}** [${e.id}] (Lvl ${e.level}) - [Attack Now](${getDirectAttackUrl(e.id)})`
-            )
+            .map((e) => {
+              const armor = formatArmorChip(e.armorSet);
+              const bonuses = e.weaponBonuses ? ` | ⚔️ ${e.weaponBonuses}` : "";
+              const stats = e.estimatedStats ? ` | 📊 ${e.estimatedStats}` : "";
+              return `• **${e.name}** [${e.id}] (Lvl ${e.level}${stats}) | ${armor}${bonuses} - [Attack Now](${getDirectAttackUrl(e.id)})`;
+            })
             .join("\n")
         );
 
@@ -297,7 +299,7 @@ export async function handleCommandInteraction(
               ? "✈️ **Traveling Abroad**"
               : "⚪ **Inactive**";
 
-            return `• **${t.name}** [${t.id}] - Lvl ${t.level} | ${t.totalStats.toLocaleString()} stats\n  ${statusLabel} | [Attack Link](${getDirectAttackUrl(t.id)})`;
+            return `• **${t.name}** [${t.id}] - Lvl ${t.level} | ${t.totalStats.toLocaleString()} stats | 🛡️ Standard Combat\n  ${statusLabel} | [Attack Link](${getDirectAttackUrl(t.id)})`;
           })
           .join("\n\n")
       )

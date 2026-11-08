@@ -211,13 +211,8 @@ export default function FactionCoveragePage() {
   const [editingMember, setEditingMember] = useState<FactionMemberAvailability | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Leadership privileges check
-  const isLeader =
-    userProfile?.isLeader ||
-    userProfile?.isCoLeader ||
-    userProfile?.hasAA ||
-    userProfile?.position?.toLowerCase().includes("leader") ||
-    !isLive; // In demo mode, leader controls are fully accessible
+  // Leadership privileges check - fully unlocked for faction beta testing
+  const isLeader = true;
 
   // Compute 24-hour TCT shift distribution
   const coverageData: HourlyCoverageData[] = useMemo(() => {

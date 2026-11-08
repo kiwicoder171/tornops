@@ -90,13 +90,13 @@ export default function PricingPage() {
       <div className="text-center space-y-3 pt-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-          <span>OPEN PUBLIC ACCESS • 100% FREE FOR ALL</span>
+          <span>FACTION TESTING PASS • 100% UNRESTRICTED ACCESS</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-          All Tactical Tools Are 100% Free
+          All Tactical &amp; Leadership Tools Are 100% Free
         </h1>
         <p className="text-zinc-400 text-sm max-w-2xl mx-auto leading-relaxed">
-          We&apos;ve paused all paid plans to give every Torn faction and citizen unrestricted access to our combat intelligence, sleep heatmaps, and payout engines. No paywalls, no Xanax required.
+          The 1 Xanax premium pass has been placed on hold so your faction mates can thoroughly test all features, stress-test live war rooms, and audit for bugs. No subscriptions, no paywalls, zero Xanax required.
         </p>
       </div>
 

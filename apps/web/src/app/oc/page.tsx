@@ -66,26 +66,24 @@ export default function OcOptimizerPage() {
     userProfile?.position?.toLowerCase().includes("co-leader") ||
     false;
 
-  // View mode state
-  const [viewMode, setViewMode] = useState<"LEADER" | "MEMBER">("MEMBER");
+  // View mode state - default to LEADER so faction mates can try it out immediately
+  const [viewMode, setViewMode] = useState<"LEADER" | "MEMBER">("LEADER");
 
   // Keep viewMode synced if user connects as a real leader
   useEffect(() => {
     if (isLive && isActualLeader) {
       setViewMode("LEADER");
-    } else if (isLive && !isActualLeader) {
-      setViewMode("MEMBER");
     }
   }, [isLive, isActualLeader]);
 
-  // Guaranteed active view: if live and not leader, strictly "MEMBER"
-  const activeView: "LEADER" | "MEMBER" = isLive && !isActualLeader ? "MEMBER" : viewMode;
+  // Guaranteed active view: fully unlocked for testing!
+  const activeView: "LEADER" | "MEMBER" = viewMode;
 
   // --- Leader State ---
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
   const [lockedSlots, setLockedSlots] = useState<Record<string, number>>({});
   const [pinged, setPinged] = useState<number | null>(null);
-  const [candidates, setCandidates] = useState<FactionCandidate[]>(isLive ? [] : DEMO_CANDIDATES);
+  const [candidates, setCandidates] = useState<FactionCandidate[]>(DEMO_CANDIDATES);
 
   // --- Member State ---
   const [mySkills, setMySkills] = useState<UserSkill[]>(isLive ? [] : DEMO_SKILLS);
@@ -192,78 +190,47 @@ export default function OcOptimizerPage() {
           </p>
         </div>
 
-        {/* View Switcher or Locked Notice */}
-        {!isLive ? (
-          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode("MEMBER")}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                activeView === "MEMBER"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Demo: Member View
-            </button>
-            <button
-              onClick={() => setViewMode("LEADER")}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                activeView === "LEADER"
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Demo: Leader (AA)
-            </button>
-          </div>
-        ) : isActualLeader ? (
-          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode("LEADER")}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                activeView === "LEADER"
-                  ? "bg-purple-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Leader Optimizer
-            </button>
-            <button
-              onClick={() => setViewMode("MEMBER")}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                activeView === "MEMBER"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Member View
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center">
-            <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-purple-400" /> Leader View Restricted (AA Only)
-            </span>
-          </div>
-        )}
+        {/* View Switcher */}
+        <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
+          <button
+            onClick={() => setViewMode("LEADER")}
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+              activeView === "LEADER"
+                ? "bg-purple-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            {isLive && !isActualLeader ? "Leader Optimizer (Testing Mode)" : "Leader Optimizer"}
+          </button>
+          <button
+            onClick={() => setViewMode("MEMBER")}
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+              activeView === "MEMBER"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Member View
+          </button>
+        </div>
       </div>
 
-      {/* Leadership Restricted Notice for Members */}
-      {isLive && !isActualLeader && (
-        <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between">
+      {/* Leadership Unlocked Notice for Testing */}
+      {isLive && !isActualLeader && activeView === "LEADER" && (
+        <div className="p-4 bg-emerald-950/30 border border-emerald-500/30 rounded-xl flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20">
+            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-white">Leader AA Optimizer Restricted</h4>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Only faction leaders and co-leaders with Advanced Access (AA) can configure lineups and lock slots. Your personal assignment and skill tree are displayed below.
+              <h4 className="text-xs font-semibold text-white">Full Leader Optimizer Unlocked for Testing</h4>
+              <p className="text-xs text-slate-300 mt-0.5">
+                All Crimes 2.0 team planning, slot recommendation algorithms, slot locks, and Discord alerts are unlocked so you can fully test the suite.
               </p>
             </div>
           </div>
-          <span className="text-xs font-mono px-2.5 py-1 bg-slate-800 text-slate-300 rounded border border-slate-700 whitespace-nowrap tabular-nums">
-            Role: {userProfile?.position || "Recruit"}
+          <span className="text-xs font-mono px-2.5 py-1 bg-emerald-900/40 text-emerald-300 rounded border border-emerald-700/50 whitespace-nowrap">
+            Full Access
           </span>
         </div>
       )}

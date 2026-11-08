@@ -31,6 +31,7 @@ export default function BankingLedgerPage() {
   const [requestedAmount, setRequestedAmount] = useState("");
   const [requestReason, setRequestReason] = useState("");
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [unlockedForTesting, setUnlockedForTesting] = useState(false);
 
   // Check if current user is leadership with AA
   const isLeader =
@@ -39,6 +40,7 @@ export default function BankingLedgerPage() {
     userProfile?.hasAA ||
     userProfile?.position?.toLowerCase().includes("leader") ||
     userProfile?.position?.toLowerCase().includes("co-leader") ||
+    unlockedForTesting ||
     false;
 
   const handleMemberRequest = (e: React.FormEvent) => {
@@ -96,6 +98,16 @@ export default function BankingLedgerPage() {
                 <p className="text-xs text-slate-500 italic mt-1">
                   To view live faction deposits and approve batch transfers, connect with an API key from faction leadership with Access Authority (AA).
                 </p>
+                <div className="pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setUnlockedForTesting(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition-colors"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Unlock Full Banker Suite (Faction Testing Mode)</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -163,8 +175,25 @@ export default function BankingLedgerPage() {
           </div>
         </div>
       ) : (
-        /* Full Banker View (Available for Leaders or Demo Mode) */
+        /* Full Banker View (Available for Leaders, Demo Mode, or Testing Unlock) */
         <div className="space-y-8">
+          {unlockedForTesting && (
+            <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center justify-between text-xs text-emerald-300">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>
+                  <strong>Full Banker Suite Unlocked for Testing:</strong> You have full access to inspect vault metrics, withdrawal queues, and deposit logs.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUnlockedForTesting(false)}
+                className="text-[11px] text-zinc-400 hover:text-white underline ml-3 shrink-0"
+              >
+                Reset to Member View
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 bg-slate-900 border border-slate-800 rounded-xl">
               <div className="flex items-center justify-between">

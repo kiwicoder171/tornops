@@ -35,6 +35,9 @@ import {
   parseSpyReportText,
   getMatchupRating,
   PlayerSpyData,
+  formatArmorChip,
+  formatWeaponBonusChips,
+  CANONICAL_ARMOR_SETS,
 } from "@torn/shared";
 import { useTorn } from "@/context/TornContext";
 
@@ -90,6 +93,8 @@ const DEFAULT_DEMO_SPIES: Record<number, PlayerSpyData> = {
     timestamp: Math.floor(Date.now() / 1000) - 86400 * 3,
     source: "TORNSTATS",
     spiedBy: "TornStats Spy DB",
+    armorSet: "EOD",
+    weaponBonuses: "Execute 24%, Paralyze 15%",
   },
   4102931: {
     playerId: 4102931,
@@ -102,6 +107,8 @@ const DEFAULT_DEMO_SPIES: Record<number, PlayerSpyData> = {
     timestamp: Math.floor(Date.now() / 1000) - 86400 * 7,
     source: "FACTION_SPY",
     spiedBy: "Faction Discord Intel",
+    armorSet: "Riot",
+    weaponBonuses: "Bloodlust 20%",
   },
   3912048: {
     playerId: 3912048,
@@ -111,6 +118,8 @@ const DEFAULT_DEMO_SPIES: Record<number, PlayerSpyData> = {
     source: "FFSCOUTER",
     spiedBy: "FFScouter Radar",
     fairFight: 1.45,
+    armorSet: "Combat",
+    weaponBonuses: "Plunder 35%",
   },
   3829104: {
     playerId: 3829104,
@@ -120,6 +129,7 @@ const DEFAULT_DEMO_SPIES: Record<number, PlayerSpyData> = {
     source: "FFSCOUTER",
     spiedBy: "FFScouter Radar",
     fairFight: 1.12,
+    armorSet: "Kevlar",
   },
 };
 
@@ -269,6 +279,8 @@ export default function WarRoomPage() {
   const [spyFormSpd, setSpyFormSpd] = useState("");
   const [spyFormDex, setSpyFormDex] = useState("");
   const [spyFormTotal, setSpyFormTotal] = useState("");
+  const [spyFormArmor, setSpyFormArmor] = useState("");
+  const [spyFormWeapons, setSpyFormWeapons] = useState("");
   const [spyFormSource, setSpyFormSource] = useState<"MANUAL" | "FACTION_SPY" | "TORNSTATS" | "FAIR_FIGHT">("MANUAL");
 
   // Batch paste input
@@ -625,6 +637,8 @@ export default function WarRoomPage() {
       setSpyFormSpd(existing.speed ? existing.speed.toString() : "");
       setSpyFormDex(existing.dexterity ? existing.dexterity.toString() : "");
       setSpyFormTotal(existing.total ? existing.total.toString() : "");
+      setSpyFormArmor(existing.armorSet || "");
+      setSpyFormWeapons(existing.weaponBonuses || "");
       setSpyFormSource(
         existing.source === "TORNSTATS"
           ? "TORNSTATS"
@@ -640,6 +654,8 @@ export default function WarRoomPage() {
       setSpyFormSpd("");
       setSpyFormDex("");
       setSpyFormTotal("");
+      setSpyFormArmor("");
+      setSpyFormWeapons("");
       setSpyFormSource("MANUAL");
     }
   };
@@ -668,6 +684,8 @@ export default function WarRoomPage() {
       timestamp: Math.floor(Date.now() / 1000),
       source: spyFormSource,
       spiedBy: spyFormSource === "TORNSTATS" ? "TornStats" : "Command Center",
+      armorSet: spyFormArmor.trim() || undefined,
+      weaponBonuses: spyFormWeapons.trim() || undefined,
     };
 
     const newDb = { ...spies, [activeSpyModalTarget.id]: updatedEntry };
@@ -1484,93 +1502,120 @@ export default function WarRoomPage() {
                         {/* Battle Stats & Intel (Enemy Only) */}
                         {activeTab === "ENEMY_TARGETS" && (
                           <td className="px-4 py-3 whitespace-nowrap">
-                            {spy && spy.total ? (
-                              <div className="flex items-center gap-2">
-                                {/* Spied or FFScouter Badge */}
-                                <div
-                                  onClick={() => openSpyEditor(t)}
-                                  className={`group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors ${
-                                    spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT"
-                                      ? "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
-                                      : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                                  }`}
-                                >
-                                  {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? (
-                                    <Radar className="w-3 h-3 text-cyan-400" />
-                                  ) : (
-                                    <Eye className="w-3 h-3 text-emerald-400" />
-                                  )}
-                                  <span className="font-mono font-bold">{formatStatNumber(spy.total)}</span>
-                                  <span
-                                    className={`text-[10px] uppercase font-semibold ${
-                                      spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400/90" : "text-emerald-400/80"
+                            <div className="space-y-1.5">
+                              {spy && spy.total ? (
+                                <div className="flex items-center gap-2">
+                                  {/* Spied or FFScouter Badge */}
+                                  <div
+                                    onClick={() => openSpyEditor(t)}
+                                    className={`group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded transition-colors ${
+                                      spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT"
+                                        ? "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                        : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                                     }`}
                                   >
-                                    {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF-Est" : "Spied"}
+                                    {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? (
+                                      <Radar className="w-3 h-3 text-cyan-400" />
+                                    ) : (
+                                      <Eye className="w-3 h-3 text-emerald-400" />
+                                    )}
+                                    <span className="font-mono font-bold">{formatStatNumber(spy.total)}</span>
+                                    <span
+                                      className={`text-[10px] uppercase font-semibold ${
+                                        spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400/90" : "text-emerald-400/80"
+                                      }`}
+                                    >
+                                      {spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF-Est" : "Spied"}
+                                    </span>
+
+                                    {/* Hover Tooltip with Str/Def/Spd/Dex */}
+                                    <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2.5 bg-slate-950 border border-slate-700 rounded-lg shadow-xl text-left min-w-[210px] pointer-events-none">
+                                      <div className="text-[11px] font-bold text-white mb-1.5 flex items-center justify-between border-b border-slate-800 pb-1">
+                                        <span>{spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF Combat Estimate" : "Spy Report"}: {t.name}</span>
+                                        <span className={`font-mono font-bold ${spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400" : "text-emerald-400"}`}>
+                                          {formatStatNumber(spy.total)}
+                                        </span>
+                                      </div>
+                                      {spy.strength || spy.defense ? (
+                                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono">
+                                          <div className="text-slate-400">Str: <span className="text-slate-200">{spy.strength ? formatStatNumber(spy.strength) : "—"}</span></div>
+                                          <div className="text-slate-400">Def: <span className="text-slate-200">{spy.defense ? formatStatNumber(spy.defense) : "—"}</span></div>
+                                          <div className="text-slate-400">Spd: <span className="text-slate-200">{spy.speed ? formatStatNumber(spy.speed) : "—"}</span></div>
+                                          <div className="text-slate-400">Dex: <span className="text-slate-200">{spy.dexterity ? formatStatNumber(spy.dexterity) : "—"}</span></div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-[10px] text-slate-300">
+                                          Derived from Fair-Fight attack logs ({spy.fairFight ? `${spy.fairFight}x FF` : "Combat Telemetry"}).
+                                        </div>
+                                      )}
+                                      <div className="text-[9px] text-slate-500 mt-2 border-t border-slate-800/60 pt-1 flex items-center justify-between">
+                                        <span>Source: {spy.spiedBy || spy.source}</span>
+                                        <span>{Math.max(1, Math.round((Date.now() / 1000 - spy.timestamp) / 86400))}d ago</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Matchup Rating Badge */}
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${matchup.color}`}>
+                                    {matchup.label}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  {/* Algorithmic Point Estimate Badge */}
+                                  <div
+                                    onClick={() => openSpyEditor(t)}
+                                    className="group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                                  >
+                                    <Sparkles className="w-3 h-3 text-amber-400" />
+                                    <span className="font-mono text-[11px] text-slate-200 font-medium">{estimate.label}</span>
+                                    <span className="text-[10px] text-slate-400 font-mono">Est</span>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2 bg-slate-950 border border-slate-700 rounded shadow-lg text-[10px] text-slate-300 whitespace-nowrap pointer-events-none">
+                                      <div>Gym progression regression model based on Level {t.level}.</div>
+                                      <div className="text-indigo-400 mt-0.5">Click to log verified spy or query FFScouter</div>
+                                    </div>
+                                  </div>
+
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${matchup.color}`}>
+                                    {matchup.label}
                                   </span>
 
-                                  {/* Hover Tooltip with Str/Def/Spd/Dex */}
-                                  <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2.5 bg-slate-950 border border-slate-700 rounded-lg shadow-xl text-left min-w-[210px] pointer-events-none">
-                                    <div className="text-[11px] font-bold text-white mb-1.5 flex items-center justify-between border-b border-slate-800 pb-1">
-                                      <span>{spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "FF Combat Estimate" : "Spy Report"}: {t.name}</span>
-                                      <span className={`font-mono font-bold ${spy.source === "FFSCOUTER" || spy.source === "FAIR_FIGHT" ? "text-cyan-400" : "text-emerald-400"}`}>
-                                        {formatStatNumber(spy.total)}
-                                      </span>
-                                    </div>
-                                    {spy.strength || spy.defense ? (
-                                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] font-mono">
-                                        <div className="text-slate-400">Str: <span className="text-slate-200">{spy.strength ? formatStatNumber(spy.strength) : "—"}</span></div>
-                                        <div className="text-slate-400">Def: <span className="text-slate-200">{spy.defense ? formatStatNumber(spy.defense) : "—"}</span></div>
-                                        <div className="text-slate-400">Spd: <span className="text-slate-200">{spy.speed ? formatStatNumber(spy.speed) : "—"}</span></div>
-                                        <div className="text-slate-400">Dex: <span className="text-slate-200">{spy.dexterity ? formatStatNumber(spy.dexterity) : "—"}</span></div>
-                                      </div>
-                                    ) : (
-                                      <div className="text-[10px] text-slate-300">
-                                        Derived from Fair-Fight attack logs ({spy.fairFight ? `${spy.fairFight}x FF` : "Combat Telemetry"}).
-                                      </div>
-                                    )}
-                                    <div className="text-[9px] text-slate-500 mt-2 border-t border-slate-800/60 pt-1 flex items-center justify-between">
-                                      <span>Source: {spy.spiedBy || spy.source}</span>
-                                      <span>{Math.max(1, Math.round((Date.now() / 1000 - spy.timestamp) / 86400))}d ago</span>
-                                    </div>
-                                  </div>
+                                  <button
+                                    onClick={() => openSpyEditor(t)}
+                                    className="text-[10px] text-indigo-400 hover:text-indigo-300 underline underline-offset-2 ml-1"
+                                  >
+                                    + Spy
+                                  </button>
                                 </div>
+                              )}
 
-                                {/* Matchup Rating Badge */}
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${matchup.color}`}>
-                                  {matchup.label}
+                              {/* Target Defender Loadout Chips (Armor Set & RW Weapon Bonus Tags) */}
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-800/90 text-cyan-300 border border-slate-700">
+                                  {formatArmorChip(spy?.armorSet || (t.level >= 60 ? "EOD" : t.level >= 40 ? "Riot" : t.level >= 20 ? "Combat" : "Standard Combat"))}
                                 </span>
+                                {spy?.weaponBonuses ? (
+                                  formatWeaponBonusChips(spy.weaponBonuses).map((bonus, idx) => (
+                                    <span
+                                      key={idx}
+                                      className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                                        bonus.toLowerCase().includes("execute")
+                                          ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                          : bonus.toLowerCase().includes("bloodlust")
+                                          ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                                          : bonus.toLowerCase().includes("paralyze")
+                                          ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                          : "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                                      }`}
+                                    >
+                                      {bonus}
+                                    </span>
+                                  ))
+                                ) : null}
                               </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                {/* Algorithmic Point Estimate Badge */}
-                                <div
-                                  onClick={() => openSpyEditor(t)}
-                                  className="group relative cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-                                >
-                                  <Sparkles className="w-3 h-3 text-amber-400" />
-                                  <span className="font-mono text-[11px] text-slate-200 font-medium">{estimate.label}</span>
-                                  <span className="text-[10px] text-slate-400 font-mono">Est</span>
-
-                                  {/* Tooltip */}
-                                  <div className="absolute bottom-7 left-0 hidden group-hover:block z-30 p-2 bg-slate-950 border border-slate-700 rounded shadow-lg text-[10px] text-slate-300 whitespace-nowrap pointer-events-none">
-                                    <div>Gym progression regression model based on Level {t.level}.</div>
-                                    <div className="text-indigo-400 mt-0.5">Click to log verified spy or query FFScouter</div>
-                                  </div>
-                                </div>
-
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${matchup.color}`}>
-                                  {matchup.label}
-                                </span>
-
-                                <button
-                                  onClick={() => openSpyEditor(t)}
-                                  className="text-[10px] text-indigo-400 hover:text-indigo-300 underline underline-offset-2 ml-1"
-                                >
-                                  + Spy
-                                </button>
-                              </div>
-                            )}
+                            </div>
                           </td>
                         )}
 
@@ -1737,6 +1782,44 @@ export default function WarRoomPage() {
                 onChange={(e) => setSpyFormTotal(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="spy-form-armor" className="text-[11px] font-semibold text-slate-300 uppercase block mb-1">
+                  🛡️ Defender Armor
+                </label>
+                <select
+                  id="spy-form-armor"
+                  name="spyFormArmor"
+                  aria-label="Defender Armor Set"
+                  value={spyFormArmor}
+                  onChange={(e) => setSpyFormArmor(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="">Standard / Unverified</option>
+                  {Object.keys(CANONICAL_ARMOR_SETS).map((setName) => (
+                    <option key={setName} value={setName}>
+                      {setName} Set (~{CANONICAL_ARMOR_SETS[setName].fullSetAvgRating.toFixed(0)}% Mit)
+                    </option>
+                  ))}
+                  <option value="None">Unarmored (0% Mit)</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="spy-form-weapons" className="text-[11px] font-semibold text-slate-300 uppercase block mb-1">
+                  ⚔️ RW Weapon Bonuses
+                </label>
+                <input
+                  id="spy-form-weapons"
+                  type="text"
+                  placeholder="e.g. Execute 24%, Paralyze 15%"
+                  value={spyFormWeapons}
+                  onChange={(e) => setSpyFormWeapons(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+                />
+              </div>
             </div>
 
             <div>

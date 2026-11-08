@@ -1,3 +1,6 @@
+import { solveDefenderStatsFromFF, CANONICAL_FF_RATIO } from "./fair-fight.js";
+import type { DefenderLoadout } from "./loadout.js";
+
 export interface BattleStatEstimate {
   min: number;
   max: number;
@@ -20,6 +23,9 @@ export interface PlayerSpyData {
   source: "TORNSTATS" | "FACTION_SPY" | "MANUAL" | "FAIR_FIGHT" | "FFSCOUTER";
   spiedBy?: string;
   fairFight?: number;
+  armorSet?: string;
+  weaponBonuses?: string;
+  loadout?: DefenderLoadout;
 }
 
 /**
@@ -244,41 +250,21 @@ export function estimateBattleStats(level: number, ageDays: number = 365): Battl
 /**
  * Reverse Fair-Fight (FF) calculation.
  * In Torn, Fair Fight is calculated as:
- * FF = 1 + (7/8) * (Defender / Attacker - 1) clamped between 1.00 and 3.00.
+ * FF = 1 + (Defender / Attacker) * (8 / 9) clamped between 1.00 and 3.00.
+ * Therefore (Defender / Attacker) = (FF - 1) * (9 / 8) = (FF - 1) * 1.125.
  *
  * Given the attacker's total stats and the attack's FF multiplier,
- * this computes the defender's estimated battle stat range.
+ * this computes the defender's estimated battle stat range using the canonical 1.125 constant.
  */
 export function reverseFairFight(
   attackerStats: number,
   fairFight: number
 ): { min: number; max: number; est: number } {
-  if (fairFight <= 1.0) {
-    // Defender is weaker than or equal to attacker
-    return {
-      min: Math.round(attackerStats * 0.05),
-      max: attackerStats,
-      est: Math.round(attackerStats * 0.5),
-    };
-  }
-
-  if (fairFight >= 3.0) {
-    // Defender is roughly 2.85x or much higher than attacker
-    const min = Math.round(attackerStats * (1 + (8 / 7) * 2.0));
-    return {
-      min,
-      max: min * 5,
-      est: min * 1.5,
-    };
-  }
-
-  // Linear range between 1.0 and 3.0
-  const ratio = 1 + (8 / 7) * (fairFight - 1);
-  const est = Math.round(attackerStats * ratio);
+  const solved = solveDefenderStatsFromFF(attackerStats, fairFight);
   return {
-    min: Math.round(est * 0.85),
-    max: Math.round(est * 1.15),
-    est,
+    min: solved.minTBS,
+    max: solved.maxTBS,
+    est: solved.estimatedTBS,
   };
 }
 

@@ -29,6 +29,7 @@ import {
   getDirectAttackUrl,
   exportToYataFormat,
   exportToIdList,
+  formatArmorChip,
 } from "@torn/shared";
 import { useTorn } from "@/context/TornContext";
 
@@ -535,6 +536,20 @@ export default function LevelingTargetsPage() {
                       Dex: <span className="text-slate-200">{target.dex.toLocaleString()}</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Defender Loadout & Intel Strip */}
+                <div className="mt-2.5 p-2 bg-slate-950/50 rounded-lg border border-slate-800/70 flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5 text-slate-300">
+                    <Shield className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <span>Armor:</span>
+                    <span className="font-semibold text-cyan-300">
+                      {target.level >= 40 ? "Riot Set (~49% Mit)" : target.level >= 20 ? "Combat (~39% Mit)" : "Standard Combat"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60 font-mono">
+                    RW: Standard
+                  </span>
                 </div>
               </div>
 

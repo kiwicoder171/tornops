@@ -28,7 +28,20 @@ export interface MultiHitStatEstimate {
 
 // Torn Fair Fight ratio constant: FF = 1 + (Defender / Attacker) * (8 / 9)
 // Therefore (Defender / Attacker) = (FF - 1) * (9 / 8) = (FF - 1) * 1.125
-const FF_RATIO_FACTOR = 1.125; // 9 / 8
+export const CANONICAL_FF_RATIO = 1.125; // 9 / 8
+export const FF_RATIO_FACTOR = CANONICAL_FF_RATIO;
+
+/**
+ * Calculates Torn Fair Fight modifier from known attacker and defender total battle stats.
+ * Formula: FF = 1 + (Defender / Attacker) * (8 / 9), clamped between 1.00 and 3.00.
+ */
+export function calculateFairFight(attackerTBS: number, defenderTBS: number): number {
+  if (attackerTBS <= 0) {
+    throw new Error("Attacker battle stats must be greater than 0");
+  }
+  const rawFF = 1 + (defenderTBS / attackerTBS) * (8 / 9);
+  return Number(Math.min(3.00, Math.max(1.00, rawFF)).toFixed(2));
+}
 
 /**
  * Calculates estimated Defender Total Battle Stats from a single attack log entry.

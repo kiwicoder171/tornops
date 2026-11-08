@@ -1,3 +1,5 @@
+> 🧠 **Obsidian Hub**: [[_Brain/Projects/Torn|Torn]] · [[Antigravity/Torn/CONTEXT|Torn/CONTEXT.md]]
+
 # 🏙️ Torn Faction Operations Suite
 
 An end-to-end, high-performance, Terms-of-Service-compliant operations suite for Torn City factions.

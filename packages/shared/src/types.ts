@@ -57,6 +57,8 @@ export interface RankedWarData {
   lead: number;
 }
 
+import type { DefenderLoadout } from "./loadout.js";
+
 export interface HospitalCalloutTarget {
   playerId: number;
   name: string;
@@ -66,6 +68,9 @@ export interface HospitalCalloutTarget {
   hospitalUntil: number;
   estimatedStats?: string;
   directAttackUrl: string;
+  armorSet?: string;
+  weaponBonuses?: string;
+  loadout?: DefenderLoadout;
 }
 
 export interface ActivityHeatmapSlot {

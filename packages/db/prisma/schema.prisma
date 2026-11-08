@@ -128,6 +128,9 @@ model EnemyWatch {
   level          Int
   hospitalUntil  DateTime?
   estimatedStats String?
+  armorSet       String?
+  weaponBonuses  String?
+  loadoutJson    String?
   lastAction     String?
   sleepSchedule  String?        // JSON of active hours
   priority       Int            @default(1) // 1=Normal, 2=High Value, 3=Priority Target
