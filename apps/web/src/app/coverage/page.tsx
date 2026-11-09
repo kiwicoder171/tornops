@@ -58,7 +58,7 @@ function getMemberLocalTime(tz: string, fallbackOffset: number, date: Date): str
 }
 
 export default function FactionCoveragePage() {
-  const { isLive, apiKey, userProfile } = useTorn();
+  const { isLive, apiKey, userProfile, isHydrated } = useTorn();
 
   // Current real-time TCT Clock (UTC)
   const [now, setNow] = useState<Date>(new Date());
@@ -77,9 +77,9 @@ export default function FactionCoveragePage() {
     .padStart(2, "0")}:${currentTctSecond.toString().padStart(2, "0")} TCT`;
 
   // Availability roster state
-  const [members, setMembers] = useState<FactionMemberAvailability[]>(isLive ? [] : DEMO_FACTION_TIMEZONES);
+  const [members, setMembers] = useState<FactionMemberAvailability[]>([]);
   const [isLiveRosterLoaded, setIsLiveRosterLoaded] = useState(false);
-  const [isLoadingRoster, setIsLoadingRoster] = useState(isLive);
+  const [isLoadingRoster, setIsLoadingRoster] = useState(false);
   const [cloudSynced, setCloudSynced] = useState(false);
 
   const effectiveFactionId = userProfile?.factionId || 57693;
@@ -103,28 +103,26 @@ export default function FactionCoveragePage() {
 
   // Load persisted member timezones from localStorage in Demo Mode
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!isLive) {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setMembers(parsed);
-          }
+    if (typeof window === "undefined" || !isHydrated || isLive) return;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMembers(parsed);
         }
-      } catch {
-        // Fallback to default
       }
+    } catch {
+      // Fallback to default
     }
-  }, [isLive]);
+  }, [isHydrated, isLive]);
 
   // Sync with Live Torn API faction roster if key is available
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isLive || !apiKey) {
-      if (!isLive) {
-        setMembers(DEMO_FACTION_TIMEZONES);
-      }
+      setMembers(DEMO_FACTION_TIMEZONES);
       return;
     }
 

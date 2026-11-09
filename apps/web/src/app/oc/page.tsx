@@ -55,7 +55,7 @@ const DEMO_SKILLS: UserSkill[] = [
 ];
 
 export default function OcOptimizerPage() {
-  const { isLive, apiKey, userProfile } = useTorn();
+  const { isLive, apiKey, userProfile, isHydrated } = useTorn();
 
   // Role detection: accurately check whether current user is Leader or Co-Leader with AA
   const isActualLeader =
@@ -83,7 +83,8 @@ export default function OcOptimizerPage() {
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
   const [lockedSlots, setLockedSlots] = useState<Record<string, number>>({});
   const [pinged, setPinged] = useState<number | null>(null);
-  const [candidates, setCandidates] = useState<FactionCandidate[]>(DEMO_CANDIDATES);
+  const [candidates, setCandidates] = useState<FactionCandidate[]>([]);
+  const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
   const [cloudSynced, setCloudSynced] = useState(false);
   const [isSyncingPlan, setIsSyncingPlan] = useState(false);
 
@@ -134,10 +135,12 @@ export default function OcOptimizerPage() {
   };
 
   // --- Member State ---
-  const [mySkills, setMySkills] = useState<UserSkill[]>(isLive ? [] : DEMO_SKILLS);
+  const [mySkills, setMySkills] = useState<UserSkill[]>([]);
 
   // Fetch real skills & faction members if connected live
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isLive || !apiKey) {
       setCandidates(DEMO_CANDIDATES);
       setMySkills(DEMO_SKILLS);
@@ -157,6 +160,7 @@ export default function OcOptimizerPage() {
     };
 
     const fetchLiveCandidates = async () => {
+      setIsLoadingCandidates(true);
       try {
         const res = await fetch(`/api/torn/faction?selections=basic&key=${encodeURIComponent(apiKey)}`);
         const data = await res.json();
@@ -175,12 +179,14 @@ export default function OcOptimizerPage() {
         }
       } catch {
         // Retain
+      } finally {
+        setIsLoadingCandidates(false);
       }
     };
 
     fetchLiveSkills();
     fetchLiveCandidates();
-  }, [isLive, apiKey]);
+  }, [isHydrated, isLive, apiKey]);
 
   const currentTemplate = OC_TEMPLATES[selectedTemplateIndex];
 

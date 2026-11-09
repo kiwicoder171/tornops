@@ -43,7 +43,7 @@ interface LiveWarSummary {
 }
 
 export default function OverviewPage() {
-  const { isLive, apiKey, userProfile } = useTorn();
+  const { isLive, apiKey, userProfile, isHydrated } = useTorn();
   const [chainData, setChainData] = useState<LiveChainData>({
     current: 0,
     max: 10,
@@ -52,47 +52,22 @@ export default function OverviewPage() {
     cooldown: 0,
   });
 
-  const [warSummary, setWarSummary] = useState<LiveWarSummary | null>(
-    isLive
-      ? null
-      : {
-          opponentName: "Storm Heralds",
-          opponentId: 57574,
-          ourScore: 2409,
-          opponentScore: 1573,
-          lead: 836,
-          isWon: true,
-          statusLabel: "VICTORY",
-        }
-  );
+  const [warSummary, setWarSummary] = useState<LiveWarSummary | null>(null);
 
   const [factionStats, setFactionStats] = useState({
-    members: isLive ? (userProfile?.factionId ? 1 : 0) : 19,
-    respect: isLive ? 0 : 10465,
-    tag: isLive ? "" : "MD",
+    members: 0,
+    respect: 0,
+    tag: "",
   });
 
   // Synchronized TCT clock & shift telemetry
   const [tctNow, setTctNow] = useState<Date>(new Date());
-  const [factionMembers, setFactionMembers] = useState<any[]>(isLive ? [] : DEMO_FACTION_TIMEZONES);
+  const [factionMembers, setFactionMembers] = useState<any[]>([]);
 
   useEffect(() => {
     const t = setInterval(() => setTctNow(new Date()), 1000);
-    if (!isLive) {
-      try {
-        const stored = localStorage.getItem("torn_faction_timezones_v1");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setFactionMembers(parsed);
-          }
-        }
-      } catch {
-        // Storage error fallback
-      }
-    }
     return () => clearInterval(t);
-  }, [isLive]);
+  }, []);
 
   const curTctHour = tctNow.getUTCHours();
   const curTctMinute = tctNow.getUTCMinutes();
@@ -105,20 +80,20 @@ export default function OverviewPage() {
 
   // If live key is connected, poll live faction telemetry
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isLive || !apiKey) {
-      if (!isLive) {
-        setWarSummary({
-          opponentName: "Storm Heralds",
-          opponentId: 57574,
-          ourScore: 2409,
-          opponentScore: 1573,
-          lead: 836,
-          isWon: true,
-          statusLabel: "VICTORY",
-        });
-        setFactionMembers(DEMO_FACTION_TIMEZONES);
-        setFactionStats({ members: 19, respect: 10465, tag: "MD" });
-      }
+      setWarSummary({
+        opponentName: "Storm Heralds",
+        opponentId: 57574,
+        ourScore: 2409,
+        opponentScore: 1573,
+        lead: 836,
+        isWon: true,
+        statusLabel: "VICTORY",
+      });
+      setFactionMembers(DEMO_FACTION_TIMEZONES);
+      setFactionStats({ members: 19, respect: 10465, tag: "MD" });
       return;
     }
 
@@ -205,12 +180,12 @@ export default function OverviewPage() {
     };
 
     fetchLiveData();
-    const interval = setInterval(fetchLiveData, 5000);
+    const interval = setInterval(fetchLiveData, 15000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [isLive, apiKey, userProfile]);
+  }, [isHydrated, isLive, apiKey, userProfile]);
 
   const chainPercentage = chainData.max > 0 ? Math.min(100, Math.round((chainData.current / chainData.max) * 100)) : 0;
 

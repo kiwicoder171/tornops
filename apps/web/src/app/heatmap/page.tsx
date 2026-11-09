@@ -122,11 +122,11 @@ const mockEnemyRoster: MemberActivity[] = [
 ];
 
 export default function EnemyHeatmapPage() {
-  const { isLive, apiKey, userProfile } = useTorn();
-  const [targetFactionId, setTargetFactionId] = useState<string>(isLive ? "" : "57574");
+  const { isLive, apiKey, userProfile, isHydrated } = useTorn();
+  const [targetFactionId, setTargetFactionId] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [enemyRoster, setEnemyRoster] = useState<MemberActivity[]>(isLive ? [] : mockEnemyRoster);
+  const [enemyRoster, setEnemyRoster] = useState<MemberActivity[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
 
@@ -196,11 +196,11 @@ export default function EnemyHeatmapPage() {
 
   // Auto-detect ranked war opponent when connected live
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isLive || !apiKey) {
-      if (!isLive) {
-        setTargetFactionId("57574");
-        setEnemyRoster(mockEnemyRoster);
-      }
+      setTargetFactionId("57574");
+      setEnemyRoster(mockEnemyRoster);
       return;
     }
 
@@ -228,7 +228,7 @@ export default function EnemyHeatmapPage() {
     };
 
     autoDetectOpponent();
-  }, [isLive, apiKey, userProfile]);
+  }, [isHydrated, isLive, apiKey, userProfile]);
 
   const handleScanOpponent = async () => {
     if (!targetFactionId.trim()) return;

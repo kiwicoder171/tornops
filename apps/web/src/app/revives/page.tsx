@@ -146,9 +146,9 @@ const INITIAL_REVIVERS: ReviverContract[] = [
 ];
 
 export default function ReviveDispatchPage() {
-  const { isLive, apiKey, userProfile } = useTorn();
-  const [patients, setPatients] = useState<HospitalPatient[]>(isLive ? [] : INITIAL_PATIENTS);
-  const [revivers, setRevivers] = useState<ReviverContract[]>(isLive ? [] : INITIAL_REVIVERS);
+  const { isLive, apiKey, userProfile, isHydrated } = useTorn();
+  const [patients, setPatients] = useState<HospitalPatient[]>([]);
+  const [revivers, setRevivers] = useState<ReviverContract[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState<"queue" | "revivers" | "payouts">("queue");
   const [searchQuery, setSearchQuery] = useState("");
@@ -156,6 +156,8 @@ export default function ReviveDispatchPage() {
 
   // Live hospital triage polling
   useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isLive || !apiKey) {
       setPatients(INITIAL_PATIENTS);
       setRevivers(INITIAL_REVIVERS);
@@ -206,7 +208,7 @@ export default function ReviveDispatchPage() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [isLive, apiKey]);
+  }, [isHydrated, isLive, apiKey]);
 
   // Request Revive Modal state
   const [showRequestModal, setShowRequestModal] = useState(false);

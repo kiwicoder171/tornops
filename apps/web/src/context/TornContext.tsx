@@ -26,6 +26,7 @@ interface TornContextType {
   maskedKey: string;
   isLive: boolean;
   isLoading: boolean;
+  isHydrated: boolean;
   userProfile: TornUserProfile | null;
   error: string | null;
   saveApiKey: (key: string) => Promise<boolean>;
@@ -46,6 +47,7 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<TornUserProfile | null>(null);
   const [isLive, setIsLive] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [suiteMode, setSuiteModeState] = useState<SuiteMode>("all");
@@ -164,7 +166,11 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      validateAndLoad(saved);
+      validateAndLoad(saved).finally(() => {
+        setIsHydrated(true);
+      });
+    } else {
+      setIsHydrated(true);
     }
     const savedMode = localStorage.getItem("TORN_SUITE_MODE") as SuiteMode;
     if (savedMode && (savedMode === "all" || savedMode === "faction" || savedMode === "citizen")) {
@@ -191,6 +197,7 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
         maskedKey: "",
         isLive,
         isLoading,
+        isHydrated,
         userProfile,
         error,
         saveApiKey,

@@ -56,14 +56,14 @@ const DEMO_REQUESTS: BankingWithdrawalRecord[] = [
 ];
 
 export default function BankingLedgerPage() {
-  const { isLive, userProfile } = useTorn();
+  const { isLive, userProfile, isHydrated } = useTorn();
   const [requestedAmount, setRequestedAmount] = useState("");
   const [requestReason, setRequestReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSubmitted, setRequestSubmitted] = useState(false);
   const [unlockedForTesting, setUnlockedForTesting] = useState(false);
-  const [queue, setQueue] = useState<BankingWithdrawalRecord[]>(DEMO_REQUESTS);
-  const [isLoadingQueue, setIsLoadingQueue] = useState(false);
+  const [queue, setQueue] = useState<BankingWithdrawalRecord[]>([]);
+  const [isLoadingQueue, setIsLoadingQueue] = useState(true);
   const [fulfillingId, setFulfillingId] = useState<string | null>(null);
 
   const effectiveFactionId = userProfile?.factionId || 57693;
@@ -80,6 +80,8 @@ export default function BankingLedgerPage() {
 
   // Load live banking queue from Firestore API
   const fetchQueue = useCallback(async () => {
+    if (!isHydrated) return;
+
     setIsLoadingQueue(true);
     try {
       const res = await fetch(`/api/banking?factionId=${effectiveFactionId}`);
@@ -96,7 +98,7 @@ export default function BankingLedgerPage() {
     } finally {
       setIsLoadingQueue(false);
     }
-  }, [effectiveFactionId, isLive]);
+  }, [effectiveFactionId, isLive, isHydrated]);
 
   useEffect(() => {
     fetchQueue();
@@ -373,7 +375,12 @@ export default function BankingLedgerPage() {
             </span>
           </div>
 
-          {queue.length === 0 ? (
+          {isLoadingQueue ? (
+            <div className="text-center py-10 text-xs text-zinc-500 font-mono flex items-center justify-center gap-2">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+              <span>Syncing live banking queue with Firestore...</span>
+            </div>
+          ) : queue.length === 0 ? (
             <div className="text-center py-10 border border-dashed border-[#1f1f28] rounded-lg text-xs text-zinc-500">
               No withdrawal requests pending in the queue.
             </div>
