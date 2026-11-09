@@ -24,10 +24,11 @@ import {
 
 interface OverseasDestination {
   id: string;
+  itemId: number;
   country: string;
   flag: string;
-  flightMinutesStandard: number; // e.g. 177 mins
-  flightMinutesAirstrip: number; // e.g. 124 mins
+  flightMinutesStandard: number;
+  flightMinutesAirstrip: number;
   featuredItem: string;
   itemType: "Plushie" | "Flower" | "Drug" | "Special";
   localCost: number;
@@ -36,61 +37,136 @@ interface OverseasDestination {
   lastUpdated: string;
 }
 
-const DESTINATIONS: OverseasDestination[] = [
+const CANONICAL_DESTINATIONS: OverseasDestination[] = [
   {
-    id: "uae",
+    id: "uae_camel",
+    itemId: 384,
     country: "United Arab Emirates",
     flag: "🇦🇪",
-    flightMinutesStandard: 247,
-    flightMinutesAirstrip: 173,
+    flightMinutesStandard: 271,
+    flightMinutesAirstrip: 135,
     featuredItem: "Camel Plushie",
     itemType: "Plushie",
     localCost: 14000,
-    tornMarketValue: 98500,
+    tornMarketValue: 70504,
     stockCount: 480,
-    lastUpdated: "3m ago",
+    lastUpdated: "Official API",
   },
   {
-    id: "switzerland",
-    country: "Switzerland",
-    flag: "🇨🇭",
-    flightMinutesStandard: 177,
-    flightMinutesAirstrip: 124,
-    featuredItem: "Chamois Plushie",
+    id: "uae_tribulus",
+    itemId: 385,
+    country: "United Arab Emirates",
+    flag: "🇦🇪",
+    flightMinutesStandard: 271,
+    flightMinutesAirstrip: 135,
+    featuredItem: "Tribulus Omanense",
+    itemType: "Flower",
+    localCost: 6000,
+    tornMarketValue: 61104,
+    stockCount: 320,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "china_panda",
+    itemId: 274,
+    country: "China",
+    flag: "🇨🇳",
+    flightMinutesStandard: 242,
+    flightMinutesAirstrip: 143,
+    featuredItem: "Panda Plushie",
     itemType: "Plushie",
     localCost: 400,
-    tornMarketValue: 47200,
-    stockCount: 1120,
-    lastUpdated: "1m ago",
+    tornMarketValue: 53488,
+    stockCount: 850,
+    lastUpdated: "Official API",
   },
   {
-    id: "south_africa",
+    id: "china_peony",
+    itemId: 276,
+    country: "China",
+    flag: "🇨🇳",
+    flightMinutesStandard: 242,
+    flightMinutesAirstrip: 143,
+    featuredItem: "Peony",
+    itemType: "Flower",
+    localCost: 5000,
+    tornMarketValue: 53849,
+    stockCount: 620,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "south_africa_violet",
+    itemId: 282,
     country: "South Africa",
     flag: "🇿🇦",
-    flightMinutesStandard: 298,
-    flightMinutesAirstrip: 209,
-    featuredItem: "Xanax",
-    itemType: "Drug",
-    localCost: 835000,
-    tornMarketValue: 841000,
-    stockCount: 142,
-    lastUpdated: "2m ago",
+    flightMinutesStandard: 300,
+    flightMinutesAirstrip: 165,
+    featuredItem: "African Violet",
+    itemType: "Flower",
+    localCost: 2000,
+    tornMarketValue: 55661,
+    stockCount: 940,
+    lastUpdated: "Official API",
   },
   {
     id: "south_africa_lion",
+    itemId: 281,
     country: "South Africa",
     flag: "🇿🇦",
-    flightMinutesStandard: 298,
-    flightMinutesAirstrip: 209,
+    flightMinutesStandard: 300,
+    flightMinutesAirstrip: 165,
     featuredItem: "Lion Plushie",
     itemType: "Plushie",
     localCost: 400,
-    tornMarketValue: 69800,
+    tornMarketValue: 52130,
     stockCount: 650,
-    lastUpdated: "2m ago",
+    lastUpdated: "Official API",
   },
   {
-    id: "uk",
+    id: "south_africa_xanax",
+    itemId: 206,
+    country: "South Africa",
+    flag: "🇿🇦",
+    flightMinutesStandard: 300,
+    flightMinutesAirstrip: 165,
+    featuredItem: "Xanax",
+    itemType: "Drug",
+    localCost: 850000,
+    tornMarketValue: 842477,
+    stockCount: 142,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "japan_cherry",
+    itemId: 277,
+    country: "Japan",
+    flag: "🇯🇵",
+    flightMinutesStandard: 226,
+    flightMinutesAirstrip: 158,
+    featuredItem: "Cherry Blossom",
+    itemType: "Flower",
+    localCost: 500,
+    tornMarketValue: 36322,
+    stockCount: 1430,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "uk_heather",
+    itemId: 267,
+    country: "United Kingdom",
+    flag: "🇬🇧",
+    flightMinutesStandard: 159,
+    flightMinutesAirstrip: 111,
+    featuredItem: "Heather",
+    itemType: "Flower",
+    localCost: 5000,
+    tornMarketValue: 34241,
+    stockCount: 1200,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "uk_fox",
+    itemId: 268,
     country: "United Kingdom",
     flag: "🇬🇧",
     flightMinutesStandard: 159,
@@ -98,25 +174,27 @@ const DESTINATIONS: OverseasDestination[] = [
     featuredItem: "Red Fox Plushie",
     itemType: "Plushie",
     localCost: 1000,
-    tornMarketValue: 45000,
+    tornMarketValue: 31786,
     stockCount: 890,
-    lastUpdated: "4m ago",
+    lastUpdated: "Official API",
   },
   {
-    id: "japan",
-    country: "Japan",
-    flag: "🇯🇵",
-    flightMinutesStandard: 227,
-    flightMinutesAirstrip: 159,
-    featuredItem: "Cherry Blossom",
-    itemType: "Flower",
-    localCost: 500,
-    tornMarketValue: 56500,
-    stockCount: 1430,
-    lastUpdated: "6m ago",
+    id: "uk_nessie",
+    itemId: 266,
+    country: "United Kingdom",
+    flag: "🇬🇧",
+    flightMinutesStandard: 159,
+    flightMinutesAirstrip: 111,
+    featuredItem: "Nessie Plushie",
+    itemType: "Plushie",
+    localCost: 200,
+    tornMarketValue: 29882,
+    stockCount: 1050,
+    lastUpdated: "Official API",
   },
   {
-    id: "argentina",
+    id: "argentina_monkey",
+    itemId: 269,
     country: "Argentina",
     flag: "🇦🇷",
     flightMinutesStandard: 167,
@@ -124,38 +202,55 @@ const DESTINATIONS: OverseasDestination[] = [
     featuredItem: "Monkey Plushie",
     itemType: "Plushie",
     localCost: 400,
-    tornMarketValue: 47000,
+    tornMarketValue: 31269,
     stockCount: 780,
-    lastUpdated: "2m ago",
+    lastUpdated: "Official API",
   },
   {
-    id: "hawaii",
-    country: "Hawaii",
-    flag: "🇺🇸",
-    flightMinutesStandard: 134,
-    flightMinutesAirstrip: 94,
-    featuredItem: "Orchid",
+    id: "argentina_ceibo",
+    itemId: 271,
+    country: "Argentina",
+    flag: "🇦🇷",
+    flightMinutesStandard: 167,
+    flightMinutesAirstrip: 117,
+    featuredItem: "Ceibo Flower",
     itemType: "Flower",
-    localCost: 700,
-    tornMarketValue: 33500,
-    stockCount: 2200,
-    lastUpdated: "8m ago",
+    localCost: 500,
+    tornMarketValue: 30755,
+    stockCount: 650,
+    lastUpdated: "Official API",
   },
   {
-    id: "cayman",
-    country: "Cayman Islands",
-    flag: "🇰🇾",
-    flightMinutesStandard: 35,
-    flightMinutesAirstrip: 25,
-    featuredItem: "Banana Orchid",
+    id: "switzerland_edelweiss",
+    itemId: 272,
+    country: "Switzerland",
+    flag: "🇨🇭",
+    flightMinutesStandard: 175,
+    flightMinutesAirstrip: 122,
+    featuredItem: "Edelweiss",
     itemType: "Flower",
+    localCost: 900,
+    tornMarketValue: 15446,
+    stockCount: 1400,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "switzerland_chamois",
+    itemId: 273,
+    country: "Switzerland",
+    flag: "🇨🇭",
+    flightMinutesStandard: 175,
+    flightMinutesAirstrip: 122,
+    featuredItem: "Chamois Plushie",
+    itemType: "Plushie",
     localCost: 400,
-    tornMarketValue: 10500,
-    stockCount: 3100,
-    lastUpdated: "1m ago",
+    tornMarketValue: 14154,
+    stockCount: 1120,
+    lastUpdated: "Official API",
   },
   {
-    id: "mexico",
+    id: "mexico_jaguar",
+    itemId: 258,
     country: "Mexico",
     flag: "🇲🇽",
     flightMinutesStandard: 26,
@@ -163,12 +258,41 @@ const DESTINATIONS: OverseasDestination[] = [
     featuredItem: "Jaguar Plushie",
     itemType: "Plushie",
     localCost: 10000,
-    tornMarketValue: 18500,
+    tornMarketValue: 13824,
     stockCount: 1800,
-    lastUpdated: "5m ago",
+    lastUpdated: "Official API",
   },
   {
-    id: "canada",
+    id: "mexico_dahlia",
+    itemId: 260,
+    country: "Mexico",
+    flag: "🇲🇽",
+    flightMinutesStandard: 26,
+    flightMinutesAirstrip: 18,
+    featuredItem: "Dahlia",
+    itemType: "Flower",
+    localCost: 300,
+    tornMarketValue: 2362,
+    stockCount: 2200,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "cayman_orchid",
+    itemId: 617,
+    country: "Cayman Islands",
+    flag: "🇰🇾",
+    flightMinutesStandard: 35,
+    flightMinutesAirstrip: 25,
+    featuredItem: "Banana Orchid",
+    itemType: "Flower",
+    localCost: 4000,
+    tornMarketValue: 8039,
+    stockCount: 3100,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "canada_wolverine",
+    itemId: 261,
     country: "Canada",
     flag: "🇨🇦",
     flightMinutesStandard: 41,
@@ -176,19 +300,87 @@ const DESTINATIONS: OverseasDestination[] = [
     featuredItem: "Wolverine Plushie",
     itemType: "Plushie",
     localCost: 30,
-    tornMarketValue: 9800,
+    tornMarketValue: 4140,
     stockCount: 2400,
-    lastUpdated: "7m ago",
+    lastUpdated: "Official API",
+  },
+  {
+    id: "canada_crocus",
+    itemId: 263,
+    country: "Canada",
+    flag: "🇨🇦",
+    flightMinutesStandard: 41,
+    flightMinutesAirstrip: 29,
+    featuredItem: "Crocus",
+    itemType: "Flower",
+    localCost: 600,
+    tornMarketValue: 3620,
+    stockCount: 2100,
+    lastUpdated: "Official API",
+  },
+  {
+    id: "hawaii_orchid",
+    itemId: 264,
+    country: "Hawaii",
+    flag: "🇺🇸",
+    flightMinutesStandard: 134,
+    flightMinutesAirstrip: 94,
+    featuredItem: "Orchid",
+    itemType: "Flower",
+    localCost: 700,
+    tornMarketValue: 3526,
+    stockCount: 2200,
+    lastUpdated: "Official API",
   },
 ];
 
 export default function TravelPage() {
-  const { userProfile, isLive } = useTorn();
+  const { userProfile, isLive, apiKey } = useTorn();
+  const [destinations, setDestinations] = useState<OverseasDestination[]>(CANONICAL_DESTINATIONS);
+  const [isSyncingPrices, setIsSyncingPrices] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [carryCapacity, setCarryCapacity] = useState(29); // 5 base + 10 suitcase + 10 faction perk + 4 WLT
   const [hasAirstrip, setHasAirstrip] = useState(true);
   const [filterType, setFilterType] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [soundAlerts, setSoundAlerts] = useState(true);
+
+  // Live item price sync function
+  const syncLivePrices = async (key: string) => {
+    if (!key) return;
+    try {
+      setIsSyncingPrices(true);
+      const res = await fetch(`/api/torn/torn?selections=items&key=${encodeURIComponent(key)}`);
+      const data = await res.json();
+      if (data && data.items) {
+        setDestinations((prev) =>
+          prev.map((dest) => {
+            const liveItem = data.items[dest.itemId];
+            if (liveItem && typeof liveItem.market_value === "number") {
+              return {
+                ...dest,
+                tornMarketValue: liveItem.market_value,
+                lastUpdated: "Live API",
+              };
+            }
+            return dest;
+          })
+        );
+        const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        setLastSyncTime(timeStr);
+      }
+    } catch {
+      // Retain canonical baseline prices
+    } finally {
+      setIsSyncingPrices(false);
+    }
+  };
+
+  useEffect(() => {
+    if (apiKey) {
+      syncLivePrices(apiKey);
+    }
+  }, [apiKey]);
 
   // Check if live player is traveling or abroad
   const isPlayerTraveling =
@@ -249,12 +441,21 @@ export default function TravelPage() {
   const secondsRemainder = flightSecondsLeft % 60;
   const isMugDanger = flightSecondsLeft <= 300 && flightSecondsLeft > 0; // Under 5 minutes = danger window
 
-  const filteredDestinations = DESTINATIONS.filter((d) => {
+  const filteredDestinations = destinations.filter((d) => {
     const matchesFilter = filterType === "ALL" || d.itemType.toUpperCase() === filterType;
     const matchesSearch =
       d.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.featuredItem.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
+  });
+
+  // Sort by Yield Velocity (highest profit/hr first)
+  const sortedDestinations = [...filteredDestinations].sort((a, b) => {
+    const flightA = hasAirstrip ? a.flightMinutesAirstrip : a.flightMinutesStandard;
+    const flightB = hasAirstrip ? b.flightMinutesAirstrip : b.flightMinutesStandard;
+    const profitA = ((a.tornMarketValue - a.localCost) * carryCapacity) / (flightA * 2);
+    const profitB = ((b.tornMarketValue - b.localCost) * carryCapacity) / (flightB * 2);
+    return profitB - profitA;
   });
 
   return (
@@ -479,8 +680,24 @@ export default function TravelPage() {
           </div>
         </div>
 
-        <div className="text-right text-[#71717a] text-[11px]">
-          Rates updated continuously from community stock telemetry
+        <div className="flex items-center gap-3 text-right text-[11px]">
+          {lastSyncTime ? (
+            <span className="text-emerald-400 font-mono flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Torn Market Values Live ({lastSyncTime})
+            </span>
+          ) : (
+            <span className="text-zinc-400 font-mono">Torn Market Catalog (Canonical Baseline)</span>
+          )}
+          {apiKey && (
+            <button
+              onClick={() => syncLivePrices(apiKey)}
+              disabled={isSyncingPrices}
+              className="text-sky-400 hover:text-sky-300 font-medium underline transition-colors"
+            >
+              {isSyncingPrices ? "Syncing..." : "Refresh Live Prices"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -520,9 +737,9 @@ export default function TravelPage() {
         </div>
       </div>
 
-      {/* Stock Cards Grid */}
+      {/* Stock Cards Grid (Sorted by Yield Velocity / Profit per Hour) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredDestinations.map((dest) => {
+        {sortedDestinations.map((dest) => {
           const flightMinutesOneWay = hasAirstrip
             ? dest.flightMinutesAirstrip
             : dest.flightMinutesStandard;
