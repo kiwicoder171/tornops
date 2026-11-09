@@ -2,494 +2,555 @@
 
 import { useState, useEffect } from "react";
 import {
+  Shield,
   ShieldAlert,
-  ShieldCheck,
-  Package,
-  Pill,
-  Clock,
-  AlertTriangle,
+  Swords,
   Search,
   Copy,
   Check,
   ExternalLink,
-  MessageSquare,
-  Users,
-  TrendingDown,
-  DollarSign,
+  Flame,
+  Zap,
+  Target,
+  Sparkles,
+  UserCheck,
+  AlertTriangle,
+  Clock,
+  Layers,
+  HelpCircle,
+  Plus,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 
-interface LoanedItem {
+export interface RwItem {
   id: string;
-  memberName: string;
-  memberId: number;
-  itemName: string;
-  category: "WEAPON" | "ARMOR" | "HAZMAT";
-  loanDate: string;
-  daysHeld: number;
-  estimatedValue: string;
-  isOverdue: boolean;
+  name: string;
+  category: "PRIMARY" | "SECONDARY" | "MELEE" | "ARMOR";
+  bonusName: string;
+  bonusValue: string;
+  bonusType: "DEBUFF" | "DAMAGE" | "UTILITY" | "ARMOR_SET";
+  bonusDescription: string;
+  tier: "ORANGE" | "YELLOW" | "RED";
+  baseDamage?: number;
+  baseAccuracy?: number;
+  loanedTo?: {
+    name: string;
+    id: number;
+    daysHeld: number;
+    isOverdue: boolean;
+  };
+  valueEst: string;
 }
 
-interface MedicalConsumption {
-  memberId: number;
-  memberName: string;
-  warHits: number;
-  xanaxTaken: number;
-  bloodTaken: number;
-  efficiencyScore: "OPTIMAL" | "BALANCED" | "HIGH CONSUMPTION" | "LEECH WARNING";
-}
-
-const mockLoans: LoanedItem[] = [
+const CANONICAL_RW_ARMORY: RwItem[] = [
   {
-    id: "LN-101",
-    memberName: "Jack_Sparrow",
-    memberId: 2190841,
-    itemName: "Orange RW Macana (22% Powerful)",
-    category: "WEAPON",
-    loanDate: "2026-09-02",
-    daysHeld: 40,
-    estimatedValue: "$480,000,000",
-    isOverdue: true,
+    id: "rw-1",
+    name: "Enfield SA-80",
+    category: "PRIMARY",
+    bonusName: "Eviscerate",
+    bonusValue: "24%",
+    bonusType: "DEBUFF",
+    bonusDescription: "Causes the target to take +24% more damage from all incoming hits for the next 3 turns.",
+    tier: "ORANGE",
+    baseDamage: 68.4,
+    baseAccuracy: 58.2,
+    loanedTo: {
+      name: "WarStriker_X",
+      id: 2841092,
+      daysHeld: 18,
+      isOverdue: true,
+    },
+    valueEst: "$1,250,000,000",
   },
   {
-    id: "LN-102",
-    memberName: "GhostRider_99",
-    memberId: 2841092,
-    itemName: "Full Combat Armor Set (Quality 88%)",
+    id: "rw-2",
+    name: "Armalite M-15A4",
+    category: "PRIMARY",
+    bonusName: "Powerful",
+    bonusValue: "28%",
+    bonusType: "DAMAGE",
+    bonusDescription: "Provides +28% flat damage boost on all hits fired with this rifle.",
+    tier: "ORANGE",
+    baseDamage: 72.1,
+    baseAccuracy: 61.5,
+    loanedTo: {
+      name: "Jack_Sparrow",
+      id: 2190841,
+      daysHeld: 6,
+      isOverdue: false,
+    },
+    valueEst: "$1,850,000,000",
+  },
+  {
+    id: "rw-3",
+    name: "Macana",
+    category: "MELEE",
+    bonusName: "Revitalize",
+    bonusValue: "20%",
+    bonusType: "UTILITY",
+    bonusDescription: "20% chance on damaging hit to restore 5 Energy immediately.",
+    tier: "ORANGE",
+    baseDamage: 65.2,
+    baseAccuracy: 62.0,
+    loanedTo: {
+      name: "Valkyrie_Tank",
+      id: 3019284,
+      daysHeld: 4,
+      isOverdue: false,
+    },
+    valueEst: "$950,000,000",
+  },
+  {
+    id: "rw-4",
+    name: "BT MP9",
+    category: "SECONDARY",
+    bonusName: "Expose",
+    bonusValue: "22%",
+    bonusType: "DEBUFF",
+    bonusDescription: "Reduces target Defense by 22% for the duration of the fight.",
+    tier: "YELLOW",
+    baseDamage: 54.0,
+    baseAccuracy: 64.1,
+    loanedTo: {
+      name: "SilentKiller",
+      id: 1984019,
+      daysHeld: 24,
+      isOverdue: true,
+    },
+    valueEst: "$420,000,000",
+  },
+  {
+    id: "rw-5",
+    name: "Cobra Derringer",
+    category: "SECONDARY",
+    bonusName: "Paralyze",
+    bonusValue: "18%",
+    bonusType: "UTILITY",
+    bonusDescription: "18% chance on hit to force the opponent to lose their turn completely.",
+    tier: "YELLOW",
+    baseDamage: 48.6,
+    baseAccuracy: 55.4,
+    valueEst: "$380,000,000",
+  },
+  {
+    id: "rw-6",
+    name: "Mag 7 Shotgun",
+    category: "PRIMARY",
+    bonusName: "Deadeye",
+    bonusValue: "34%",
+    bonusType: "DAMAGE",
+    bonusDescription: "Deals +34% critical hit damage on neck and head shots.",
+    tier: "ORANGE",
+    baseDamage: 66.8,
+    baseAccuracy: 52.4,
+    valueEst: "$620,000,000",
+  },
+  {
+    id: "rw-7",
+    name: "Diamond Bludgeon",
+    category: "MELEE",
+    bonusName: "Plunder",
+    bonusValue: "45%",
+    bonusType: "UTILITY",
+    bonusDescription: "Increases mug money yield by 45% when winning fight with this weapon.",
+    tier: "YELLOW",
+    baseDamage: 58.1,
+    baseAccuracy: 56.7,
+    loanedTo: {
+      name: "BountyHunter_99",
+      id: 2981014,
+      daysHeld: 11,
+      isOverdue: false,
+    },
+    valueEst: "$550,000,000",
+  },
+  {
+    id: "rw-8",
+    name: "Dune Combat Armor Set",
     category: "ARMOR",
-    loanDate: "2026-09-18",
-    daysHeld: 24,
-    estimatedValue: "$120,000,000",
-    isOverdue: true,
+    bonusName: "Dune Mitigation",
+    bonusValue: "Quality 86%",
+    bonusType: "ARMOR_SET",
+    bonusDescription: "Provides high ballistic protection and +10% environmental hazard resistance in sandy terrain.",
+    tier: "YELLOW",
+    loanedTo: {
+      name: "FrontlineBeast",
+      id: 2109842,
+      daysHeld: 32,
+      isOverdue: true,
+    },
+    valueEst: "$340,000,000",
   },
   {
-    id: "LN-103",
-    memberName: "SilentKiller",
-    memberId: 1984019,
-    itemName: "Hazmat Suit",
-    category: "HAZMAT",
-    loanDate: "2026-10-04",
-    daysHeld: 8,
-    estimatedValue: "$45,000,000",
-    isOverdue: false,
-  },
-  {
-    id: "LN-104",
-    memberName: "Valkyrie_Tank",
-    memberId: 3019284,
-    itemName: "Yellow RW Armalite (18% Specialist)",
-    category: "WEAPON",
-    loanDate: "2026-10-06",
-    daysHeld: 6,
-    estimatedValue: "$210,000,000",
-    isOverdue: false,
+    id: "rw-9",
+    name: "Hazmat Suit",
+    category: "ARMOR",
+    bonusName: "Toxin Immunity",
+    bonusValue: "100%",
+    bonusType: "ARMOR_SET",
+    bonusDescription: "Guarantees complete immunity against toxic weapons, tear gas, and Pepper Spray debuffs.",
+    tier: "YELLOW",
+    valueEst: "$45,000,000",
   },
 ];
 
-const mockConsumptions: MedicalConsumption[] = [
-  {
-    memberId: 2190841,
-    memberName: "Jack_Sparrow",
-    warHits: 48,
-    xanaxTaken: 4,
-    bloodTaken: 12,
-    efficiencyScore: "OPTIMAL",
-  },
-  {
-    memberId: 2841092,
-    memberName: "GhostRider_99",
-    warHits: 36,
-    xanaxTaken: 5,
-    bloodTaken: 18,
-    efficiencyScore: "BALANCED",
-  },
-  {
-    memberId: 1984019,
-    memberName: "SilentKiller",
-    warHits: 12,
-    xanaxTaken: 9,
-    bloodTaken: 24,
-    efficiencyScore: "HIGH CONSUMPTION",
-  },
-  {
-    memberId: 3501924,
-    memberName: "LazyBones_AFK",
-    warHits: 2,
-    xanaxTaken: 14,
-    bloodTaken: 10,
-    efficiencyScore: "LEECH WARNING",
-  },
-];
+const STORAGE_RW_KEY = "TORN_ARMORY_RW_ITEMS";
 
 export default function ArmoryPage() {
   const { userProfile, isLive } = useTorn();
-  const [activeTab, setActiveTab] = useState<"loans" | "consumption">("loans");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedRecall, setSelectedRecall] = useState<LoanedItem | null>(null);
-  const [copiedRecall, setCopiedRecall] = useState<boolean>(false);
-  const [loans, setLoans] = useState<LoanedItem[]>(isLive ? [] : mockLoans);
-  const [consumptions, setConsumptions] = useState<MedicalConsumption[]>(isLive ? [] : mockConsumptions);
+  const [items, setItems] = useState<RwItem[]>(CANONICAL_RW_ARMORY);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("ALL");
+  const [filterBonus, setFilterBonus] = useState<string>("ALL");
+  const [filterLoanStatus, setFilterLoanStatus] = useState<"ALL" | "LOANED" | "AVAILABLE" | "OVERDUE">("ALL");
+  const [selectedRecall, setSelectedRecall] = useState<RwItem | null>(null);
+  const [copiedRecall, setCopiedRecall] = useState(false);
 
+  // Restore custom armory items from localStorage if available
   useEffect(() => {
-    if (isLive) {
-      setLoans([]);
-      setConsumptions([]);
-    } else {
-      setLoans(mockLoans);
-      setConsumptions(mockConsumptions);
+    try {
+      const saved = localStorage.getItem(STORAGE_RW_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setItems(parsed);
+        }
+      }
+    } catch {
+      // Ignore
     }
-  }, [isLive]);
+  }, []);
 
-  const filteredLoans = loans.filter(
-    (l) =>
-      l.memberName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.memberId.toString().includes(searchQuery)
-  );
+  const filteredItems = items.filter((item) => {
+    // Search query
+    const matchSearch =
+      searchQuery === "" ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.loanedTo?.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const overdueCount = loans.filter((l) => l.isOverdue).length;
-  const totalXanaxTaken = consumptions.reduce((sum, c) => sum + c.xanaxTaken, 0);
+    // Category filter
+    const matchType = filterType === "ALL" || item.category === filterType;
 
-  const getRecallMessage = (loan: LoanedItem) => {
-    return `Hey ${loan.memberName},
+    // Bonus Type filter
+    const matchBonus = filterBonus === "ALL" || item.bonusType === filterBonus;
 
-Our faction armory audit shows you have had the ${loan.itemName} checked out for ${loan.daysHeld} days.
+    // Loan status filter
+    let matchLoan = true;
+    if (filterLoanStatus === "LOANED") matchLoan = !!item.loanedTo;
+    if (filterLoanStatus === "AVAILABLE") matchLoan = !item.loanedTo;
+    if (filterLoanStatus === "OVERDUE") matchLoan = !!item.loanedTo?.isOverdue;
 
-We are preparing loadouts and armory allocations for our upcoming Ranked War. Please return the equipment to the faction armory controls as soon as you're online.
+    return matchSearch && matchType && matchBonus && matchLoan;
+  });
 
-Return link: https://www.torn.com/factions.php?step=your#/tab=armoury
-Thanks!`;
+  const generateRecallMessage = (item: RwItem) => {
+    if (!item.loanedTo) return "";
+    return `Hi [${item.loanedTo.name}], friendly reminder from Faction Leadership: Please return the loaned [${item.name} (${item.bonusName} ${item.bonusValue})] back to the faction armory when possible. It has been on loan for ${item.loanedTo.daysHeld} days. Thank you!`;
   };
 
-  const handleCopyRecall = (loan: LoanedItem) => {
-    navigator.clipboard.writeText(getRecallMessage(loan));
+  const copyRecallMessage = (msg: string) => {
+    navigator.clipboard.writeText(msg);
     setCopiedRecall(true);
-    setTimeout(() => setCopiedRecall(false), 2000);
+    setTimeout(() => setCopiedRecall(false), 2500);
   };
+
+  // Metrics
+  const totalItems = items.length;
+  const loanedCount = items.filter((i) => !!i.loanedTo).length;
+  const overdueCount = items.filter((i) => !!i.loanedTo?.isOverdue).length;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-[#0c0c0e] border border-[#1e1e24] shadow-sm">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              FACTION VAULT • AUDITOR
-            </span>
-            <span className="text-xs text-zinc-400 font-mono">Real-time Loan Tracking</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-emerald-400" />
-            <span>Armory & Loaner Item Tracker</span>
-          </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Audit high-value Ranked War weapons, combat armors, and medical usage. Detect overheld items and generate 1-click recall notices.
-          </p>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex bg-[#0d0d0f] border border-[#222225] p-1 rounded-lg text-xs font-mono">
-          <button
-            onClick={() => setActiveTab("loans")}
-            className={`px-3 py-1.5 rounded-md font-bold transition-colors ${
-              activeTab === "loans"
-                ? "bg-emerald-600 text-white"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Loaned Equipment ({loans.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("consumption")}
-            className={`px-3 py-1.5 rounded-md font-bold transition-colors ${
-              activeTab === "consumption"
-                ? "bg-emerald-600 text-white"
-                : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Medical / Drug Audit
-          </button>
-        </div>
-      </div>
-
-      {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-mono mb-1">
-            <span>LOANED ARMORY VALUE</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-white font-mono">
-            {loans.length > 0 ? "$855,000,000" : "$0"}
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">{loans.length} active equipment loans</p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
-          <div className="flex items-center justify-between text-xs text-amber-400 font-mono mb-1">
-            <span>OVERDUE ITEMS (&gt;14 DAYS)</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-white font-mono">{overdueCount} Items</div>
-          <p className="text-[11px] text-amber-300/80 mt-1">
-            {overdueCount === 0 ? "Zero overdue equipment" : "Overdue for return to armory vault"}
-          </p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
-          <div className="flex items-center justify-between text-xs text-purple-400 font-mono mb-1">
-            <span>WAR XANAX BURN RATE</span>
-            <Pill className="w-4 h-4 text-purple-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-white font-mono">
-            {totalXanaxTaken > 0 ? `${totalXanaxTaken} Used / War` : "0 Used"}
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">
-            {totalXanaxTaken > 0 ? "Avg 0.34 Xanax taken per scored hit" : "Medical inventory stable"}
-          </p>
-        </div>
-
-        <div className="p-4 rounded-xl bg-[#0d0d0f] border border-[#222225]">
-          <div className="flex items-center justify-between text-xs text-blue-400 font-mono mb-1">
-            <span>ARMORY HEALTH</span>
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-white font-mono">
-            {isLive ? (overdueCount === 0 ? "100% Secure" : "Audit Required") : "94% Accounted"}
-          </div>
-          <p className="text-[11px] text-emerald-400 mt-1">
-            {overdueCount === 0 ? "Zero overdue items" : "Follow up on overdue items"}
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content Sections */}
-      {activeTab === "loans" ? (
-        <div className="p-5 rounded-xl bg-[#0d0d0f] border border-[#222225] space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#1f1f23] pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+              <Swords className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <Package className="w-4 h-4 text-emerald-400" />
-                <span>Active Loaned Weapons & Combat Armors</span>
-              </h2>
-              <p className="text-[11px] text-zinc-400">
-                Track who holds faction items. Items held for over 14 days are flagged for recall.
+              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                Ranked War (RW) Weapon Vault & Armory
+              </h1>
+              <p className="text-xs text-zinc-400">
+                Track high-tier Ranked War weapon bonuses (Eviscerate, Expose, Revitalize, Powerful) and manage active member loans.
               </p>
             </div>
+          </div>
+        </div>
 
-            <div className="relative w-full sm:w-56">
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                id="armorySearch"
-                name="armorySearch"
-                aria-label="Search member or item"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search member or item..."
-                className="bg-black border border-[#27272a] pl-8 pr-3 py-1.5 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 w-full"
-              />
+        {/* Stats Summary Pills */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="px-3 py-1.5 rounded-lg bg-[#141418] border border-[#23232b] flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-zinc-400">Total RW Assets:</span>
+            <span className="font-mono font-bold text-white tabular-nums">{totalItems}</span>
+          </div>
+          <div className="px-3 py-1.5 rounded-lg bg-[#141418] border border-[#23232b] flex items-center gap-1.5">
+            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-zinc-400">On Loan:</span>
+            <span className="font-mono font-bold text-emerald-400 tabular-nums">{loanedCount}</span>
+          </div>
+          {overdueCount > 0 && (
+            <div className="px-3 py-1.5 rounded-lg bg-red-950/30 border border-red-900/50 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-red-300 font-semibold">{overdueCount} Overdue Loans</span>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs whitespace-nowrap">
-              <thead className="bg-[#121215] text-[10px] font-mono text-zinc-400 uppercase tracking-wider border-b border-[#1f1f23]">
-                <tr>
-                  <th className="py-2.5 px-3">Borrower</th>
-                  <th className="py-2.5 px-3">Equipment Item</th>
-                  <th className="py-2.5 px-3">Category</th>
-                  <th className="py-2.5 px-3">Est. Value</th>
-                  <th className="py-2.5 px-3">Loan Duration</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3 text-right">Recall Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#18181c] text-zinc-300">
-                {filteredLoans.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-12 text-center text-zinc-500">
-                      <Package className="w-8 h-8 mx-auto mb-2 opacity-50 text-emerald-400" />
-                      <div className="text-sm font-semibold text-white">No Active Loans</div>
-                      <div className="text-xs text-zinc-500 mt-0.5">
-                        All faction armory items and loaner equipment are secured in the faction vault.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredLoans.map((loan) => (
-                    <tr key={loan.id} className="hover:bg-[#141418] transition-colors">
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-white flex items-center gap-1.5">
-                          <span>{loan.memberName}</span>
-                          <span className="text-[10px] font-mono text-zinc-500">[{loan.memberId}]</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 font-semibold text-zinc-200">{loan.itemName}</td>
-                      <td className="py-3 px-3">
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#18181c] border border-[#27272a] text-zinc-300">
-                          {loan.category}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-emerald-400 font-bold">{loan.estimatedValue}</td>
-                      <td className="py-3 px-3 font-mono text-zinc-300">{loan.daysHeld} days</td>
-                      <td className="py-3 px-3">
-                        {loan.isOverdue ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            <AlertTriangle className="w-3 h-3" />
-                            OVERDUE
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                            ACTIVE LOAN
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={() => setSelectedRecall(loan)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/30 text-[11px] font-bold transition-all"
-                        >
-                          <MessageSquare className="w-3 h-3" />
-                          <span>Send Recall</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {/* Tactical RW Synergy Guide Banner */}
+      <div className="p-4 rounded-xl bg-[#0e0e12] border border-[#1f1f26] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+            <Flame className="w-4 h-4 text-amber-400" />
+            <span>Recommended RW Attack Sequence for Maximum Hit Efficiency</span>
+          </div>
+          <p className="text-[11px] text-zinc-400">
+            1. Open with <span className="text-sky-300 font-semibold">Expose / Eviscerate</span> to shred enemy defenses → 2. Burst with <span className="text-red-300 font-semibold">Powerful / Deadeye</span> primary → 3. Finish or heal with <span className="text-emerald-300 font-semibold">Revitalize</span> melee to recover +5 Energy.
+          </p>
+        </div>
+      </div>
+
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-4 rounded-xl bg-[#0c0c0f] border border-[#1b1b22]">
+        {/* Search */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search weapon name, bonus (e.g. Eviscerate), or borrower..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#121216] border border-[#202028] focus:border-red-500 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {/* Category */}
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="bg-[#121216] border border-[#202028] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-none cursor-pointer"
+          >
+            <option value="ALL">All Weapon Slots</option>
+            <option value="PRIMARY">Primary Rifles</option>
+            <option value="SECONDARY">Secondary Weapons</option>
+            <option value="MELEE">Melee Weapons</option>
+            <option value="ARMOR">Armor Sets</option>
+          </select>
+
+          {/* Bonus Type */}
+          <select
+            value={filterBonus}
+            onChange={(e) => setFilterBonus(e.target.value)}
+            className="bg-[#121216] border border-[#202028] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-none cursor-pointer"
+          >
+            <option value="ALL">All Bonus Types</option>
+            <option value="DEBUFF">Debuffs (Eviscerate, Expose)</option>
+            <option value="DAMAGE">Damage (Powerful, Deadeye)</option>
+            <option value="UTILITY">Utility (Revitalize, Paralyze)</option>
+            <option value="ARMOR_SET">Armor Mitigations</option>
+          </select>
+
+          {/* Loan Status */}
+          <div className="inline-flex items-center rounded-lg bg-[#121216] border border-[#202028] p-0.5">
+            {(["ALL", "AVAILABLE", "LOANED", "OVERDUE"] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setFilterLoanStatus(st)}
+                className={`px-2 py-1 rounded-md text-[10px] font-medium transition-colors cursor-pointer ${
+                  filterLoanStatus === st
+                    ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {st}
+              </button>
+            ))}
           </div>
         </div>
-      ) : (
-        /* Medical Consumption Audit Tab */
-        <div className="p-5 rounded-xl bg-[#0d0d0f] border border-[#222225] space-y-4">
-          <div className="border-b border-[#1f1f23] pb-3">
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <Pill className="w-4 h-4 text-purple-400" />
-              <span>Ranked War Medical & Drug Consumption Audit</span>
-            </h2>
-            <p className="text-[11px] text-zinc-400">
-              Evaluates item withdrawal ratio against combat score. Flags members withdrawing excessive supplies without scoring hits.
-            </p>
-          </div>
+      </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs whitespace-nowrap">
-              <thead className="bg-[#121215] text-[10px] font-mono text-zinc-400 uppercase tracking-wider border-b border-[#1f1f23]">
-                <tr>
-                  <th className="py-2.5 px-3">Faction Member</th>
-                  <th className="py-2.5 px-3">War Hits Made</th>
-                  <th className="py-2.5 px-3">Xanax Taken</th>
-                  <th className="py-2.5 px-3">Blood Bags Taken</th>
-                  <th className="py-2.5 px-3">Efficiency Rating</th>
-                  <th className="py-2.5 px-3 text-right">Torn Profile</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#18181c] text-zinc-300">
-                {consumptions.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-zinc-500">
-                      <Pill className="w-8 h-8 mx-auto mb-2 opacity-50 text-purple-400" />
-                      <div className="text-sm font-semibold text-white">No Medical Anomalies</div>
-                      <div className="text-xs text-zinc-500 mt-0.5">
-                        No abnormal medical or Xanax consumption logs detected for this war cycle.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  consumptions.map((c) => (
-                    <tr key={c.memberId} className="hover:bg-[#141418] transition-colors">
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-white flex items-center gap-1.5">
-                          <span>{c.memberName}</span>
-                          <span className="text-[10px] font-mono text-zinc-500">[{c.memberId}]</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 font-mono font-bold text-white">{c.warHits} hits</td>
-                      <td className="py-3 px-3 font-mono text-purple-300 font-bold">{c.xanaxTaken}x</td>
-                      <td className="py-3 px-3 font-mono text-red-400 font-bold">{c.bloodTaken}x</td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                            c.efficiencyScore === "OPTIMAL"
-                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                              : c.efficiencyScore === "BALANCED"
-                              ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
-                              : c.efficiencyScore === "HIGH CONSUMPTION"
-                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                              : "bg-red-500/20 text-red-400 border-red-500/40 animate-pulse"
-                          }`}
-                        >
-                          {c.efficiencyScore}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <a
-                          href={`https://www.torn.com/profiles.php?XID=${c.memberId}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </td>
-                    </tr>
-                  ))
+      {/* RW Weapon Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredItems.map((item) => {
+          const isLoaned = !!item.loanedTo;
+          const isOverdue = !!item.loanedTo?.isOverdue;
+
+          return (
+            <div
+              key={item.id}
+              className={`rounded-xl p-4 border flex flex-col justify-between transition-all ${
+                isOverdue
+                  ? "bg-red-950/10 border-red-900/40"
+                  : "bg-[#0c0c0f] border-[#1c1c24] hover:border-[#2b2b36]"
+              }`}
+            >
+              <div>
+                {/* Card Top: Slot & Tier Badges */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider bg-[#181820] text-zinc-300 border border-[#262632]">
+                      {item.category}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase ${
+                        item.tier === "ORANGE"
+                          ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                          : item.tier === "RED"
+                          ? "bg-red-500/15 text-red-300 border border-red-500/30"
+                          : "bg-yellow-500/15 text-yellow-300 border border-yellow-500/30"
+                      }`}
+                    >
+                      {item.tier}
+                    </span>
+                  </div>
+
+                  <span className="text-[11px] font-mono font-semibold text-zinc-400">
+                    {item.valueEst}
+                  </span>
+                </div>
+
+                {/* Weapon Name */}
+                <h3 className="text-sm font-bold text-white mb-2">{item.name}</h3>
+
+                {/* Highlighted RW Bonus Banner */}
+                <div className="p-2.5 rounded-lg bg-[#121217] border border-[#22222c] mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      {item.bonusName}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/40 border border-amber-800/40 px-2 py-0.2 rounded">
+                      +{item.bonusValue}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 leading-snug">
+                    {item.bonusDescription}
+                  </p>
+                </div>
+
+                {/* Weapon Combat Stats (if available) */}
+                {item.baseDamage && (
+                  <div className="grid grid-cols-2 gap-2 text-center text-xs mb-3 font-mono">
+                    <div className="p-1.5 rounded bg-[#101014] border border-[#1e1e26]">
+                      <span className="text-[10px] text-zinc-500 block">DAMAGE</span>
+                      <span className="font-bold text-white tabular-nums">{item.baseDamage}</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-[#101014] border border-[#1e1e26]">
+                      <span className="text-[10px] text-zinc-500 block">ACCURACY</span>
+                      <span className="font-bold text-white tabular-nums">{item.baseAccuracy}</span>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+              </div>
+
+              {/* Loan Status & Recall Action */}
+              <div className="pt-3 border-t border-[#181820]">
+                {isLoaned ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <UserCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span className="text-white font-medium truncate">{item.loanedTo?.name}</span>
+                        <span className="text-zinc-500 text-[10px] font-mono">[{item.loanedTo?.id}]</span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${
+                          isOverdue
+                            ? "bg-red-950/40 text-red-400 border border-red-800/40 animate-pulse"
+                            : "bg-[#16161c] text-zinc-400 border border-[#24242e]"
+                        }`}
+                      >
+                        {item.loanedTo?.daysHeld}d held
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedRecall(item)}
+                      className="w-full py-1.5 text-[11px] font-medium text-zinc-300 hover:text-white bg-[#15151c] hover:bg-[#1d1d27] border border-[#242430] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3 text-sky-400" />
+                      <span>Generate Recall Message</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-xs py-1">
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1 text-[11px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      Available in Armory
+                    </span>
+                    <span className="text-[10px] text-zinc-500 font-mono">Ready to Loan</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Recall Message Modal */}
       {selectedRecall && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-[#0f0f13] border border-[#2a2a32] rounded-xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#222226] pb-3">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <span>Armory Equipment Recall Notice</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg p-5 rounded-xl bg-[#0e0e12] border border-[#282835] space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-[#20202a]">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-bold text-white">
+                  Armory Recall Dispatcher
+                </h3>
               </div>
               <button
                 onClick={() => setSelectedRecall(null)}
-                className="text-zinc-500 hover:text-white text-xs font-mono p-1"
+                className="text-zinc-500 hover:text-white text-xs cursor-pointer"
               >
                 ✕ Close
               </button>
             </div>
 
-            <textarea
-              readOnly
-              rows={8}
-              value={getRecallMessage(selectedRecall)}
-              className="w-full bg-black border border-[#26262a] rounded-lg p-3 text-xs text-zinc-200 font-mono leading-relaxed resize-none focus:outline-none"
-            />
+            <div className="space-y-2">
+              <label className="text-[11px] text-zinc-400 font-medium">
+                Copy and paste this message into Torn Chat or Discord to recall the asset:
+              </label>
+              <textarea
+                readOnly
+                rows={4}
+                value={generateRecallMessage(selectedRecall)}
+                className="w-full bg-[#14141a] border border-[#252532] rounded-lg p-3 text-xs text-zinc-200 font-mono focus:outline-none"
+              />
+            </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-              <span className="text-[11px] text-zinc-400">
-                Directs member to armory return tab.
-              </span>
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <button
-                  onClick={() => handleCopyRecall(selectedRecall)}
-                  className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  {copiedRecall ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedRecall ? "Copied!" : "Copy Notice"}</span>
-                </button>
-                <a
-                  href={`https://www.torn.com/messages.php#/p=compose&XID=${selectedRecall.memberId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3.5 py-2 bg-[#1c1c22] hover:bg-[#282830] text-zinc-200 border border-[#2e2e36] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Send on Torn</span>
-                </a>
-              </div>
+            <div className="flex items-center justify-between pt-2">
+              <a
+                href={`https://www.torn.com/messages.php#/p=compose&XID=${selectedRecall.loanedTo?.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-medium underline"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Direct Torn Message</span>
+              </a>
+
+              <button
+                onClick={() => copyRecallMessage(generateRecallMessage(selectedRecall))}
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {copiedRecall ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Recall Message</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

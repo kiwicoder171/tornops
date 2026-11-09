@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+export type SuiteMode = "all" | "faction" | "citizen";
+
 export interface TornUserProfile {
   playerId: number;
   name: string;
@@ -28,6 +30,8 @@ interface TornContextType {
   error: string | null;
   saveApiKey: (key: string) => Promise<boolean>;
   disconnect: () => void;
+  suiteMode: SuiteMode;
+  setSuiteMode: (mode: SuiteMode) => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
   toggleMobileSidebar: () => void;
@@ -44,6 +48,14 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [suiteMode, setSuiteModeState] = useState<SuiteMode>("all");
+
+  const setSuiteMode = (mode: SuiteMode) => {
+    setSuiteModeState(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("TORN_SUITE_MODE", mode);
+    }
+  };
 
   const toggleMobileSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
 
@@ -148,11 +160,15 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Restore saved key from localStorage on initial load
+  // Restore saved key & suite mode from localStorage on initial load
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       validateAndLoad(saved);
+    }
+    const savedMode = localStorage.getItem("TORN_SUITE_MODE") as SuiteMode;
+    if (savedMode && (savedMode === "all" || savedMode === "faction" || savedMode === "citizen")) {
+      setSuiteModeState(savedMode);
     }
   }, []);
 
@@ -179,6 +195,8 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
         error,
         saveApiKey,
         disconnect,
+        suiteMode,
+        setSuiteMode,
         isMobileSidebarOpen,
         setIsMobileSidebarOpen,
         toggleMobileSidebar,

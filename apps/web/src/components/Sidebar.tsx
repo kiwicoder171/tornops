@@ -24,6 +24,9 @@ import {
   Globe,
   X,
   BookOpen,
+  Building2,
+  Sparkles,
+  CheckSquare,
 } from "lucide-react";
 import { useTorn } from "@/context/TornContext";
 import { formatChainTime } from "@torn/shared";
@@ -67,7 +70,7 @@ const navSections: NavSection[] = [
     items: [
       { name: "Travel & Stock", href: "/travel", icon: Plane },
       { name: "Leveling Targets", href: "/targets", icon: Target },
-      { name: "Task Board", href: "/todo", icon: Kanban },
+      { name: "Daily Routine & Resets", href: "/todo", icon: CheckSquare, badge: "DAILY", badgeVariant: "emerald" },
     ],
   },
   {
@@ -82,7 +85,17 @@ const navSections: NavSection[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isLive, apiKey, userProfile, isMobileSidebarOpen, setIsMobileSidebarOpen } = useTorn();
+  const { isLive, apiKey, userProfile, isMobileSidebarOpen, setIsMobileSidebarOpen, suiteMode, setSuiteMode } = useTorn();
+
+  const filteredSections = navSections.filter((sec) => {
+    if (suiteMode === "faction") {
+      return sec.title === "WAR & COMBAT" || sec.title === "FACTION OPERATIONS" || sec.title === "SYSTEM & SETTINGS";
+    }
+    if (suiteMode === "citizen") {
+      return sec.title === "CITIZEN TOOLS" || sec.title === "SYSTEM & SETTINGS";
+    }
+    return true;
+  });
 
   // Persistent live chain ticker in sidebar
   const [chainCount, setChainCount] = useState<number>(0);
@@ -197,6 +210,51 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* Mode View Switcher (Sidebar Quick-Select) */}
+      <div className="px-3 pt-2.5 pb-1">
+        <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-[#0e0e11] border border-[#222225] text-xs">
+          <button
+            type="button"
+            onClick={() => setSuiteMode("faction")}
+            className={`flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              suiteMode === "faction"
+                ? "bg-red-500/15 text-red-300 border border-red-500/30 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+            title="Faction Operations Mode"
+          >
+            <Swords className="w-3 h-3 text-red-400" />
+            <span>Faction</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSuiteMode("citizen")}
+            className={`flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              suiteMode === "citizen"
+                ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+            title="Citizen Daily Mode"
+          >
+            <Building2 className="w-3 h-3 text-emerald-400" />
+            <span>Citizen</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSuiteMode("all")}
+            className={`flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              suiteMode === "all"
+                ? "bg-blue-500/15 text-blue-300 border border-blue-500/30 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+            title="All Tools"
+          >
+            <Sparkles className="w-3 h-3 text-blue-400" />
+            <span>All</span>
+          </button>
+        </div>
+      </div>
+
       {/* Categorized Navigation List */}
       <nav className="flex-1 px-2.5 py-3 space-y-3.5 overflow-y-auto custom-scrollbar">
         {/* Primary Hub Overview */}
@@ -222,7 +280,7 @@ export function Sidebar() {
           </Link>
         </div>
 
-        {navSections.map((section) => (
+        {filteredSections.map((section) => (
           <div key={section.title} className="space-y-0.5">
             <div className="px-2 py-1 text-[9px] font-mono font-medium text-zinc-400 uppercase tracking-wider">
               {section.title}

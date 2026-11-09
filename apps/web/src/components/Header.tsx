@@ -14,11 +14,14 @@ import {
   Menu,
   X,
   ExternalLink,
+  Swords,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import { ApiTosTable } from "@/components/ApiTosTable";
 
 export function Header() {
-  const { isLive, isLoading, userProfile, error, saveApiKey, disconnect, toggleMobileSidebar } = useTorn();
+  const { isLive, isLoading, userProfile, error, saveApiKey, disconnect, toggleMobileSidebar, suiteMode, setSuiteMode } = useTorn();
   const [inputKey, setInputKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,6 +99,49 @@ export function Header() {
             <span suppressHydrationWarning className="text-[11px] sm:text-xs">{tctClock}</span>
             <span className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase">TCT</span>
           </Link>
+
+          {/* Suite Mode Switcher (Faction Ops vs. Citizen Daily) */}
+          <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-[#0e0e11] border border-[#222225] text-xs">
+            <button
+              type="button"
+              onClick={() => setSuiteMode("faction")}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                suiteMode === "faction"
+                  ? "bg-red-500/15 text-red-300 border border-red-500/30 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+              title="Filter to Faction War Room, Spy Vault, Banking & Operations"
+            >
+              <Swords className="w-3 h-3 text-red-400" />
+              <span>Faction Ops</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSuiteMode("citizen")}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                suiteMode === "citizen"
+                  ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+              title="Filter to Citizen Daily Tools (Travel & Stock, Targets, Routine)"
+            >
+              <Building2 className="w-3 h-3 text-emerald-400" />
+              <span>Citizen Daily</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSuiteMode("all")}
+              className={`hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                suiteMode === "all"
+                  ? "bg-blue-500/15 text-blue-300 border border-blue-500/30 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+              title="Show all tools"
+            >
+              <Sparkles className="w-3 h-3 text-blue-400" />
+              <span>All</span>
+            </button>
+          </div>
 
           {error && (
             <span className="hidden sm:flex text-xs text-red-400 items-center gap-1.5 font-mono bg-red-950/30 border border-red-900/50 px-2 py-0.5 rounded truncate max-w-[200px]">
