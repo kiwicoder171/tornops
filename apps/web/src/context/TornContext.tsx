@@ -54,7 +54,8 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/torn/user?selections=profile,bars&key=${encodeURIComponent(key.trim())}`);
+      // First, fetch user profile with Public Access selection (supported by all 16-char Public keys)
+      const res = await fetch(`/api/torn/user?selections=profile&key=${encodeURIComponent(key.trim())}`);
       const data = await res.json();
 
       if (data.error) {
@@ -97,6 +98,25 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
       if (!isCoLeader && (posLower.includes("co-leader") || posLower.includes("coleader"))) isCoLeader = true;
       const hasAA = isLeader || isCoLeader;
 
+      // Optional progressive enhancement: attempt to fetch bars if key has Minimal Access or above
+      let energy = undefined;
+      let nerve = undefined;
+      let happy = undefined;
+      let life = data.life ? { current: data.life.current, max: data.life.maximum } : undefined;
+
+      try {
+        const barsRes = await fetch(`/api/torn/user?selections=bars&key=${encodeURIComponent(key.trim())}`);
+        const barsData = await barsRes.json();
+        if (barsData && !barsData.error) {
+          if (barsData.energy) energy = { current: barsData.energy.current, max: barsData.energy.maximum };
+          if (barsData.nerve) nerve = { current: barsData.nerve.current, max: barsData.nerve.maximum };
+          if (barsData.happy) happy = { current: barsData.happy.current, max: barsData.happy.maximum };
+          if (barsData.life) life = { current: barsData.life.current, max: barsData.life.maximum };
+        }
+      } catch {
+        // Bars is optional; keep public life data from profile
+      }
+
       const profile: TornUserProfile = {
         playerId,
         name,
@@ -107,10 +127,10 @@ export function TornProvider({ children }: { children: React.ReactNode }) {
         isLeader,
         isCoLeader,
         hasAA,
-        energy: data.energy ? { current: data.energy.current, max: data.energy.maximum } : undefined,
-        nerve: data.nerve ? { current: data.nerve.current, max: data.nerve.maximum } : undefined,
-        happy: data.happy ? { current: data.happy.current, max: data.happy.maximum } : undefined,
-        life: data.life ? { current: data.life.current, max: data.life.maximum } : undefined,
+        energy,
+        nerve,
+        happy,
+        life,
         status: data.status ? { description: data.status.description, state: data.status.state, color: data.status.color, until: data.status.until } : undefined,
       };
 

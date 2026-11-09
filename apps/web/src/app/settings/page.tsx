@@ -42,7 +42,7 @@ export default function SettingsPage() {
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } else {
-      setFormError("Invalid Torn API Key. Please verify that this is a valid 16-character Public key.");
+      setFormError(error || "Invalid Torn API Key. Please verify that this is a valid 16-character Public key.");
     }
   };
 
@@ -140,12 +140,12 @@ export default function SettingsPage() {
                   <Key className="w-3.5 h-3.5 text-cyan-400" /> Enter Torn Public API Key
                 </label>
                 <a
-                  href="https://www.torn.com/preferences.php#tab=api"
+                  href="https://www.torn.com/preferences.php#tab=api?step=addNewKey&title=TornOps&type=1"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1 underline"
                 >
-                  <span>Generate Key on Torn</span>
+                  <span>Auto-Generate Public Key on Torn</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>

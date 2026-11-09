@@ -125,7 +125,7 @@ export function ApiTosTable() {
               <td className="px-3.5 py-2.5 text-slate-300">
                 Clicking &quot;Disconnect&quot; instantly erases your API key and cached data from your browser storage. You can also delete or revoke your key immediately in your{" "}
                 <a
-                  href="https://www.torn.com/preferences.php#tab=api"
+                  href="https://www.torn.com/preferences.php#tab=api?step=addNewKey&title=TornOps&type=1"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-cyan-400 underline hover:text-cyan-300"

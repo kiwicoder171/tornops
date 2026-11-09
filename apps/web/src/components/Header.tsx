@@ -56,7 +56,7 @@ export function Header() {
       setInputKey("");
       setIsModalOpen(false);
     } else {
-      setModalError("Invalid Torn API Key. Please ensure it is a valid 16-character Public Access key.");
+      setModalError(error || "Invalid Torn API Key. Please ensure it is a valid 16-character Public Access key.");
     }
   };
 
@@ -245,12 +245,12 @@ export function Header() {
                       <Key className="w-3.5 h-3.5 text-cyan-400" /> Public API Key
                     </label>
                     <a
-                      href="https://www.torn.com/preferences.php#tab=api"
+                      href="https://www.torn.com/preferences.php#tab=api?step=addNewKey&title=TornOps&type=1"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[11px] text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1 underline"
                     >
-                      <span>Create Public Key on Torn</span>
+                      <span>Auto-Generate Public Key on Torn</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
