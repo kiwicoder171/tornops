@@ -339,35 +339,80 @@ export default function TravelPage() {
   const [destinations, setDestinations] = useState<OverseasDestination[]>(CANONICAL_DESTINATIONS);
   const [isSyncingPrices, setIsSyncingPrices] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [yataSyncStatus, setYataSyncStatus] = useState<"idle" | "connected" | "offline">("idle");
   const [carryCapacity, setCarryCapacity] = useState(29); // 5 base + 10 suitcase + 10 faction perk + 4 WLT
   const [hasAirstrip, setHasAirstrip] = useState(true);
   const [filterType, setFilterType] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [soundAlerts, setSoundAlerts] = useState(true);
 
-  // Live item price sync function
+  // Live item price & YATA stock sync function
   const syncLivePrices = async (key: string) => {
-    if (!key) return;
     try {
       setIsSyncingPrices(true);
-      const res = await fetch(`/api/torn/torn?selections=items&key=${encodeURIComponent(key)}`);
-      const data = await res.json();
-      if (data && data.items) {
-        setDestinations((prev) =>
-          prev.map((dest) => {
-            const liveItem = data.items[dest.itemId];
-            if (liveItem && typeof liveItem.market_value === "number") {
-              return {
-                ...dest,
-                tornMarketValue: liveItem.market_value,
-                lastUpdated: "Live API",
-              };
+
+      // 1. Attempt YATA Abroad Stock & Cost Sync
+      try {
+        const yataRes = await fetch("/api/travel/stock");
+        const yataJson = await yataRes.json();
+        if (yataJson.success && yataJson.data && yataJson.data.stocks) {
+          setYataSyncStatus("connected");
+          const yataStocks = yataJson.data.stocks;
+          // Map item ID to quantity and cost
+          const stockMap: Record<number, { quantity: number; cost?: number }> = {};
+          Object.values(yataStocks).forEach((countryObj: any) => {
+            const list = countryObj.stocks || countryObj.items || [];
+            if (Array.isArray(list)) {
+              list.forEach((st: any) => {
+                if (st && st.id) {
+                  stockMap[st.id] = { quantity: st.quantity, cost: st.cost };
+                }
+              });
             }
-            return dest;
-          })
-        );
-        const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        setLastSyncTime(timeStr);
+          });
+
+          setDestinations((prev) =>
+            prev.map((dest) => {
+              const liveStock = stockMap[dest.itemId];
+              if (liveStock) {
+                return {
+                  ...dest,
+                  stockCount: liveStock.quantity,
+                  localCost: liveStock.cost || dest.localCost,
+                  lastUpdated: "YATA + Official API",
+                };
+              }
+              return dest;
+            })
+          );
+        } else {
+          setYataSyncStatus("offline");
+        }
+      } catch {
+        setYataSyncStatus("offline");
+      }
+
+      // 2. Official Torn API Market Values
+      if (key) {
+        const res = await fetch(`/api/torn/torn?selections=items&key=${encodeURIComponent(key)}`);
+        const data = await res.json();
+        if (data && data.items) {
+          setDestinations((prev) =>
+            prev.map((dest) => {
+              const liveItem = data.items[dest.itemId];
+              if (liveItem && typeof liveItem.market_value === "number") {
+                return {
+                  ...dest,
+                  tornMarketValue: liveItem.market_value,
+                  lastUpdated: "Live API",
+                };
+              }
+              return dest;
+            })
+          );
+          const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          setLastSyncTime(timeStr);
+        }
       }
     } catch {
       // Retain canonical baseline prices
@@ -680,7 +725,19 @@ export default function TravelPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-right text-[11px]">
+        <div className="flex flex-wrap items-center gap-3 text-right text-[11px]">
+          {yataSyncStatus === "connected" ? (
+            <span className="text-sky-400 font-mono flex items-center gap-1 bg-sky-950/40 border border-sky-800/40 px-2 py-0.5 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+              YATA Stock Synced
+            </span>
+          ) : yataSyncStatus === "offline" ? (
+            <span className="text-amber-400/80 font-mono flex items-center gap-1 bg-amber-950/30 border border-amber-800/30 px-2 py-0.5 rounded" title="YATA API (yata.yt) returned 502 Bad Gateway. Displaying canonical overseas store costs.">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              YATA Offline (Using Canonical Costs)
+            </span>
+          ) : null}
+
           {lastSyncTime ? (
             <span className="text-emerald-400 font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -689,15 +746,13 @@ export default function TravelPage() {
           ) : (
             <span className="text-zinc-400 font-mono">Torn Market Catalog (Canonical Baseline)</span>
           )}
-          {apiKey && (
-            <button
-              onClick={() => syncLivePrices(apiKey)}
-              disabled={isSyncingPrices}
-              className="text-sky-400 hover:text-sky-300 font-medium underline transition-colors"
-            >
-              {isSyncingPrices ? "Syncing..." : "Refresh Live Prices"}
-            </button>
-          )}
+          <button
+            onClick={() => syncLivePrices(apiKey || "")}
+            disabled={isSyncingPrices}
+            className="text-sky-400 hover:text-sky-300 font-medium underline transition-colors cursor-pointer"
+          >
+            {isSyncingPrices ? "Syncing..." : "Refresh Live Prices"}
+          </button>
         </div>
       </div>
 
