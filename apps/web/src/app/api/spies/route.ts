@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getFirestoreDb } from "@/lib/firebase-admin";
 import { getSupabaseClient } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -13,61 +16,104 @@ export async function GET(req: NextRequest) {
   }
 
   const factionId = Number(factionIdStr);
-  const supabase = getSupabaseClient();
+  const firestore = getFirestoreDb();
 
-  if (!supabase) {
-    return NextResponse.json({
-      configured: false,
-      message: "Supabase not configured yet. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_ANON_KEY.",
-      spies: [],
-    });
-  }
+  // 1. Primary Engine: Firebase Firestore
+  if (firestore) {
+    try {
+      const snapshot = await firestore
+        .collection("faction_spies")
+        .where("faction_id", "==", factionId)
+        .get();
 
-  try {
-    const { data, error } = await supabase
-      .from("faction_spies")
-      .select("*")
-      .eq("faction_id", factionId);
+      const spies = snapshot.docs.map((doc) => {
+        const row = doc.data();
+        return {
+          playerId: row.player_id,
+          name: row.name || undefined,
+          strength: row.strength || undefined,
+          defense: row.defense || undefined,
+          speed: row.speed || undefined,
+          dexterity: row.dexterity || undefined,
+          total: row.total,
+          fairFight: row.fair_fight || undefined,
+          source: row.source || "FACTION_SPY",
+          spiedBy: row.spied_by || "Teammate Cloud",
+          timestamp:
+            row.timestamp ||
+            (row.updated_at ? Math.floor(new Date(row.updated_at).getTime() / 1000) : Math.floor(Date.now() / 1000)),
+        };
+      });
 
-    if (error) {
-      console.error("Supabase faction_spies GET error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({
+        configured: true,
+        engine: "firestore",
+        factionId,
+        count: spies.length,
+        spies,
+      });
+    } catch (err: any) {
+      console.error("[Firestore] faction_spies GET error:", err);
+      return NextResponse.json({ error: err?.message || "Firestore query error" }, { status: 500 });
     }
-
-    // Map rows into PlayerSpyData format
-    const spies = (data || []).map((row) => ({
-      playerId: row.player_id,
-      name: row.name || undefined,
-      strength: row.strength || undefined,
-      defense: row.defense || undefined,
-      speed: row.speed || undefined,
-      dexterity: row.dexterity || undefined,
-      total: row.total,
-      fairFight: row.fair_fight || undefined,
-      source: row.source || "FACTION_SPY",
-      spiedBy: row.spied_by || "Teammate Cloud",
-      timestamp: row.timestamp || Math.floor(new Date(row.updated_at || row.created_at).getTime() / 1000),
-    }));
-
-    return NextResponse.json({
-      configured: true,
-      factionId,
-      count: spies.length,
-      spies,
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "Internal error" }, { status: 500 });
   }
+
+  // 2. Fallback Engine: Supabase (if configured)
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("faction_spies")
+        .select("*")
+        .eq("faction_id", factionId);
+
+      if (error) {
+        console.error("Supabase faction_spies GET error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const spies = (data || []).map((row) => ({
+        playerId: row.player_id,
+        name: row.name || undefined,
+        strength: row.strength || undefined,
+        defense: row.defense || undefined,
+        speed: row.speed || undefined,
+        dexterity: row.dexterity || undefined,
+        total: row.total,
+        fairFight: row.fair_fight || undefined,
+        source: row.source || "FACTION_SPY",
+        spiedBy: row.spied_by || "Teammate Cloud",
+        timestamp: row.timestamp || Math.floor(new Date(row.updated_at || row.created_at).getTime() / 1000),
+      }));
+
+      return NextResponse.json({
+        configured: true,
+        engine: "supabase",
+        factionId,
+        count: spies.length,
+        spies,
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err?.message || "Internal error" }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({
+    configured: false,
+    message: "No cloud database configured. Set Firebase or Supabase credentials.",
+    spies: [],
+  });
 }
 
 export async function POST(req: NextRequest) {
+  const firestore = getFirestoreDb();
   const supabase = getSupabaseClient();
 
-  if (!supabase) {
+  if (!firestore && !supabase) {
     return NextResponse.json(
       {
         configured: false,
-        error: "Supabase not configured. Connect your Supabase project in environment variables.",
+        error: "Database not configured. Provide Firebase service account or Supabase credentials.",
       },
       { status: 503 }
     );
@@ -106,19 +152,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No valid spy entries to upsert" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
-      .from("faction_spies")
-      .upsert(rows, { onConflict: "faction_id,player_id" });
+    // 1. Primary Engine: Firebase Firestore
+    if (firestore) {
+      const batchSize = 400;
+      for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = firestore.batch();
+        const chunk = rows.slice(i, i + batchSize);
+        for (const row of chunk) {
+          const docRef = firestore.collection("faction_spies").doc(`${row.faction_id}_${row.player_id}`);
+          batch.set(docRef, row, { merge: true });
+        }
+        await batch.commit();
+      }
 
-    if (error) {
-      console.error("Supabase faction_spies upsert error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({
+        success: true,
+        engine: "firestore",
+        upsertedCount: rows.length,
+      });
     }
 
-    return NextResponse.json({
-      success: true,
-      upsertedCount: rows.length,
-    });
+    // 2. Fallback Engine: Supabase
+    if (supabase) {
+      const { error } = await supabase
+        .from("faction_spies")
+        .upsert(rows, { onConflict: "faction_id,player_id" });
+
+      if (error) {
+        console.error("Supabase faction_spies upsert error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        engine: "supabase",
+        upsertedCount: rows.length,
+      });
+    }
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Failed to upsert spies" }, { status: 500 });
   }

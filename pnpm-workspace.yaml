@@ -3,6 +3,8 @@ packages:
   - "apps/*"
 
 allowBuilds:
+  '@firebase/util': set this to true or false
   '@prisma/client': false
   '@prisma/engines': false
   prisma: false
+  protobufjs: set this to true or false
