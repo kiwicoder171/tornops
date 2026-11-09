@@ -75,7 +75,17 @@ export default function OverviewPage() {
   const tctTimeStr = `${curTctHour.toString().padStart(2, "0")}:${curTctMinute
     .toString()
     .padStart(2, "0")}:${curTctSecond.toString().padStart(2, "0")} TCT`;
-  const awakeNowCount = factionMembers.filter((m) => isMemberAwakeAtTct(m, curTctHour)).length;
+
+  // Real-time live status from Torn API
+  const onlineNowCount = factionMembers.filter(
+    (m) => m.lastActionStatus === "Online" || m.lastActionStatus === "Idle"
+  ).length;
+
+  // Active or daytime availability (awake by schedule OR literally online right now in Torn)
+  const awakeNowCount = factionMembers.filter(
+    (m) => isMemberAwakeAtTct(m, curTctHour) || m.lastActionStatus === "Online" || m.lastActionStatus === "Idle"
+  ).length;
+
   const coverage24h = compute24hCoverage(factionMembers);
 
   // If live key is connected, poll live faction telemetry
@@ -125,23 +135,43 @@ export default function OverviewPage() {
             ? data.members
             : Object.entries(data.members).map(([id, m]: [string, any]) => ({ id: Number(id), ...m }));
 
-          const mapped = rawMembers.map((m: any) => ({
-            memberId: m.id,
-            name: m.name,
-            level: m.level || 1,
-            position: m.position || "Member",
-            timezone: "Atlantic/Reykjavik",
-            timezoneLabel: "GMT / TCT (UTC+0)",
-            utcOffset: 0,
-            awakeStartLocal: 8,
-            awakeEndLocal: 23,
-            chainWatchStartTct: 12,
-            chainWatchEndTct: 18,
-            warPreference: "ALL" as const,
-            ocReady: true,
-            lastActionStatus: m.last_action?.status || "Offline",
-            inGameStatus: m.status?.state || "Okay",
-          }));
+          // Merge any leadership-customized timezones saved in Firestore
+          let savedShiftsMap: Record<number, any> = {};
+          const effectiveFactionId = userProfile?.factionId || data.basic?.faction_id || data.faction?.id;
+          if (effectiveFactionId) {
+            try {
+              const covRes = await fetch(`/api/coverage?factionId=${effectiveFactionId}`);
+              const covData = await covRes.json();
+              if (covData.members && Array.isArray(covData.members)) {
+                covData.members.forEach((sm: any) => {
+                  savedShiftsMap[sm.memberId] = sm;
+                });
+              }
+            } catch {
+              // Silently fallback to intelligent defaults
+            }
+          }
+
+          const mapped = rawMembers.map((m: any) => {
+            const saved = savedShiftsMap[m.id];
+            return {
+              memberId: m.id,
+              name: m.name,
+              level: m.level || 1,
+              position: m.position || "Member",
+              timezone: saved?.timezone || "Atlantic/Reykjavik",
+              timezoneLabel: saved?.timezoneLabel || "GMT / TCT (UTC+0)",
+              utcOffset: saved?.utcOffset ?? 0,
+              awakeStartLocal: saved?.awakeStartLocal ?? 8,
+              awakeEndLocal: saved?.awakeEndLocal ?? 23,
+              chainWatchStartTct: saved?.chainWatchStartTct ?? 12,
+              chainWatchEndTct: saved?.chainWatchEndTct ?? 18,
+              warPreference: (saved?.warPreference || "ALL") as "WEEKEND" | "WEEKDAY" | "ALL",
+              ocReady: saved?.ocReady ?? true,
+              lastActionStatus: m.last_action?.status || "Offline",
+              inGameStatus: m.status?.state || "Okay",
+            };
+          });
           setFactionMembers(mapped);
         } else if (!userProfile?.factionId) {
           setFactionMembers([]);
@@ -409,10 +439,17 @@ export default function OverviewPage() {
                 </span>
               </h2>
             </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              <strong className="text-white font-mono">{awakeNowCount}</strong> of{" "}
-              <strong className="text-white font-mono">{factionMembers.length}</strong> roster members are active in their daytime window right now.
-            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <strong className="font-mono">{onlineNowCount}</strong> Live Online
+              </span>
+              <span className="text-zinc-600 hidden sm:inline">•</span>
+              <span className="text-xs text-zinc-400">
+                <strong className="text-white font-mono">{awakeNowCount}</strong> of{" "}
+                <strong className="text-white font-mono">{factionMembers.length}</strong> in daytime availability window
+              </span>
+            </div>
           </div>
         </div>
 
