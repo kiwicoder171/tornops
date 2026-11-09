@@ -80,6 +80,26 @@ export default function FactionCoveragePage() {
   const [members, setMembers] = useState<FactionMemberAvailability[]>(isLive ? [] : DEMO_FACTION_TIMEZONES);
   const [isLiveRosterLoaded, setIsLiveRosterLoaded] = useState(false);
   const [isLoadingRoster, setIsLoadingRoster] = useState(isLive);
+  const [cloudSynced, setCloudSynced] = useState(false);
+
+  const effectiveFactionId = userProfile?.factionId || 57693;
+
+  // Load cloud-synced roster from Firestore
+  useEffect(() => {
+    const fetchCloudRoster = async () => {
+      try {
+        const res = await fetch(`/api/coverage?factionId=${effectiveFactionId}`);
+        const data = await res.json();
+        if (data.members && Array.isArray(data.members) && data.members.length > 0) {
+          setMembers(data.members);
+          setCloudSynced(true);
+        }
+      } catch {
+        // Fallback to local
+      }
+    };
+    fetchCloudRoster();
+  }, [effectiveFactionId]);
 
   // Load persisted member timezones from localStorage in Demo Mode
   useEffect(() => {
@@ -191,11 +211,21 @@ export default function FactionCoveragePage() {
     fetchLiveRoster();
   }, [isLive, apiKey]);
 
-  // Persist whenever members state is updated
-  const saveRoster = (newMembers: FactionMemberAvailability[]) => {
+  // Persist whenever members state is updated (both local and Firestore cloud)
+  const saveRoster = async (newMembers: FactionMemberAvailability[]) => {
     setMembers(newMembers);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newMembers));
+      await fetch("/api/coverage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          factionId: effectiveFactionId,
+          members: newMembers,
+          updatedBy: userProfile?.name || "Teammate",
+        }),
+      });
+      setCloudSynced(true);
     } catch {
       // Storage error fallback
     }
@@ -403,6 +433,13 @@ export default function FactionCoveragePage() {
 
         {/* Global Synchronized TCT Clock & Self-Service CTA */}
         <div className="flex flex-wrap items-center gap-3">
+          {cloudSynced && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Cloud Roster Synced (#{effectiveFactionId})</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-2.5 px-3 py-1.5 bg-zinc-950/90 border border-zinc-800 rounded-lg">
             <Clock className="w-4 h-4 text-emerald-400 animate-pulse" />
             <div className="flex flex-col">

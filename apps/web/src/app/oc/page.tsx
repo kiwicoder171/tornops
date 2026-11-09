@@ -84,6 +84,54 @@ export default function OcOptimizerPage() {
   const [lockedSlots, setLockedSlots] = useState<Record<string, number>>({});
   const [pinged, setPinged] = useState<number | null>(null);
   const [candidates, setCandidates] = useState<FactionCandidate[]>(DEMO_CANDIDATES);
+  const [cloudSynced, setCloudSynced] = useState(false);
+  const [isSyncingPlan, setIsSyncingPlan] = useState(false);
+
+  const effectiveFactionId = userProfile?.factionId || 57693;
+
+  // Load shared faction OC plan from Firestore API
+  useEffect(() => {
+    const fetchCloudPlan = async () => {
+      try {
+        const res = await fetch(`/api/oc?factionId=${effectiveFactionId}`);
+        const data = await res.json();
+        if (data.plan) {
+          if (typeof data.plan.selectedTemplateIndex === "number") {
+            setSelectedTemplateIndex(data.plan.selectedTemplateIndex);
+          }
+          if (data.plan.lockedSlots) {
+            setLockedSlots(data.plan.lockedSlots);
+          }
+          setCloudSynced(true);
+        }
+      } catch {
+        // Retain default
+      }
+    };
+    fetchCloudPlan();
+  }, [effectiveFactionId]);
+
+  // Save plan to cloud
+  const savePlanToCloud = async (templateIdx: number, slots: Record<string, number>) => {
+    setIsSyncingPlan(true);
+    try {
+      await fetch("/api/oc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          factionId: effectiveFactionId,
+          selectedTemplateIndex: templateIdx,
+          lockedSlots: slots,
+          updatedBy: userProfile?.name || "Leader",
+        }),
+      });
+      setCloudSynced(true);
+    } catch {
+      // Retain local state
+    } finally {
+      setIsSyncingPlan(false);
+    }
+  };
 
   // --- Member State ---
   const [mySkills, setMySkills] = useState<UserSkill[]>(isLive ? [] : DEMO_SKILLS);
@@ -136,16 +184,20 @@ export default function OcOptimizerPage() {
 
   const currentTemplate = OC_TEMPLATES[selectedTemplateIndex];
 
+  const handleSelectTemplate = (idx: number) => {
+    setSelectedTemplateIndex(idx);
+    savePlanToCloud(idx, lockedSlots);
+  };
+
   const toggleLockSlot = (slotKey: string, memberId: number) => {
-    setLockedSlots((prev) => {
-      const copy = { ...prev };
-      if (copy[slotKey]) {
-        delete copy[slotKey];
-      } else {
-        copy[slotKey] = memberId;
-      }
-      return copy;
-    });
+    const updated = { ...lockedSlots };
+    if (updated[slotKey]) {
+      delete updated[slotKey];
+    } else {
+      updated[slotKey] = memberId;
+    }
+    setLockedSlots(updated);
+    savePlanToCloud(selectedTemplateIndex, updated);
   };
 
   const handlePingMember = (id: number) => {
@@ -190,8 +242,16 @@ export default function OcOptimizerPage() {
           </p>
         </div>
 
-        {/* View Switcher */}
-        <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
+        {/* View Switcher & Cloud Status */}
+        <div className="flex flex-wrap items-center gap-2">
+          {cloudSynced && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+              <span>{isSyncingPlan ? "Syncing..." : `Cloud Synced (Faction #${effectiveFactionId})`}</span>
+            </div>
+          )}
+
+          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
           <button
             onClick={() => setViewMode("LEADER")}
             className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
@@ -214,6 +274,7 @@ export default function OcOptimizerPage() {
           </button>
         </div>
       </div>
+    </div>
 
       {/* Leadership Unlocked Notice for Testing */}
       {isLive && !isActualLeader && activeView === "LEADER" && (
@@ -272,7 +333,7 @@ export default function OcOptimizerPage() {
             {OC_TEMPLATES.map((tpl, idx) => (
               <button
                 key={tpl.crimeTypeId}
-                onClick={() => setSelectedTemplateIndex(idx)}
+                onClick={() => handleSelectTemplate(idx)}
                 className={`px-3.5 py-2 rounded-xl border text-xs font-medium transition-all ${
                   selectedTemplateIndex === idx
                     ? "bg-purple-500/10 border-purple-500/40 text-purple-300"
